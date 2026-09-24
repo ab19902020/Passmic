@@ -39,6 +39,11 @@ def rgba(path):
     im[..., :3] *= im[..., 3:4] / 255.0
     return im
 SPR = {n: dict(body=rgba(f'{A}/{n}_body.png'), head=rgba(f'{A}/{n}_head.png'), **meta[n]) for n in meta}
+SPR_PAD = 110  # room around each drawing so a swinging arm is never clipped at the sprite edge
+for sp_ in SPR.values():
+    for k_ in ('body', 'head'): sp_[k_] = np.pad(sp_[k_], ((SPR_PAD, SPR_PAD), (SPR_PAD, SPR_PAD), (0, 0)))
+    sp_['x0'] -= SPR_PAD; sp_['y0'] -= SPR_PAD
+    for k_ in ('neck', 'foot', 'headc'): sp_[k_] = [sp_[k_][0] + SPR_PAD, sp_[k_][1] + SPR_PAD]
 HAND = {'carra1': (895, 752), 'carra2': (690, 300), 'nev1': (1030, 600), 'nev2': (1455, 380), 'keane1': (1405, 630), 'keane2': (790, 525), 'carra5': (720, 645), 'keane5': (722, 522), 'nev5': (1050, 570), 'carra4': (385, 473), 'keane4': (923, 517), 'nev4': (1224, 456)}
 for n, s in SPR.items():
     hx, hy = HAND[n]; s['hand'] = (hx - s['x0'], hy - s['y0'])
@@ -60,55 +65,128 @@ def _ol_rim(img):
     edge = cv2.GaussianBlur(edge, (0, 0), 1.0) * (a / 255)
     r = np.zeros_like(img); r[..., 0] = r[..., 1] = r[..., 2] = edge; r[..., 3] = edge
     return o, r
+def _ol_rim_body(img, head_a):
+    """Outline + rim light for a body layer, from the outer silhouette of body+head (closed), so the neck opening
+    and internal seams never get a rim line."""
+    a = np.maximum(img[..., 3], head_a)
+    a = cv2.morphologyEx((a > 110).astype(np.uint8), cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))).astype(np.float32) * 255
+    a = np.minimum(a, cv2.GaussianBlur(np.maximum(img[..., 3], head_a), (0, 0), 0.7) + 60)
+    tmp = np.zeros_like(img); tmp[..., 3] = a
+    ol, rim = _ol_rim(tmp)
+    return ol, rim * (img[..., 3:4] / 255)
 for n_, sp_ in SPR.items():
-    sp_['body_ol'], sp_['body_rim'] = _ol_rim(sp_['body']); sp_['head_ol'], sp_['head_rim'] = _ol_rim(sp_['head'])
+    sp_['head_a'] = sp_['head'][..., 3].copy()
+    sp_['body_ol'], sp_['body_rim'] = _ol_rim_body(sp_['body'], sp_['head_a']); sp_['head_ol'], sp_['head_rim'] = _ol_rim(sp_['head'])
 # ---- arm rig: cut each drawing's arms out so they can rotate at the shoulder (masks/rig.json) -------------
 RIG = json.load(open(MASKS + '/rig.json'))
+def _smooth01(x): x = np.clip(x, 0, 1); return x * x * (3 - 2 * x)
 def _build_rig(sp, arms):
+    """Skinned arms: each arm bends smoothly from the shoulder (weight 0) to the forearm (weight 1), so the
+    arm never detaches or shows a cut line. Where the arm swings away, the body behind it is inpainted from
+    the surrounding shirt (never a flat patch)."""
     body = sp['body']; H_, W_ = body.shape[:2]; a = body[..., 3]
+    yy, xx = np.mgrid[0:H_, 0:W_].astype(np.float32)
     pm_all = np.zeros((H_, W_), np.uint8)
     for arm in arms: cv2.fillPoly(pm_all, [np.array(arm['poly'], np.int32)], 1)
     torso = ((a > 128) & (pm_all == 0)).astype(np.uint8)
     n_, lab, st, _ = cv2.connectedComponentsWithStats(torso, 8)
     if n_ > 1: torso = (lab == 1 + np.argmax(st[1:, 4])).astype(np.uint8)
-    # torso outline with the holes the arms leave closed (follows the real outline, unlike a convex hull)
     hull = cv2.morphologyEx(torso, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (61, 61)))
     cs_, _ = cv2.findContours(hull, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE); hull = np.zeros_like(torso)
     cv2.drawContours(hull, cs_, -1, 1, -1)
-    hull &= cv2.erode((a > 128).astype(np.uint8), np.ones((3, 3), np.uint8))
-    nx, ny = sp['neck']; smp = body[ny + 40:ny + 140, max(0, nx - 50):nx + 50].reshape(-1, 4)
-    smp = smp[smp[:, 3] > 250]
-    shirt = np.median(smp[:, :3], 0) if len(smp) else np.array((28, 26, 30), np.float32)
-    rig = body.copy(); out = []
+    hull &= (a > 128).astype(np.uint8)
+    rgb = np.clip(body[..., :3] * 255 / np.maximum(a[..., None], 1), 0, 255).astype(np.uint8)
+    hsv = cv2.cvtColor(rgb, cv2.COLOR_BGR2HSV)
+    skinish = ((hsv[..., 1] > 55) & (hsv[..., 2] > 110) & (hsv[..., 0] < 35)).astype(np.uint8)  # skin, hands, beer
+    offtorso = ((a > 8) & (hull == 0)).astype(np.uint8)
+    out = []; rem_all = np.zeros((H_, W_), np.float32); fill_all = np.zeros((H_, W_), np.float32)
+    hull_dil = cv2.dilate(hull, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (21, 21))) & (a > 128).astype(np.uint8)
     for arm in arms:
-        pm = np.zeros((H_, W_), np.uint8); cv2.fillPoly(pm, [np.array(arm['poly'], np.int32)], 255)
-        pmf = cv2.GaussianBlur(pm.astype(np.float32) / 255, (0, 0), 0.8)
-        img = body * pmf[..., None]
-        fill = np.clip(pmf * hull, 0, 1)
-        rig = rig * (1 - pmf[..., None])
-        rig[..., :3] += shirt * fill[..., None]; rig[..., 3] += 255 * fill
-        # outline/rim: only the drawing's real outer edge around the arm (never the internal cut line)
-        pmd = cv2.GaussianBlur(cv2.dilate(pm, np.ones((9, 9), np.uint8)).astype(np.float32) / 255, (0, 0), 1.0)[..., None]
-        ol_, rim_ = sp['body_ol'] * pmd, sp['body_rim'] * pmf[..., None]
-        out.append(dict(img=img, ol=ol_, rim=rim_, pivot=tuple(arm['pivot']), side=arm['side'], rng=arm.get('range', 1.0), poly=np.array(arm['poly'], np.float32)))
-    for arm in out:  # shoulder cap so a rotated arm never opens a gap at the joint
-        px_, py_ = map(int, arm['pivot']); cap = np.zeros((H_, W_), np.float32)
-        cv2.circle(cap, (px_, py_), 20, 1.0, -1, cv2.LINE_AA); cap *= (a > 0)
-        rig = rig * (1 - cap[..., None]); rig[..., :3] += shirt * cap[..., None]; rig[..., 3] += 255 * cap
-    sp['body_rig'] = rig; sp['body_rig_ol'], sp['body_rig_rim'] = _ol_rim(rig); sp['arms'] = out
+        poly = np.array(arm['poly'], np.float32) + SPR_PAD; pv = np.array(arm['pivot'], np.float32) + SPR_PAD
+        pm = np.zeros((H_, W_), np.uint8); cv2.fillPoly(pm, [poly.astype(np.int32)], 1)
+        pm_big = cv2.dilate(pm, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15)))
+        # the arm is: its skin/hand (+ the drawn outline around it) inside the traced polygon, plus everything
+        # of the drawing that lies off the torso (sleeves in the air, edge pixels) -- never a slice of shirt
+        if arm.get('mode', 'skin') == 'skin':
+            core = pm & skinish
+            br = (pm & (hsv[..., 2] > 150).astype(np.uint8))  # glass rims / highlights touching the hand
+            nb, lbb, _, _ = cv2.connectedComponentsWithStats(br, 8)
+            touch = np.unique(lbb[(cv2.dilate(core, np.ones((7, 7), np.uint8)) > 0) & (lbb > 0)])
+            core = core | np.isin(lbb, touch).astype(np.uint8)
+        else: core = pm & (a > 128).astype(np.uint8)
+        nn_, lb_, st_, _ = cv2.connectedComponentsWithStats(core, 8)
+        if nn_ > 1: core = np.isin(lb_, 1 + np.where(st_[1:, 4] >= 60)[0]).astype(np.uint8)
+        am = cv2.dilate(core, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))) & pm_big & (a > 8)
+        if arm.get('mode', 'skin') == 'full': am |= cv2.dilate(pm, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))) & offtorso
+        d = np.hypot(xx - pv[0], yy - pv[1])
+        dm = d[am > 0]
+        if len(dm) < 50: continue
+        if arm.get('mode', 'skin') == 'skin':
+            # bare arms swing from where the arm leaves the sleeve/body (elbow or hem), not the shoulder
+            dmin = float(np.percentile(dm, 1)); near = (am > 0) & (d < dmin + 14)
+            pv = np.array([xx[near].mean(), yy[near].mean()], np.float32)
+            d = np.hypot(xx - pv[0], yy - pv[1]); dm = d[am > 0]
+        d0, L = float(np.percentile(dm, 2)), float(np.percentile(dm, 99))
+        w = _smooth01((d - d0 - arm.get('bend0', 0.05) * (L - d0)) / (arm.get('bend1', 0.45) * (L - d0))).astype(np.float32)
+        amf = cv2.GaussianBlur(am.astype(np.float32), (0, 0), 0.7)
+        img = body * amf[..., None]
+        amr = cv2.GaussianBlur(cv2.dilate(am, np.ones((5, 5), np.uint8)).astype(np.float32), (0, 0), 0.7)  # remove the arm's edge fully (no ghost outline)
+        rem_all = np.maximum(rem_all, amr * _smooth01(w / 0.1))
+        if arm.get('mode', 'skin') == 'skin': fz = hull_dil  # a bare elbow's surroundings are body too
+        else: fz = hull & (d < d0 + 0.3 * (L - d0)).astype(np.uint8)  # raised arms: only the shoulder is body, the rest is air
+        fill_all = np.maximum(fill_all, amr * _smooth01(w / 0.1) * cv2.GaussianBlur(fz.astype(np.float32), (0, 0), 0.8))
+        out.append(dict(img=img, w=w, pivot=(float(pv[0]), float(pv[1])), side=arm['side'], rng=arm.get('range', 1.0), poly=poly, L=L))
+    # inpaint the body behind the moving arm parts from the surrounding torso
+    notshirt = cv2.dilate(((skinish | (hsv[..., 2] > 150)) & cv2.dilate(pm_all, np.ones((31, 31), np.uint8))).astype(np.uint8), np.ones((5, 5), np.uint8))
+    holem = ((rem_all > 0.02) | (a < 128) | (notshirt > 0)).astype(np.uint8) * 255  # fill from shirt pixels only
+    ys_, xs_ = np.where(rem_all > 0.02)
+    fillc = rgb.astype(np.float32)
+    if len(ys_):
+        y0, y1, x0, x1 = max(0, ys_.min() - 40), min(H_, ys_.max() + 41), max(0, xs_.min() - 40), min(W_, xs_.max() + 41)
+        fillc[y0:y1, x0:x1] = cv2.inpaint(rgb[y0:y1, x0:x1], holem[y0:y1, x0:x1], 9, cv2.INPAINT_TELEA).astype(np.float32)
+    fillc = cv2.GaussianBlur(fillc, (0, 0), 1.2) * 0.93  # the hidden torso sits slightly in shadow
+    rig = body * (1 - rem_all[..., None])
+    fa = fill_all
+    rig[..., :3] += fillc * fa[..., None]; rig[..., 3] += 255 * fa
+    sp['body_rig'] = rig; sp['arms'] = out
 for n_, sp_ in SPR.items():
     if n_ in RIG: _build_rig(sp_, RIG[n_])
+ARM_MAX = 0.34  # rad: arms swing at most ~20 degrees either way, so the drawings never distort
 def arm_rot(arm, p):
     """Rotation (rad, clockwise on screen) of an arm for pose p: positive 'up' raises either arm."""
-    return arm['rng'] * (p.get('aL', 0.0) if arm['side'] == 'L' else -p.get('aR', 0.0))
+    a_ = p.get('aL', 0.0) if arm['side'] == 'L' else -p.get('aR', 0.0)
+    return arm['rng'] * clamp(a_, -ARM_MAX, ARM_MAX)
 def rot_about(pt, piv, ang):
     c_, s_ = math.cos(ang), math.sin(ang); dx, dy = pt[0] - piv[0], pt[1] - piv[1]
     return (piv[0] + c_ * dx - s_ * dy, piv[1] + s_ * dx + c_ * dy)
 def arm_point(spr, pt, p):
-    """Sprite-local point after the arm it sits on is rotated (for the mic / champagne hand)."""
+    """Sprite-local point after the arm it sits on bends (for the mic / champagne hand)."""
     for arm in spr.get('arms', []):
-        if cv2.pointPolygonTest(arm['poly'], (float(pt[0]), float(pt[1])), False) >= 0: return rot_about(pt, arm['pivot'], arm_rot(arm, p))
+        if cv2.pointPolygonTest(arm['poly'], (float(pt[0]), float(pt[1])), False) >= 0:
+            wy, wx = int(clamp(pt[1], 0, arm['w'].shape[0] - 1)), int(clamp(pt[0], 0, arm['w'].shape[1] - 1))
+            return rot_about(pt, arm['pivot'], arm_rot(arm, p) * float(arm['w'][wy, wx]))
     return pt
+def compose_body(spr, p):
+    """Body + skinned arms for pose p, in sprite space, with outline and rim for the whole silhouette."""
+    if 'arms' not in spr: return spr['body'], spr['body_ol'], spr['body_rim']
+    angs = [arm_rot(arm, p) for arm in spr['arms']]
+    if all(abs(a_) < 1e-3 for a_ in angs): return spr['body'], spr['body_ol'], spr['body_rim']
+    out = spr['body_rig'].copy(); H_, W_ = out.shape[:2]
+    for arm, ang in zip(spr['arms'], angs):
+        pvx, pvy = arm['pivot']; poly = arm['poly']; m = int(arm['L'] * abs(ang)) + 6
+        x0, x1 = max(0, int(poly[:, 0].min()) - m), min(W_, int(poly[:, 0].max()) + m + 1)
+        y0, y1 = max(0, int(poly[:, 1].min()) - m), min(H_, int(poly[:, 1].max()) + m + 1)
+        gy, gx = np.mgrid[y0:y1, x0:x1].astype(np.float32); dx, dy = gx - pvx, gy - pvy
+        sx, sy = gx.copy(), gy.copy()
+        for _ in range(5):  # invert the skinning warp: find source s with s bent by ang*w(s) == p
+            th = -ang * cv2.remap(arm['w'], sx, sy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+            c_, s_ = np.cos(th), np.sin(th)
+            sx = pvx + c_ * dx - s_ * dy; sy = pvy + s_ * dx + c_ * dy
+        wa = cv2.remap(arm['img'], sx, sy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
+        reg = out[y0:y1, x0:x1]; al = wa[..., 3:4] / 255
+        out[y0:y1, x0:x1] = reg * (1 - al) + wa
+    ol_, rim_ = _ol_rim_body(out, spr['head_a'])
+    return out, ol_, rim_
 _yy, _xx = np.mgrid[0:OH, 0:OW].astype(np.float32)
 VIGNETTE = (1 - 0.3 * (((_xx - OW / 2) / (OW / 2)) ** 2 + ((_yy - OH / 2) / (OH / 2)) ** 2) * 0.55)[..., None]
 HZ = 760
@@ -175,7 +253,7 @@ def scene_for(b):
     return 'studio'
 for n_, sp_ in SPR.items():
     sp_['name'] = n_
-    if n_ in MOUTH: sp_['mouth'] = MOUTH[n_]
+    if n_ in MOUTH: sp_['mouth'] = dict(MOUTH[n_], mx=MOUTH[n_]['mx'] + SPR_PAD, my=MOUTH[n_]['my'] + SPR_PAD)
 def jaw_open(img, mx, my, rx, open_px, mw=None, span=None, paint=True):
     """Stretch the lower face down by open_px (no tearing) and paint a mouth of half-width mw.
     A negative open_px squeezes the band [my, my+span] shut instead (paint=False)."""
@@ -1070,15 +1148,8 @@ def _render(t, force=None, shot=None, scene_=None):
         Mbody = aff(s_ * p['sx'], s_ * p['sy'], p['roll'], spr['foot'][0], spr['foot'][1], ox, oy)
         if refl is not None: Mbody = np.array([[1, 0, 0], [0, -1, 2 * refl]], np.float64) @ np.vstack([Mbody, [0, 0, 1]])
         rimc = np.array(PAL[int(b // 2) % 5] if scene != 'pitch' else (235, 245, 255), np.float32) / 255 * (0.18 + 0.12 * dip)
-        rigged = 'arms' in spr
-        bimg, bol, brim = (spr['body_rig'], spr['body_rig_ol'], spr['body_rig_rim']) if rigged else (spr['body'], spr['body_ol'], spr['body_rim'])
+        bimg, bol, brim = compose_body(spr, p)
         parts = [(bimg, bol, brim, Mbody)]
-        if rigged:
-            Mb3 = np.vstack([Mbody, [0, 0, 1]])
-            for arm in spr['arms']:
-                pv = arm['pivot']; ang = arm_rot(arm, p); c_, s2_ = math.cos(ang), math.sin(ang)
-                Ma = Mb3 @ np.array([[c_, -s2_, pv[0] - c_ * pv[0] + s2_ * pv[1]], [s2_, c_, pv[1] - s2_ * pv[0] - c_ * pv[1]], [0, 0, 1]], np.float64)
-                parts.append((arm['img'], arm['ol'], arm['rim'], Ma[:2]))
         if refl is None:
             for _, ol_, _, M_ in parts: draw_sprite(dst, ol_ * fd, M_, 1.0)
         for im_, _, _, M_ in parts: draw_sprite(dst, im_ * fd if fd < 1 else im_, M_, gain)

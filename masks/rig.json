@@ -1,5 +1,5 @@
 {
- "_doc": "Arm rig per drawing (sprite-local px, same frame as assets/<name>_body.png). Each arm: polygon around the arm (hand to shoulder), pivot = shoulder, side = which side of the screen it reaches to (L/R). The renderer cuts the arm out of the body (filling the torso behind it with shirt colour) and rotates it about the pivot.",
+ "_doc": "Arm rig per drawing (sprite-local px, same frame as assets/<name>_body.png). Each arm: polygon around the arm (hand to shoulder), pivot = shoulder, side = which side of the screen it reaches to (L/R). The renderer cuts the arm out of the body (filling the torso behind it with shirt colour) and rotates it about the pivot. mode: 'skin' = only the bare arm/hand (skin, glass) inside the polygon moves (arms in front of or along the torso); 'full' = everything inside the polygon moves (sleeved arms up in the air).",
  "carra1": [
   {
    "side": "L",
@@ -44,7 +44,8 @@
      0,
      232
     ]
-   ]
+   ],
+   "mode": "skin"
   },
   {
    "side": "R",
@@ -93,7 +94,8 @@
      348,
      395
     ]
-   ]
+   ],
+   "mode": "skin"
   }
  ],
  "carra2": [
@@ -140,7 +142,8 @@
      0,
      280
     ]
-   ]
+   ],
+   "mode": "skin"
   },
   {
    "side": "R",
@@ -177,7 +180,8 @@
      380,
      300
     ]
-   ]
+   ],
+   "mode": "skin"
   }
  ],
  "carra5": [
@@ -220,7 +224,8 @@
      0,
      140
     ]
-   ]
+   ],
+   "mode": "skin"
   },
   {
    "side": "R",
@@ -257,7 +262,8 @@
      255,
      260
     ]
-   ]
+   ],
+   "mode": "skin"
   }
  ],
  "carra4": [
@@ -300,7 +306,8 @@
      0,
      140
     ]
-   ]
+   ],
+   "mode": "skin"
   },
   {
    "side": "R",
@@ -337,7 +344,8 @@
      232,
      200
     ]
-   ]
+   ],
+   "mode": "skin"
   }
  ],
  "nev1": [
@@ -380,7 +388,8 @@
      328,
      272
     ]
-   ]
+   ],
+   "mode": "full"
   },
   {
    "side": "L",
@@ -405,7 +414,8 @@
      112,
      395
     ]
-   ]
+   ],
+   "mode": "skin"
   }
  ],
  "nev2": [
@@ -453,7 +463,8 @@
      225
     ]
    ],
-   "range": 0.7
+   "range": 0.7,
+   "mode": "full"
   },
   {
    "side": "R",
@@ -499,7 +510,8 @@
      296,
      318
     ]
-   ]
+   ],
+   "mode": "full"
   }
  ],
  "nev5": [
@@ -542,7 +554,8 @@
      190,
      180
     ]
-   ]
+   ],
+   "mode": "full"
   },
   {
    "side": "L",
@@ -567,7 +580,8 @@
      0,
      240
     ]
-   ]
+   ],
+   "mode": "skin"
   }
  ],
  "nev4": [
@@ -610,7 +624,8 @@
      215,
      190
     ]
-   ]
+   ],
+   "mode": "full"
   },
   {
    "side": "L",
@@ -635,7 +650,8 @@
      40,
      317
     ]
-   ]
+   ],
+   "mode": "skin"
   }
  ],
  "keane1": [
@@ -670,7 +686,8 @@
      25,
      430
     ]
-   ]
+   ],
+   "mode": "skin"
   },
   {
    "side": "R",
@@ -703,7 +720,8 @@
      305,
      300
     ]
-   ]
+   ],
+   "mode": "skin"
   }
  ],
  "keane2": [
@@ -734,7 +752,8 @@
      0,
      472
     ]
-   ]
+   ],
+   "mode": "skin"
   },
   {
    "side": "R",
@@ -771,7 +790,8 @@
      330,
      380
     ]
-   ]
+   ],
+   "mode": "skin"
   }
  ],
  "keane5": [
@@ -814,7 +834,8 @@
      0,
      150
     ]
-   ]
+   ],
+   "mode": "skin"
   },
   {
    "side": "R",
@@ -847,7 +868,8 @@
      245,
      160
     ]
-   ]
+   ],
+   "mode": "skin"
   }
  ],
  "keane4": [
@@ -882,7 +904,8 @@
      245,
      160
     ]
-   ]
+   ],
+   "mode": "skin"
   },
   {
    "side": "L",
@@ -911,7 +934,8 @@
      15,
      302
     ]
-   ]
+   ],
+   "mode": "skin"
   }
  ]
 }
