@@ -30,7 +30,10 @@ for n,(iid,cx,cy,rx,ry,nx,ny) in HEADS.items():
     img=imgs_carra1 if n=='carra1' else imgs[iid]
     m=masks[n]
     ys,xs=np.where(m>0); x0,y0,x1,y1=xs.min()-6,ys.min()-6,xs.max()+7,ys.max()+7
-    crop=img[y0:y1,x0:x1]; mm=m[y0:y1,x0:x1]
+    crop=img[y0:y1,x0:x1].copy(); mm=m[y0:y1,x0:x1]
+    for poly in CLEAN.get(n, {}).get('retouch', []):  # paint over art details that read wrong in motion
+        rm=np.zeros(crop.shape[:2],np.uint8); cv2.fillPoly(rm,[np.array(poly,np.int32)],255)
+        crop=cv2.inpaint(crop,rm,5,cv2.INPAINT_TELEA)
     H,W=mm.shape
     # head mask
     hm=np.zeros((H,W),np.uint8)

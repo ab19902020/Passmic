@@ -3,3 +3,5 @@ out/
 __pycache__/
 data/song22.wav
 data/subs.srt
+data/sep/
+data/song.wav
