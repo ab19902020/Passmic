@@ -33,6 +33,7 @@ Pose choice lives in `pose()` in `render.py` (`pose=0..3`).
 - `CHAMP`: champagne pop on each "champagne socialist" line.
 - `SECTIONS` (in beats, 145.09 BPM): drives moves, lighting, scenes (`scene_for`: studio / grid / pitch).
 - No lyrics are drawn on screen. `GAGS` adds four short comedy captions (Stick-to-Football lower thirds) timed to the lyric they riff on.
+- Pundits blink on a random per-character schedule (`BLINKS`; the eyes are found automatically in each head sprite), and when one pundit sings or speaks a solo line the other two tilt their heads towards him (`listen_dir`).
 - An awkward Inbetweeners-style trio dance (`inbet_*` moves) plays in the reveal (beats 16-32), with a callback at beats 368-376.
 - Polish: glossy floor reflections (studio/grid), a scrolling LED board on the pitch rail, a sparkle trail on mic tosses, and an RGB-split kick on the beat in the big sections.
 

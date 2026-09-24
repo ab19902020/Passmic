@@ -156,6 +156,52 @@ def jaw_open(img, mx, my, rx, open_px, mw=None, span=None, paint=True):
     reg[..., 3:4] = np.maximum(reg[..., 3:4], 255 * a_m)
     out[y0:, x0:x1] = reg
     return out
+def _find_eyes(spr):
+    """Eye whites of a head sprite (holes filled, grown over the outline) + per-column top/bottom."""
+    h = np.clip(spr['head'][..., :3] * 255 / np.maximum(spr['head'][..., 3:4], 1), 0, 255).astype(np.uint8)
+    a = spr['head'][..., 3]; hsv = cv2.cvtColor(h, cv2.COLOR_BGR2HSV); cx, cy = spr['headc']; ry = spr['ry']
+    wht = ((hsv[..., 1] < 40) & (hsv[..., 2] > 215) & (a > 200)).astype(np.uint8)
+    wht[int(cy + 0.25 * ry):] = 0; wht[:max(0, int(cy - 0.6 * ry))] = 0
+    n_, lab, st, _ = cv2.connectedComponentsWithStats(wht, 8)
+    if n_ < 2: return None
+    m = np.zeros_like(wht)
+    for i in sorted(range(1, n_), key=lambda i: -st[i, 4])[:2]:
+        if st[i, 4] < 0.15 * st[1:, 4].max(): continue
+        cs, _ = cv2.findContours((lab == i).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        cv2.drawContours(m, cs, -1, 1, -1)
+    m = cv2.dilate(m, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7)))
+    ys, xs = np.where(m > 0); x0, x1, y0, y1 = xs.min(), xs.max() + 1, ys.min(), ys.max() + 1
+    mc = m[y0:y1, x0:x1] > 0
+    top = np.where(mc.any(0), mc.argmax(0), 0).astype(np.float32); bot = np.where(mc.any(0), mc.shape[0] - mc[::-1].argmax(0), 0).astype(np.float32)
+    sk = (hsv[..., 0] >= 5) & (hsv[..., 0] <= 22) & (hsv[..., 1] > 70) & (hsv[..., 2] > 170) & (a > 250)
+    sk[int(cy + 0.1 * ry):] = False
+    skin = np.median(h[sk], axis=0).astype(np.float32) if sk.sum() > 30 else np.array((130, 170, 235), np.float32)
+    return dict(x0=int(x0), y0=int(y0), m=mc, top=top, bot=bot, skin=skin)
+def blink_eyes(img, ey, c):
+    """Close the eyes by fraction c (0 open .. 1 shut): skin lid slides down with a dark lid line."""
+    if ey is None or c < 0.05: return img
+    out = img.copy(); x0, y0, mc = ey['x0'], ey['y0'], ey['m']; H_, W_ = mc.shape
+    yy = np.arange(H_, dtype=np.float32)[:, None]
+    edge = ey['top'][None, :] + c * (ey['bot'] - ey['top'])[None, :] * 1.05
+    lid = np.clip(edge - yy + 0.5, 0, 1) * mc
+    line = np.clip(1.6 - np.abs(yy - (edge - 3 * c)), 0, 1) * mc * min(1.0, c * 3)
+    reg = out[y0:y0 + H_, x0:x0 + W_]
+    reg[..., :3] = reg[..., :3] * (1 - lid[..., None]) + ey['skin'] * lid[..., None]
+    reg[..., :3] = reg[..., :3] * (1 - line[..., None]) + np.array((32, 26, 40), np.float32) * line[..., None]
+    return out
+def _blink_times(seed):
+    ts_, t_ = [], 0.8 + 2 * hsh(seed)
+    for k in range(400):
+        ts_.append(t_)
+        if hsh(seed * 31 + k) < 0.18: ts_.append(t_ + 0.32)  # occasional double blink
+        t_ += 2.0 + 3.2 * hsh(seed * 17 + k * 7 + 3)
+    return np.array(ts_)
+BLINKS = {cid: _blink_times(i * 101 + 7) for i, cid in enumerate(('carra', 'nev', 'keane'))}
+def blink_amt(cid, t):
+    bt = BLINKS[cid]; i = np.searchsorted(bt, t) - 1
+    if i < 0: return 0.0
+    u = (t - bt[i]) / 0.2
+    return 0.0 if u >= 1 else (u / 0.35 if u < 0.35 else 1 - (u - 0.35) / 0.65)
 MOUTH_REST = 0.35  # the artwork's drawn (half-open) mouth corresponds to this opening
 def mouth_shape(img, mo, o, closed_art, wid):
     """Pose the mouth for opening o (0 = shut .. ~1.2 = wide). Carra/Gary are drawn mid-shout, so below
@@ -173,6 +219,19 @@ WHO_ID = {3: 'nev', 4: 'carra', 5: 'keane'}
 def mouth_val(t, cid_or_i, amp):
     f = int(clamp(t * FPS, 0, len(MOPEN) - 1))
     return float(MOPEN[f]) * amp
+def solo_voice(t, lead):
+    """The one pundit voicing the vocal at t (None for choruses/instrumental)."""
+    w = int(MWHO[int(clamp(t * FPS, 0, len(MWHO) - 1))])
+    return lead if w == 1 else WHO_ID.get(w)
+FOOT_X = {}
+def listen_dir(cid, t, ms):
+    """-1..1: the others tilt their heads towards whoever sings a solo line (eased over ~0.35 s)."""
+    if not FOOT_X: FOOT_X.update({c['id']: c['foot'][0] for c in CAST})
+    lead = ms.get('holder') or (ms.get('fly') or (0, 0, 'nev'))[2]; acc = 0.0
+    for k in range(8):
+        sp = solo_voice(t - k * 0.05, lead)
+        if sp and sp != cid: acc += 1 if FOOT_X[sp] > FOOT_X[cid] else -1
+    return acc / 8
 def voice_amp(t, cid, lead):
     """How much pundit `cid` mouths the vocal at time t: the lead (mic holder) sings verses,
     everyone sings choruses, quoted/spoken lines belong to one pundit, everyone else keeps quiet."""
@@ -652,6 +711,7 @@ def render(t, force=None):
         if ms.get('fly') and ms['fly'][2] == cid and ms['u'] > 0.85: y_extra += 50 * math.sin(math.pi * clamp((ms['u'] - 0.85) / 0.15))
         fs = feature_step(cid, b)
         hr, hy = p['hr'], p['hy']
+        hr += 0.075 * listen_dir(cid, t, ms)
         if ms.get('holder') == cid and sec not in ('intro', 'drop') and singing(t):
             hr += (vocal - 0.25) * 0.14 * math.sin(t * 11 + CI[cid]); hy -= 7 * vocal
         chars[cid] = dict(p=p, spr=spr, kk=c['k'][key] * (1 + 0.08 * fs), fx=c['foot'][0] + p['x'], fy=c['foot'][1] + 60 * fs, lift=p['y'] + y_extra, hr=hr, hy=hy)
@@ -903,6 +963,8 @@ def render(t, force=None):
         hs_img = spr['head']
         amp = voice_amp(t, cid, ms.get('holder') or (ms.get('fly') or (0, 0, 'nev'))[2])
         if refl is not None: amp = 0.0
+        if 'eyes' not in spr: spr['eyes'] = _find_eyes(spr)
+        hs_img = blink_eyes(hs_img, spr['eyes'], blink_amt(cid, t))
         if 'mouth' in spr and amp > 0:
             mo = spr['mouth']
             hs_img = mouth_shape(hs_img, mo, mouth_val(t, cid, amp), cid == 'keane', mouth_w(t))
