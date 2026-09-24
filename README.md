@@ -24,9 +24,11 @@ QUALITY=4k60 bash render/run.sh           # native 3840x2160 at 60 fps -> out/pa
 | `source/` | Original artwork (18306, 18307, 18346, 18348, 18349) and the song. |
 | `tools/` | Asset pipeline: `build_assets.py` (pundit sprites + head split), `groups_build.py` (dancing managers), `fix_conga.py` (conga line incl. Amorim + Carrick 2026 placard), `build_mouth_curve.py`, and the segmentation helpers (`trimap.py`, `mgr.py`, `grid.py`, ...). |
 
-## Poses
+## Poses and arm rig
 Each pundit has four poses: A = `*1` (18306), B = `*2` (18307), C = `*5` (18346 squat), D = `*4` (18349 beer).
 Pose choice lives in `pose()` in `render.py` (`pose=0..3`).
+
+Each drawing is rigged: `masks/rig.json` traces both arms (polygon + shoulder pivot). At load the renderer cuts the arms out of the body, fills the torso behind them with shirt colour, and adds a shoulder cap. Every dance move then swings the arms on the beat (`arms_for`: pumps, alternating points, claps, waves, hands up, robot…). So each of the four drawings has many arm positions, and the mic and champagne follow the hand. Edit a polygon or pivot in `rig.json` and re-render; no asset rebuild is needed.
 
 ## Song-driven events (in `render.py`)
 - `EDL` (edit decision list): one shot per lyric line, cut on the line and framed on whoever the line is about. Gary is the default, Jamie's lines go on Carra, Roy's lines on Keane, and the comedy breakdown cuts to each speaker. Cuts get a 4-frame crossfade, scene changes a 0.6 s dissolve. The camera frames each pundit from his smoothed position and a fixed head height (`cam_anchor`), so it never chases the dance bounce.

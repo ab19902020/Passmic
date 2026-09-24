@@ -62,6 +62,53 @@ def _ol_rim(img):
     return o, r
 for n_, sp_ in SPR.items():
     sp_['body_ol'], sp_['body_rim'] = _ol_rim(sp_['body']); sp_['head_ol'], sp_['head_rim'] = _ol_rim(sp_['head'])
+# ---- arm rig: cut each drawing's arms out so they can rotate at the shoulder (masks/rig.json) -------------
+RIG = json.load(open(MASKS + '/rig.json'))
+def _build_rig(sp, arms):
+    body = sp['body']; H_, W_ = body.shape[:2]; a = body[..., 3]
+    pm_all = np.zeros((H_, W_), np.uint8)
+    for arm in arms: cv2.fillPoly(pm_all, [np.array(arm['poly'], np.int32)], 1)
+    torso = ((a > 128) & (pm_all == 0)).astype(np.uint8)
+    n_, lab, st, _ = cv2.connectedComponentsWithStats(torso, 8)
+    if n_ > 1: torso = (lab == 1 + np.argmax(st[1:, 4])).astype(np.uint8)
+    # torso outline with the holes the arms leave closed (follows the real outline, unlike a convex hull)
+    hull = cv2.morphologyEx(torso, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (61, 61)))
+    cs_, _ = cv2.findContours(hull, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE); hull = np.zeros_like(torso)
+    cv2.drawContours(hull, cs_, -1, 1, -1)
+    hull &= cv2.erode((a > 128).astype(np.uint8), np.ones((3, 3), np.uint8))
+    nx, ny = sp['neck']; smp = body[ny + 40:ny + 140, max(0, nx - 50):nx + 50].reshape(-1, 4)
+    smp = smp[smp[:, 3] > 250]
+    shirt = np.median(smp[:, :3], 0) if len(smp) else np.array((28, 26, 30), np.float32)
+    rig = body.copy(); out = []
+    for arm in arms:
+        pm = np.zeros((H_, W_), np.uint8); cv2.fillPoly(pm, [np.array(arm['poly'], np.int32)], 255)
+        pmf = cv2.GaussianBlur(pm.astype(np.float32) / 255, (0, 0), 0.8)
+        img = body * pmf[..., None]
+        fill = np.clip(pmf * hull, 0, 1)
+        rig = rig * (1 - pmf[..., None])
+        rig[..., :3] += shirt * fill[..., None]; rig[..., 3] += 255 * fill
+        # outline/rim: only the drawing's real outer edge around the arm (never the internal cut line)
+        pmd = cv2.GaussianBlur(cv2.dilate(pm, np.ones((9, 9), np.uint8)).astype(np.float32) / 255, (0, 0), 1.0)[..., None]
+        ol_, rim_ = sp['body_ol'] * pmd, sp['body_rim'] * pmf[..., None]
+        out.append(dict(img=img, ol=ol_, rim=rim_, pivot=tuple(arm['pivot']), side=arm['side'], rng=arm.get('range', 1.0), poly=np.array(arm['poly'], np.float32)))
+    for arm in out:  # shoulder cap so a rotated arm never opens a gap at the joint
+        px_, py_ = map(int, arm['pivot']); cap = np.zeros((H_, W_), np.float32)
+        cv2.circle(cap, (px_, py_), 20, 1.0, -1, cv2.LINE_AA); cap *= (a > 0)
+        rig = rig * (1 - cap[..., None]); rig[..., :3] += shirt * cap[..., None]; rig[..., 3] += 255 * cap
+    sp['body_rig'] = rig; sp['body_rig_ol'], sp['body_rig_rim'] = _ol_rim(rig); sp['arms'] = out
+for n_, sp_ in SPR.items():
+    if n_ in RIG: _build_rig(sp_, RIG[n_])
+def arm_rot(arm, p):
+    """Rotation (rad, clockwise on screen) of an arm for pose p: positive 'up' raises either arm."""
+    return arm['rng'] * (p.get('aL', 0.0) if arm['side'] == 'L' else -p.get('aR', 0.0))
+def rot_about(pt, piv, ang):
+    c_, s_ = math.cos(ang), math.sin(ang); dx, dy = pt[0] - piv[0], pt[1] - piv[1]
+    return (piv[0] + c_ * dx - s_ * dy, piv[1] + s_ * dx + c_ * dy)
+def arm_point(spr, pt, p):
+    """Sprite-local point after the arm it sits on is rotated (for the mic / champagne hand)."""
+    for arm in spr.get('arms', []):
+        if cv2.pointPolygonTest(arm['poly'], (float(pt[0]), float(pt[1])), False) >= 0: return rot_about(pt, arm['pivot'], arm_rot(arm, p))
+    return pt
 _yy, _xx = np.mgrid[0:OH, 0:OW].astype(np.float32)
 VIGNETTE = (1 - 0.3 * (((_xx - OW / 2) / (OW / 2)) ** 2 + ((_yy - OH / 2) / (OH / 2)) ** 2) * 0.55)[..., None]
 HZ = 760
@@ -437,8 +484,36 @@ def move_for(cid, b):
     if s == 'final' and b < FINAL_B + 1.6: return 'jump'
     if s == 'breakdown': return 'groove' if cid == 'nev' else 'sway'
     return block_moves(s, math.floor(b / 8) * 8)[cid]
+def arms_for(move, b, ci, t):
+    """Arm swing (rad, positive = raised) for the left/right arm in each dance move, on the beat."""
+    q = math.sin(math.pi * b); s2 = math.sin(2 * math.pi * b); dip = ((1 + math.cos(2 * math.pi * b)) / 2) ** 2
+    if move == 'pump': return 0.08 * q, 0.05 + 0.32 * ((1 + math.cos(2 * math.pi * b)) / 2) ** 3
+    if move == 'point':
+        side = math.floor(b) % 2; pk = 0.3 * spike(b, 6)
+        return (pk if side else -0.05), (-0.05 if side else pk)
+    if move in ('shuffle', 'march'): return 0.22 * s2 if move == 'shuffle' else 0.25 * q, -0.22 * s2 if move == 'shuffle' else -0.25 * q
+    if move == 'headbang': return 0.12 * abs(s2), 0.12 * abs(s2)
+    if move == 'wave': ph = b - ci * 0.33; return 0.3 * math.sin(math.pi * ph), 0.3 * math.sin(math.pi * ph + math.pi / 2)
+    if move == 'twist': return 0.25 * s2, 0.25 * s2
+    if move == 'clap': c_ = 0.18 - 0.36 * spike(b * 2, 6); return c_, c_
+    if move == 'stomp': return 0.28 * spike(b / 2, 3), 0.28 * spike(b / 2, 3)
+    if move in ('sway', 'step'): return 0.18 * math.sin(math.pi * b / 2), 0.18 * math.sin(math.pi * b / 2 + 1.2)
+    if move == 'cheers': return 0.05 * q, 0.25 * dip
+    if move == 'bounce': return 0.16 * abs(q), 0.16 * abs(q)
+    if move == 'lean': sd_ = 1 if int(b / 2) % 2 else -1; return 0.2 * sd_, -0.2 * sd_
+    if move == 'groove': return 0.2 * math.sin(math.pi * b / 2), 0.2 * math.cos(math.pi * b / 2)
+    if move == 'shimmy': return 0.15 * s2, -0.15 * s2
+    if move == 'slide': return 0.25 * math.sin(math.pi * b / 4), -0.25 * math.sin(math.pi * b / 4)
+    if move == 'handsup': return 0.38 + 0.07 * q, 0.38 + 0.07 * q
+    if move == 'robot': qq = math.floor(b * 2); return 0.32 * (hsh(qq * 3 + ci) - 0.5) * 2, 0.32 * (hsh(qq * 5 + ci + 7) - 0.5) * 2
+    if move == 'swap': return 0.2 * q, 0.2 * q
+    if move.startswith('inbet'): return 0.3 * math.sin(math.pi * b + ci), -0.3 * math.sin(math.pi * b + ci)
+    if move == 'jump': u_ = clamp((b - FINAL_B) / 1.6); return 0.45 * 4 * u_ * (1 - u_), 0.45 * 4 * u_ * (1 - u_)
+    if move == 'crouch': return -0.15, -0.15
+    if move in ('standby', 'pose', 'finalpose'): return 0.05 * math.sin(t * 0.9 + ci), 0.05 * math.sin(t * 1.1 + ci)
+    return 0.12 * math.sin(math.pi * b + ci), 0.12 * math.sin(math.pi * b + ci + 1.5)
 def pose(cid, move, b, k, t):
-    ci = CI[cid]; p = dict(x=0.0, y=0.0, roll=0.0, sx=1.0, sy=1.0, hr=0.0, hy=0.0, pose=0)
+    ci = CI[cid]; p = dict(x=0.0, y=0.0, roll=0.0, sx=1.0, sy=1.0, hr=0.0, hy=0.0, pose=0, aL=0.0, aR=0.0)
     dip = ((1 + math.cos(2 * math.pi * b)) / 2) ** 1.6
     sw = math.sin(math.pi * b); hop = abs(sw); br = math.sin(t * 2.1 + ci * 1.7) * 0.006
     if move == 'standby': p.update(sy=1 + br, hr=0.03 * math.sin(t * 0.9 + ci))
@@ -524,6 +599,7 @@ def pose(cid, move, b, k, t):
         e_ = smooth(frac(b / 8) * 4) * (1 - smooth(frac(b / 8) * 4 - 3)); dx_ = {0: 670, 1: 0, 2: -670}[ci]
         p.update(pose=[0, 1][int(b) % 2], x=dx_ * e_, y=25 * hop, roll=0.04 * sw)
     elif move == 'finalpose': p.update(pose=3, sy=1 + br, hr=0.03 * math.sin(t * 1.1 + ci))
+    p['aL'], p['aR'] = arms_for(move, b, ci, t)
     return p
 def pose_at(cid, b, k, t):
     m = move_for(cid, b); back = 0
@@ -539,7 +615,7 @@ def pose_at(cid, b, k, t):
     # verses move less than choruses: calmer verses, and the choruses feel bigger
     amt = 1.0 if section(b) in HOT_SECTIONS or m in ('jump', 'crouch', 'breakdance') else 0.68
     if amt < 1:
-        for kk in ('x', 'y', 'roll', 'hr', 'hy'): p[kk] *= amt
+        for kk in ('x', 'y', 'roll', 'hr', 'hy', 'aL', 'aR'): p[kk] *= amt
         p['sx'] = 1 + (p['sx'] - 1) * amt; p['sy'] = 1 + (p['sy'] - 1) * amt
     return p
 def feature_step(cid, b):
@@ -770,8 +846,8 @@ def _render(t, force=None, shot=None, scene_=None):
         c_, s_ = math.cos(p['roll']), math.sin(p['roll'])
         return (ch['fx'] + c_ * dx - s_ * dy, ch['fy'] - ch['lift'] + s_ * dx + c_ * dy)
     for ch in chars.values():
-        ch['head'] = local_to_src(ch, *ch['spr']['headc']); ch['hand'] = local_to_src(ch, *ch['spr']['hand'])
-        if 'up' in ch['spr']: ch['up'] = local_to_src(ch, *ch['spr']['up'])
+        ch['head'] = local_to_src(ch, *ch['spr']['headc']); ch['hand'] = local_to_src(ch, *arm_point(ch['spr'], ch['spr']['hand'], ch['p']))
+        if 'up' in ch['spr']: ch['up'] = local_to_src(ch, *arm_point(ch['spr'], ch['spr']['up'], ch['p']))
 
     s = shot if shot is not None else (shot_at(b) if force is None else dict(type='forced', b0=b, b1=b + 1, seed=0))
     lt = t - beatT(s['b0']); u = clamp((b - s['b0']) / (s['b1'] - s['b0'])); side = s.get('side', 1)
@@ -998,9 +1074,20 @@ def _render(t, force=None, shot=None, scene_=None):
         Mbody = aff(s_ * p['sx'], s_ * p['sy'], p['roll'], spr['foot'][0], spr['foot'][1], ox, oy)
         if refl is not None: Mbody = np.array([[1, 0, 0], [0, -1, 2 * refl]], np.float64) @ np.vstack([Mbody, [0, 0, 1]])
         rimc = np.array(PAL[int(b // 2) % 5] if scene != 'pitch' else (235, 245, 255), np.float32) / 255 * (0.18 + 0.12 * dip)
-        if refl is None: draw_sprite(dst, spr['body_ol'] * fd, Mbody, 1.0)
-        draw_sprite(dst, spr['body'] * fd if fd < 1 else spr['body'], Mbody, gain)
-        if refl is None: draw_sprite(dst, spr['body_rim'], Mbody, rimc * fd, add=True)
+        rigged = 'arms' in spr
+        bimg, bol, brim = (spr['body_rig'], spr['body_rig_ol'], spr['body_rig_rim']) if rigged else (spr['body'], spr['body_ol'], spr['body_rim'])
+        parts = [(bimg, bol, brim, Mbody)]
+        if rigged:
+            Mb3 = np.vstack([Mbody, [0, 0, 1]])
+            for arm in spr['arms']:
+                pv = arm['pivot']; ang = arm_rot(arm, p); c_, s2_ = math.cos(ang), math.sin(ang)
+                Ma = Mb3 @ np.array([[c_, -s2_, pv[0] - c_ * pv[0] + s2_ * pv[1]], [s2_, c_, pv[1] - s2_ * pv[0] - c_ * pv[1]], [0, 0, 1]], np.float64)
+                parts.append((arm['img'], arm['ol'], arm['rim'], Ma[:2]))
+        if refl is None:
+            for _, ol_, _, M_ in parts: draw_sprite(dst, ol_ * fd, M_, 1.0)
+        for im_, _, _, M_ in parts: draw_sprite(dst, im_ * fd if fd < 1 else im_, M_, gain)
+        if refl is None:
+            for _, _, rm_, M_ in parts: draw_sprite(dst, rm_, M_, rimc * fd, add=True)
         nx, ny = spr['neck']
         n_out = Mbody @ np.array([nx, ny + ch['hy'] / ch['kk'], 1.0])
         ang_h = p['roll'] + ch['hr']; ca_, sa_ = math.cos(ang_h), math.sin(ang_h); sq = s_ * (0.5 * (p['sx'] + p['sy']))
