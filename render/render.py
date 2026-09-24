@@ -273,6 +273,26 @@ def _cork():
 CORK = _cork()
 NEV_UP = {'nev1': (1290, 335), 'nev2': (1082, 300), 'nev5': (1253, 447), 'nev4': (1224, 456)}
 RAIL_Y, RAIL_H = 585, 90
+def _led_board():
+    # stadium LED advertising board: scrolling text mask + LED dot mask (source px, tiles horizontally)
+    f = ImageFont.truetype(FONTS + '/Poppins-Bold.ttf', 58); msg = 'STICK TO FOOTBALL   \u2022   '
+    w = int(f.getlength(msg)); im = Image.new('L', (w, RAIL_H), 0)
+    ImageDraw.Draw(im).text((0, RAIL_H // 2), msg, font=f, fill=255, anchor='lm')
+    T = np.array(im, np.float32) / 255
+    yy, xx = np.mgrid[0:RAIL_H, 0:w].astype(np.float32)
+    D = np.clip(1.6 - np.hypot((xx % 5) - 2, (yy % 5) - 2) / 1.6, 0.25, 1.0)
+    return T, D
+LED_T, LED_D = _led_board()
+def led_strip(xs_src, ys_src, b, t, hot):
+    """Colour of the LED board at source coords (1-D arrays for columns / rows)."""
+    TW = LED_T.shape[1]
+    tx = ((xs_src - 40 + b * 18) % TW).astype(np.int32); ty = np.clip(ys_src - RAIL_Y, 0, RAIL_H - 1).astype(np.int32)
+    T = LED_T[ty][:, tx][..., None]; D = LED_D[ty][:, tx][..., None]
+    blk = int(b // 8)
+    fg = np.array(PAL[blk % 5], np.float32); bg = np.array((24, 8, 20), np.float32)
+    if hot and int(b) % 2 == 1: fg, bg = np.array((30, 12, 24), np.float32), np.array(PAL[(blk + 2) % 5], np.float32) * 0.8
+    pulse = 0.8 + 0.2 * ((1 + math.cos(2 * math.pi * b)) / 2) ** 2
+    return (fg * T + bg * (1 - T)) * D * pulse
 MGSC = {'mgr4': 1.5, 'mgr5': 1.8}
 def mgr_layer(b):
     s = section(b)
@@ -693,9 +713,8 @@ def render(t, force=None):
             grad = np.linspace(1.0, 0.55, y1r - y0r, dtype=np.float32)[:, None, None]
             frame[y0r:y1r, x0r:x1r] = frame[y0r:y1r, x0r:x1r] * 0.08 + np.array([34, 16, 30], np.float32) * grad * (0.5 + 0.5 * L['back'])
             if scene == 'pitch':
-                wv = ((np.arange(x1r - x0r, dtype=np.float32) / max(1.0, 60 * sc) - t * 3) % 6.0)[None, :, None]
-                band_ = np.array(PAL[int(b // 4) % 5], np.float32) * (wv < 3) + np.array(PAL[(int(b // 4) + 2) % 5], np.float32) * (wv >= 3)
-                frame[y0r:y1r, x0r:x1r] = band_ * (0.55 + 0.25 * dip)
+                xs_ = cx + (np.arange(x0r, x1r, dtype=np.float32) + 0.5 - OW / 2) / sc; ys_ = cy + (np.arange(y0r, y1r, dtype=np.float32) + 0.5 - OH / 2) / sc
+                frame[y0r:y1r, x0r:x1r] = led_strip(xs_, ys_, b, t, sec in ('chorus', 'chorus2', 'big', 'final', 'hit'))
             ncol = np.array(PAL[int(b // 2) % 5], np.float32) * (0.55 + 0.45 * dip) * (0.3 + 0.7 * L['back'])
             th = max(2, int(7 * sc)); frame[y0r:min(OH, y0r + th), x0r:x1r] = ncol
             glow = max(3, int(18 * sc)); ys_ = np.arange(glow, dtype=np.float32)[:, None, None]
