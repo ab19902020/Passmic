@@ -8,7 +8,7 @@ Everything is rendered offline with Python + OpenCV, then encoded with ffmpeg:
 ```bash
 pip install -r requirements.txt          # plus ffmpeg on PATH (auto-installed in Claude Code web sessions)
 python3 render/render.py test 62 150      # writes out/f_62.jpg, out/f_150.jpg (single frames)
-bash render/run.sh                        # full render -> out/pass_mic.mp4 (~25 min on 1 CPU, resumable)
+bash render/run.sh                        # full render -> out/pass_mic.mp4 (parallel over all cores, resumable)
 ```
 
 ## Layout
@@ -17,7 +17,7 @@ bash render/run.sh                        # full render -> out/pass_mic.mp4 (~25
 | `render/render.py` | The whole video: song map, choreography, camera director, scenes, effects. `render(t)` returns one frame. |
 | `render/run.sh` | Renders 8 segments (skips finished ones), concatenates, adds the song. |
 | `assets/` | Cut-out sprites. `<name>_body.png` / `<name>_head.png` per pose, `meta.json` (anchors), `mouths.json` (mouth positions), `groups.json` + `mgr4_*`, `mgr5_body.png` (managers), `siralex.png`, `plate_rows.png` + `hole.png` (studio backdrop). |
-| `masks/` | Cut-out masks (`maskc_*.png`) and traced outlines (`poly_*.txt`) the sprites are built from. |
+| `masks/` | Cut-out masks (`maskc_*.png`), traced outlines (`poly_*.txt`) and `clean.json` (hand-traced polygons erasing background scraps from the pundit sprites). |
 | `data/` | `audio_feat.npz` (vocal/energy envelopes), `mouth_curve.npz` (syllable-timed lip sync). |
 | `fonts/` | Poppins Bold / Bold Italic (OFL) used for the title card and placards. |
 | `source/` | Original artwork (18306, 18307, 18346, 18348, 18349) and the song. |
@@ -33,10 +33,15 @@ Pose choice lives in `pose()` in `render.py` (`pose=0..3`).
 - `CHAMP`: champagne pop on each "champagne socialist" line.
 - `SECTIONS` (in beats, 145.09 BPM): drives moves, lighting, scenes (`scene_for`: studio / grid / pitch).
 - No lyrics are drawn on screen.
+- Polish: glossy floor reflections (studio/grid), a scrolling LED board on the pitch rail, a sparkle trail on mic tosses, and an RGB-split kick on the beat in the big sections.
+
+## Checking changes
+`python3 tools/contact_sheet.py 0.5 225 3 out/sheet.jpg` renders a labelled thumbnail every 3 s (time, beat, section, shot) across all cores. It's the fastest way to review the whole video.
 
 ## Open issues / next steps
-- **Gary's "weird shadow"**: when his head tilts, the neck fill (shirt colour painted under the head in `build_assets.py`) and the dark outline sprite (`_ol_rim` in `render.py`) can show as a dark patch beside his face. Try a smaller neck fill, skin-toned neck, or dropping `head_ol`.
+- Fixed: Gary's "weird shadow". `build_assets.py` now paints a short skin-toned neck and collar under each head (it used to paint a dark shirt-coloured block), extends the head over the head/body seam, and trims hair slivers. Background scraps are erased via `masks/clean.json`.
+- Lip sync: mouth anchors in `assets/mouths.json` sit on each pose's drawn mouth, so the jaw opens there. It is syllable-timed, not phoneme-accurate.
 - Background managers no longer lip sync (disabled on purpose). The conga line and Sir Alex never did.
-- Lip sync is syllable-timed, not phoneme-accurate; mouth positions per pose are in `assets/mouths.json`.
+- `nev2` (Gary, pose B) loses the right edge of "UNITED!" on the hoodie. The source mask cuts it off.
 - David Moyes is not in any source artwork, so he is not in the video.
-- Render speed ~0.2 s/frame on one CPU; segments can be rendered in parallel on more cores (`render.py raw <start> <end>`).
+- Render speed ~0.27 s/frame per core; `run.sh` renders 350-frame segments in parallel (`JOBS=n` to limit). Delete `out/*.done` after changing `render.py`.
