@@ -273,6 +273,7 @@ def _cork():
 CORK = _cork()
 NEV_UP = {'nev1': (1290, 335), 'nev2': (1082, 300), 'nev5': (1253, 447), 'nev4': (1224, 456)}
 RAIL_Y, RAIL_H = 585, 90
+TOSS_H = 290  # apex height of the mic toss arc (source px)
 def _led_board():
     # stadium LED advertising board: scrolling text mask + LED dot mask (source px, tiles horizontally)
     f = ImageFont.truetype(FONTS + '/Poppins-Bold.ttf', 58); msg = 'STICK TO FOOTBALL   \u2022   '
@@ -617,7 +618,10 @@ def render(t, force=None):
         z = 2.0 + 0.02 * lt; cx = SW / 2 + (gi_['w'] * (0.18 + 0.64 * hsh(int(s['seed'] * 7))) - gi_['w'] / 2) * MGSC[gl_] + 40 * side * lt; cy = RAIL_Y - 150
     elif typ == 'champ':
         hx, hyy = chars['nev']['head']; e = ease(clamp(lt / 1.2)); z = lerp(1.28, 1.45, e); cx = hx + 110; cy = hyy + 100
-    elif typ == 'toss': (_, fr, to) = s['ev']; z = 1.25; cx = (chars[fr]['head'][0] + chars[to]['head'][0]) / 2; cy = 640
+    elif typ == 'toss':
+        (_, fr, to) = s["ev"]; z = 1.08; cx = (chars[fr]['head'][0] + chars[to]['head'][0]) / 2
+        apex_ = (chars[fr]['hand'][1] + chars[to]['hand'][1]) / 2 - TOSS_H
+        cy = apex_ - 170 + OH / 2 / (BASE * z)  # keep the whole arc (plus the mic) in frame
     shake = 0.3 if sec == 'intro' else 0.5 + k
     cx += (math.sin(t * 1.3) * 0.6 + math.sin(t * 2.9) * 0.4) * 5 * shake
     cy += (math.sin(t * 1.7 + 1) * 0.6 + math.sin(t * 3.3) * 0.4) * 4 * shake
@@ -796,7 +800,7 @@ def render(t, force=None):
             cv2.line(add, (int(px / 2), int((py - L2) / 2)), (int(px / 2), int((py + L2) / 2)), (255, 255, 255), 1, cv2.LINE_AA)
     frame += cv2.resize(cv2.GaussianBlur(add, (0, 0), 1.2), (OW, OH))
 
-    for cid in ('carra', 'keane', 'nev'):
+    def draw_char(dst, cid, refl=None):
         ch = chars[cid]; spr = ch['spr']; p = ch['p']
         amb = L['amb']
         if L['solo'] == '__holder': amb = 1.0 if cid == solo_id else 0.5
@@ -808,26 +812,41 @@ def render(t, force=None):
         ox, oy = to_out(ch['fx'], ch['fy'] - ch['lift'])
         s_ = sc * ch['kk']
         Mbody = aff(s_ * p['sx'], s_ * p['sy'], p['roll'], spr['foot'][0], spr['foot'][1], ox, oy)
+        if refl is not None: Mbody = np.array([[1, 0, 0], [0, -1, 2 * refl]], np.float64) @ np.vstack([Mbody, [0, 0, 1]])
         rimc = np.array(PAL[int(b // 2) % 5] if scene != 'pitch' else (235, 245, 255), np.float32) / 255 * (0.18 + 0.12 * dip)
-        draw_sprite(frame, spr['body_ol'], Mbody, 1.0)
-        draw_sprite(frame, spr['body'], Mbody, gain)
-        draw_sprite(frame, spr['body_rim'], Mbody, rimc, add=True)
+        if refl is None: draw_sprite(dst, spr['body_ol'], Mbody, 1.0)
+        draw_sprite(dst, spr['body'], Mbody, gain)
+        if refl is None: draw_sprite(dst, spr['body_rim'], Mbody, rimc, add=True)
         nx, ny = spr['neck']
         n_out = Mbody @ np.array([nx, ny + ch['hy'] / ch['kk'], 1.0])
         ang_h = p['roll'] + ch['hr']; ca_, sa_ = math.cos(ang_h), math.sin(ang_h); sq = s_ * (0.5 * (p['sx'] + p['sy']))
         Mh = np.array([[ca_ * sq, -sa_ * sq, n_out[0]], [sa_ * sq, ca_ * sq, n_out[1]], [0, 0, 1]], np.float64) @ np.array([[1, 0, -nx], [0, 1, -ny], [0, 0, 1]], np.float64)
+        if refl is not None:
+            Mh = np.array([[ca_ * sq, -sa_ * sq, n_out[0]], [-sa_ * sq, -ca_ * sq, n_out[1]], [0, 0, 1]], np.float64) @ np.array([[1, 0, -nx], [0, 1, -ny], [0, 0, 1]], np.float64)
         hs_img = spr['head']
         if 'mouth' in spr and sec not in ('intro', 'drop'):
             mo = spr['mouth']; amp = 1.0 if ms.get('holder') == cid else 0.8
             hs_img = jaw_open(hs_img, mo['mx'], mo['my'], 0.28 * mo['hw'], mouth_val(t, cid, amp) * 0.11 * mo['hh'], mw=0.1 * mo['hw'] * mouth_w(t), span=0.24 * mo['hh'])
-        draw_sprite(frame, spr['head_ol'], Mh[:2], 1.0)
-        draw_sprite(frame, hs_img, Mh[:2], gain)
-        draw_sprite(frame, spr['head_rim'], Mh[:2], rimc * 0.8, add=True)
-        if ms.get('holder') == cid:
+        if refl is None: draw_sprite(dst, spr['head_ol'], Mh[:2], 1.0)
+        draw_sprite(dst, hs_img, Mh[:2], gain)
+        if refl is None: draw_sprite(dst, spr['head_rim'], Mh[:2], rimc * 0.8, add=True)
+        if ms.get('holder') == cid and refl is None:
             hx, hy_ = ch['hand']; hx2, hy2 = ch['head']
             ang = math.atan2(hx2 - hx, -(hy2 - hy_)) * 0.35
             hox, hoy = to_out(hx, hy_)
-            draw_sprite(frame, MIC, aff(sc * 0.9, sc * 0.9, -ang, 30, 130, hox, hoy), gain)
+            draw_sprite(dst, MIC, aff(sc * 0.9, sc * 0.9, -ang, 30, 130, hox, hoy), gain)
+    if scene in ('studio', 'grid'):
+        # glossy floor: faded mirror image of the pundits below their feet
+        gys = [to_out(ch['fx'], ch['fy'])[1] for ch in chars.values()]
+        gy0 = min(gys)
+        if gy0 < OH:
+            ref = frame.copy()
+            for cid in ('carra', 'keane', 'nev'): draw_char(ref, cid, refl=to_out(chars[cid]['fx'], chars[cid]['fy'])[1])
+            yy_ = np.arange(OH, dtype=np.float32)[:, None, None]
+            w_ = np.clip(1 - (yy_ - gy0) / (260 * sc), 0, 1) ** 1.5 * (yy_ > gy0 - 4) * (0.3 if scene == 'studio' else 0.4)
+            if scene == 'studio': w_ = w_ * fmask
+            frame += (ref - frame) * w_
+    for cid in ('carra', 'keane', 'nev'): draw_char(frame, cid)
     if champ and 'up' in chars['nev']:
         ux, uy = chars['nev']['up']; pt_ = champ['pop']
         rot = 0.38 + (0.15 * math.sin(t * 40) if pt_ - 0.6 <= t < pt_ else 0) + (-0.12 * math.exp(-(t - pt_) * 6) if t >= pt_ else 0)
@@ -860,7 +879,17 @@ def render(t, force=None):
     if ms.get('fly'):
         (eb, fr, to) = ms['fly']; u2 = clamp(ms['u'])
         ax, ay = chars[fr]['hand']; bx_, by_ = chars[to]['hand']
-        mox, moy = to_out(lerp(ax, bx_, u2), lerp(ay, by_, u2) - 520 * 4 * u2 * (1 - u2))
+        mox, moy = to_out(lerp(ax, bx_, u2), lerp(ay, by_, u2) - TOSS_H * 4 * u2 * (1 - u2))
+        # sparkle trail behind the flying mic
+        tr_ = np.zeros((OH // 2, OW // 2, 3), np.float32)
+        for j in range(1, 15):
+            uj = u2 - j * 0.028
+            if uj <= 0: break
+            px_, py_ = to_out(lerp(ax, bx_, uj), lerp(ay, by_, uj) - TOSS_H * 4 * uj * (1 - uj))
+            px_ += 10 * sc * math.sin(j * 2.1 + t * 20); py_ += 10 * sc * math.cos(j * 1.7 + t * 17)
+            fade_ = (1 - j / 15) ** 1.3
+            cv2.circle(tr_, (int(px_ / 2), int(py_ / 2)), max(2, int((16 - j * 0.7) * sc)), tuple(float(v) * fade_ for v in PAL[j % 5]), -1, cv2.LINE_AA)
+        frame += cv2.resize(cv2.GaussianBlur(tr_, (0, 0), 2.5), (OW, OH)) * 2.4
         draw_sprite(frame, MIC, aff(sc * 0.9, sc * 0.9, u2 * math.pi * 4, 30, 95, mox, moy))
 
     for bt in [beatT(x) for x in (512, 432, 264, 104)]:
@@ -895,6 +924,11 @@ def render(t, force=None):
         Mr_ = cv2.getRotationMatrix2D((OW / 2, OH / 2), 7 * side, 1.12); frame = cv2.warpAffine(frame, Mr_, (OW, OH), borderMode=cv2.BORDER_REFLECT)
     if typ == 'whip2' and 0.35 < u < 0.65:
         kb_ = int(2 + 46 * math.sin(math.pi * (u - 0.35) / 0.3)); frame = cv2.blur(frame, (kb_, 1))
+    if sec in ('chorus', 'chorus2', 'big', 'final', 'hit') and force is None:
+        # RGB split kick on the beat
+        ab_ = int(round(6 * k * spike(b, 10)))
+        if ab_ >= 1:
+            frame[:, ab_:, 2] = frame[:, :-ab_, 2].copy(); frame[:, :-ab_, 0] = frame[:, ab_:, 0].copy()
     br_ = np.clip(frame - 215, 0, None)
     frame += cv2.resize(cv2.GaussianBlur(cv2.resize(br_, (OW // 4, OH // 4), interpolation=cv2.INTER_AREA), (0, 0), 5), (OW, OH)) * 0.35
     frame *= VIGNETTE
