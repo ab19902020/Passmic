@@ -839,6 +839,8 @@ def _render(t, force=None, shot=None, scene_=None):
             k2 = 'ABCD'[int(pose_at(cid, b - d_, k, t - d_ * P)['pose'])]
             if k2 == 'D' and ms.get('holder') == cid and cid == 'nev': k2 = 'A'
             if k2 != key and not champ: prev_spr, prev_kk, pw = SPR[c[k2]], c['k'][k2] * (1 + 0.08 * fs), w_; break
+        if prev_spr is not None:  # pop on the drawing swap (squash, then settle)
+            pop_ = 1 - pw; p['sy'] *= 1 - 0.05 * pop_; p['sx'] *= 1 + 0.03 * pop_
         chars[cid] = dict(prev_spr=prev_spr, prev_kk=prev_kk, pw=pw, p=p, spr=spr, kk=c['k'][key] * (1 + 0.08 * fs), fx=c['foot'][0] + p['x'], fy=c['foot'][1] + 60 * fs, lift=p['y'] + y_extra, hr=hr, hy=hy)
     def local_to_src(ch, px, py):
         spr = ch['spr']; p = ch['p']; kk = ch['kk']
@@ -1050,19 +1052,8 @@ def _render(t, force=None, shot=None, scene_=None):
     frame += cv2.resize(cv2.GaussianBlur(add, (0, 0), 1.2 * RS), (OW, OH))
 
     def draw_char(dst, cid, refl=None):
-        ch = chars[cid]
-        if ch.get('prev_spr') is not None and ch['pw'] < 1:  # dissolve whole puppet snapshots, not its overlapping parts
-            # Important: fading body/head/arms independently makes their overlap semi-transparent.
-            # Render each complete pose at full opacity against the same base, then crossfade the two snapshots.
-            keep = (ch['spr'], ch['kk'])
-            base = dst.copy()
-            ch['spr'], ch['kk'] = ch['prev_spr'], ch['prev_kk']
-            prev_frame = base.copy(); _draw_char(prev_frame, cid, refl)
-            ch['spr'], ch['kk'] = keep
-            next_frame = base.copy(); _draw_char(next_frame, cid, refl)
-            w_ = ch['pw']
-            dst[:] = prev_frame * (1 - w_) + next_frame * w_
-            return
+        # Drawings swap instantly on the beat, like cut-out animation: crossfading two different drawings
+        # (even as opaque snapshots) shows a double image. The swap gets a small squash-and-stretch pop instead.
         _draw_char(dst, cid, refl)
     def _draw_char(dst, cid, refl=None):
         ch = chars[cid]; spr = ch['spr']; p = ch['p']; fd = ch.get('fade', 1.0)

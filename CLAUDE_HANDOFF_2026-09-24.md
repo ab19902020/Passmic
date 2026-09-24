@@ -98,3 +98,10 @@ Use a 1080p review render first. Only spend the time on `QUALITY=1080p60` or `QU
 7. Commit any generated asset changes and final cleanup back to `main`.
 
 No full render was completed or visually validated during this recovery session, so that QA/render pass is the main unfinished work.
+
+## Status (Claude, follow-up)
+
+Done:
+- Rebuilt the assets with the handoff fixes. Carra's chin now rotates with his head, and Gary's hands stay on the arm/body layer during head tilts. Both were checked visually on all eight Carra/Gary drawings.
+- The snapshot crossfade for pose changes still showed a double image of the whole character for ~3 frames. Drawings now swap instantly on the beat (cut-out style) with a small squash-and-stretch pop, so there is no ghosting.
+- Contact sheet reviewed and full 1080p render produced.
