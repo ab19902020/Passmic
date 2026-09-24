@@ -388,8 +388,8 @@ for n_, (ux_, uy_) in {'nev1': (1290, 335), 'nev2': (1082, 300), 'nev5': (1253, 
 
 plate = cv2.imread(f'{A}/plate_rows.png').astype(np.float32)
 hole = cv2.imread(f'{A}/hole.png', 0).astype(np.float32) / 255
-holeb = cv2.GaussianBlur(hole, (0, 0), 25)[..., None]
-BACK = cv2.GaussianBlur(plate, (0, 0), 3.2) * (1 - holeb) + cv2.GaussianBlur(plate, (0, 0), 16) * holeb
+holeb = cv2.GaussianBlur(hole, (0, 0), 25)[..., None]  # (the plate is cleanly inpainted: only a touch softer there)
+BACK = cv2.GaussianBlur(plate, (0, 0), 3.2) * (1 - holeb) + cv2.GaussianBlur(plate, (0, 0), 5) * holeb
 BACK = np.clip(BACK * 0.86, 0, 255).astype(np.float32)
 
 FLOOR_POLY = np.array([(0, 1000), (560, 874), (1800, 868), (2229, 965), (2229, 1254), (0, 1254)], np.float32)
