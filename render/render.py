@@ -125,9 +125,10 @@ def scene_for(b):
 for n_, sp_ in SPR.items():
     sp_['name'] = n_
     if n_ in MOUTH: sp_['mouth'] = MOUTH[n_]
-def jaw_open(img, mx, my, rx, open_px, mw=None, span=None):
-    """Stretch the lower face down by open_px (no tearing) and paint a mouth of half-width mw."""
-    if open_px < 0.6: return img
+def jaw_open(img, mx, my, rx, open_px, mw=None, span=None, paint=True):
+    """Stretch the lower face down by open_px (no tearing) and paint a mouth of half-width mw.
+    A negative open_px squeezes the band [my, my+span] shut instead (paint=False)."""
+    if abs(open_px) < 0.6: return img
     H_, W_ = img.shape[:2]
     mw = mw or 0.3 * rx; span = span or 1.2 * rx
     x0 = int(max(0, mx - rx)); x1 = int(min(W_, mx + rx + 1)); y0 = int(max(0, my))
@@ -140,18 +141,45 @@ def jaw_open(img, mx, my, rx, open_px, mw=None, span=None):
     src = np.where(rel < span + D, my + rel * span / (span + D), ys - D)
     mapx = np.tile(xs, (H_ - y0, 1)).astype(np.float32); mapy = src.astype(np.float32)
     reg = cv2.remap(img, mapx, mapy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+    if not paint:
+        out[y0:, x0:x1] = reg; return out
     d0 = open_px
-    ell = (((xs[None, :] - mx) / mw) ** 2 + ((ys - (my + d0 * 0.45)) / max(1.0, d0 * 0.55)) ** 2) <= 1.0
-    ell &= reg[..., 3] > 100
-    reg[ell] = (28, 16, 70, 255)
-    tongue = ell & (ys > my + d0 * 0.55) & (np.abs(xs - mx)[None, :] < 0.6 * mw)
-    reg[tongue] = (95, 85, 205, 255)
+    # anti-aliased mouth: dark interior + tongue (soft 1.5px edges so close-ups stay clean)
+    ry_ = max(1.0, d0 * 0.55); cy_ = my + d0 * 0.45
+    e = np.sqrt(((xs[None, :] - mx) / mw) ** 2 + ((ys - cy_) / ry_) ** 2)
+    a_m = np.clip((1 - e) * min(mw, ry_) / 1.5, 0, 1) * np.clip((reg[..., 3] - 60) / 80, 0, 1)
+    et = np.sqrt(((xs[None, :] - mx) / (0.62 * mw)) ** 2 + ((ys - (cy_ + ry_ * 0.75)) / (0.62 * ry_)) ** 2)
+    a_t = np.clip((1 - et) * min(0.62 * mw, 0.62 * ry_) / 1.5, 0, 1) * a_m
+    a_m = a_m[..., None]; a_t = a_t[..., None]
+    reg[..., :3] = reg[..., :3] * (1 - a_m) + np.array((28, 16, 70), np.float32) * a_m
+    reg[..., :3] = reg[..., :3] * (1 - a_t) + np.array((95, 85, 205), np.float32) * a_t
+    reg[..., 3:4] = np.maximum(reg[..., 3:4], 255 * a_m)
     out[y0:, x0:x1] = reg
     return out
+MOUTH_REST = 0.35  # the artwork's drawn (half-open) mouth corresponds to this opening
+def mouth_shape(img, mo, o, closed_art, wid):
+    """Pose the mouth for opening o (0 = shut .. ~1.2 = wide). Carra/Gary are drawn mid-shout, so below
+    MOUTH_REST the drawn mouth is squeezed shut (lower face lifts); above it the jaw drops open.
+    Keane is drawn with his mouth closed, so he only ever opens."""
+    h = 0.085 * mo['hh']
+    if closed_art: return jaw_open(img, mo['mx'], mo['my'], 0.28 * mo['hw'], o * 0.12 * mo['hh'], mw=0.1 * mo['hw'] * wid, span=0.24 * mo['hh'])
+    if o >= MOUTH_REST:
+        return jaw_open(img, mo['mx'], mo['my'], 0.28 * mo['hw'], (o - MOUTH_REST) * 0.16 * mo['hh'], mw=0.1 * mo['hw'] * wid, span=0.24 * mo['hh'])
+    c = 0.82 * (1 - o / MOUTH_REST)
+    return jaw_open(img, mo['mx'], mo['my'] - 0.5 * h, 0.3 * mo['hw'], -c * h, span=h, paint=False)
 _MC = np.load(DATA + '/mouth_curve.npz'); MOPEN, MWID = _MC['open'], _MC['width']
+MWHO = _MC['who'] if 'who' in _MC else np.full(len(MOPEN), 2, np.int8)
+WHO_ID = {3: 'nev', 4: 'carra', 5: 'keane'}
 def mouth_val(t, cid_or_i, amp):
-    f = int(clamp((t - 0.012 * (sum(map(ord, str(cid_or_i))) % 2)) * FPS, 0, len(MOPEN) - 1))
+    f = int(clamp(t * FPS, 0, len(MOPEN) - 1))
     return float(MOPEN[f]) * amp
+def voice_amp(t, cid, lead):
+    """How much pundit `cid` mouths the vocal at time t: the lead (mic holder) sings verses,
+    everyone sings choruses, quoted/spoken lines belong to one pundit, everyone else keeps quiet."""
+    w = int(MWHO[int(clamp(t * FPS, 0, len(MWHO) - 1))])
+    if w == 1: return 1.0 if cid == lead else 0.0
+    if w == 2: return 1.0 if cid == lead else 0.85
+    return 1.0 if WHO_ID.get(w) == cid else 0.0
 def mouth_w(t): return float(MWID[int(clamp(t * FPS, 0, len(MWID) - 1))])
 for n_, (ux_, uy_) in {'nev1': (1290, 335), 'nev2': (1082, 300), 'nev5': (1253, 447), 'nev4': (1224, 456)}.items(): SPR[n_]['up'] = (ux_ - SPR[n_]['x0'], uy_ - SPR[n_]['y0'])
 
@@ -229,6 +257,29 @@ def name_card(c):
     blend_into(a, text_rgba('STICK TO FOOTBALL', 30, (255, 243, 226)), 26, h + 8)
     return a
 TITLE = title_card()
+# Comedy captions (recovered from the unfinished Work-mode session), re-timed onto the lyric they
+# riff on and drawn as a Stick-to-Football style lower third that slides in and fades out.
+GAGS = [(11.3, 14.3, 'TACTICS BOARD: PASS IT, GARY!', 1),   # "Gary, put the tactics board down, mate."
+        (50.3, 53.7, 'FIXED IT FROM YOUR PHONE', 0),        # "...seventeen times from your phone."
+        (87.0, 89.6, 'ROY IS NOT IMPRESSED.', 2),           # "Keane gives the death stare"
+        (90.6, 93.5, 'SOFA SHUFFLE', 1)]                    # "...quietly shuffles to the side."
+def _gag_card(txt, col):
+    t_ = text_rgba(txt, 44, (255, 246, 236)); tag = text_rgba('STICK TO FOOTBALL', 22, (20, 10, 30))
+    w = t_.shape[1] + 60; h = t_.shape[0] + 16; th = tag.shape[0] + 4
+    im = Image.new('RGBA', (w + 30, th + h), (0, 0, 0, 0)); dr = ImageDraw.Draw(im)
+    rgb = tuple(int(v) for v in col[::-1])
+    dr.polygon([(0, 0), (tag.shape[1] + 30, 0), (tag.shape[1] + 18, th), (0, th)], fill=rgb + (255,))
+    dr.polygon([(0, th), (w + 26, th), (w, th + h), (0, th + h)], fill=(16, 8, 26, 235))
+    dr.rectangle((0, th, 8, th + h), fill=rgb + (255,))
+    a_ = to_bgra(im); blend_into(a_, tag, 10, 0); blend_into(a_, t_, 26, th + 6)
+    return a_
+GAG_CARDS = [_gag_card(txt, CAST[ci]['col']) for (_, _, txt, ci) in GAGS]
+def draw_gags(frame, t):
+    for (g0, g1, _, _), card in zip(GAGS, GAG_CARDS):
+        if g0 <= t < g1:
+            u_in = ease(clamp((t - g0) / 0.35)); u_out = smooth(clamp((g1 - t) / 0.3))
+            x_ = int(lerp(-card.shape[1], 40, u_in)); y_ = OH - card.shape[0] - 46
+            blend_into(frame, card * u_out, x_, y_)
 NAMECARD = {c['id']: name_card(c) for c in CAST}
 
 SCREEN_SRC = {k: cv2.imread(f'{SOURCE}/{k}.png').astype(np.float32) for k in ('18346', '18348', '18349')}
@@ -487,6 +538,8 @@ def shot_at(b):
     t_ = PH + b * P
     for c0, c1 in CHAMP:
         if c0 - 1.0 <= t_ < c1 + 0.6: return dict(b0=(c0 - 1.0 - PH) / P, b1=(c1 + 0.6 - PH) / P, type='champ', who='nev', side=1, seed=c0)
+    if 86.9 <= t_ < 89.7:  # "Keane gives the death stare" -> hold on Roy for the caption
+        return dict(b0=(86.9 - PH) / P, b1=(89.7 - PH) / P, type='close', who='keane', side=1, seed=86.9)
     for g0, g1 in GARY:
         if g0 <= t_ < min(g1, g0 + 2.2): return dict(b0=(g0 - PH) / P, b1=(min(g1, g0 + 2.2) - PH) / P, type='close', who='nev', side=-1, seed=g0)
     for (s0, s1, _i, _c) in SCREENS:
@@ -576,6 +629,8 @@ def render(t, force=None):
             out[:, i_ * W3:(i_ + 1) * W3] = f_[:, OW // 2 - W3 // 2: OW // 2 - W3 // 2 + W3]
         col_ = PAL[int(b) % 5]
         for i_ in (1, 2): cv2.line(out, (i_ * W3, 0), (i_ * W3, OH), col_, 5)
+        if any(g0 <= t < g1 for g0, g1, _, _ in GAGS):
+            out = out.astype(np.float32); draw_gags(out, t); out = np.clip(out, 0, 255).astype(np.uint8)
         return out
     champ = champ_state(t)
 
@@ -846,9 +901,12 @@ def render(t, force=None):
         if refl is not None:
             Mh = np.array([[ca_ * sq, -sa_ * sq, n_out[0]], [-sa_ * sq, -ca_ * sq, n_out[1]], [0, 0, 1]], np.float64) @ np.array([[1, 0, -nx], [0, 1, -ny], [0, 0, 1]], np.float64)
         hs_img = spr['head']
-        if 'mouth' in spr and sec not in ('intro', 'drop'):
-            mo = spr['mouth']; amp = 1.0 if ms.get('holder') == cid else 0.8
-            hs_img = jaw_open(hs_img, mo['mx'], mo['my'], 0.28 * mo['hw'], mouth_val(t, cid, amp) * 0.11 * mo['hh'], mw=0.1 * mo['hw'] * mouth_w(t), span=0.24 * mo['hh'])
+        amp = voice_amp(t, cid, ms.get('holder') or (ms.get('fly') or (0, 0, 'nev'))[2])
+        if refl is not None: amp = 0.0
+        if 'mouth' in spr and amp > 0:
+            mo = spr['mouth']
+            hs_img = mouth_shape(hs_img, mo, mouth_val(t, cid, amp), cid == 'keane', mouth_w(t))
+        elif 'mouth' in spr: hs_img = mouth_shape(hs_img, spr['mouth'], 0.0, cid == 'keane', 1.0)
         if refl is None: draw_sprite(dst, spr['head_ol'], Mh[:2], 1.0)
         draw_sprite(dst, hs_img, Mh[:2], gain)
         if refl is None: draw_sprite(dst, spr['head_rim'], Mh[:2], rimc * 0.8, add=True)
@@ -951,22 +1009,6 @@ def render(t, force=None):
         ab_ = int(round(6 * k * spike(b, 10)))
         if ab_ >= 1:
             frame[:, ab_:, 2] = frame[:, :-ab_, 2].copy(); frame[:, :-ab_, 0] = frame[:, ab_:, 0].copy()
-    # Recovered lyric-matched comedy beats from the unfinished Work session.
-    # Keep these short so they punctuate rather than cover the existing video.
-    gag = None
-    if 88.0 <= t < 90.4: gag = ('TACTICS BOARD: PASS IT, GARY!', (255, 243, 226))
-    elif 126.0 <= t < 128.4: gag = ('FIXED IT FROM YOUR PHONE', (226, 243, 255))
-    elif 151.0 <= t < 153.0: gag = ('ROY IS NOT IMPRESSED.', (255, 243, 226))
-    elif 173.0 <= t < 175.5: gag = ('SOFA SHUFFLE', (226, 243, 255))
-    if gag:
-        gt_ = text_rgba(gag[0], 38, gag[1])
-        ga_ = min(smooth((t % 1000 - math.floor(t % 1000)) / 0.15), 1.0)
-        gx_ = max(20, (OW - gt_.shape[1]) // 2)
-        gy_ = 42
-        # dark translucent backing keeps the joke readable without replacing the scene
-        x1_ = min(OW - 10, gx_ + gt_.shape[1] + 20)
-        cv2.rectangle(frame, (max(10, gx_ - 20), gy_ - 12), (x1_, gy_ + gt_.shape[0] + 10), (18, 8, 24), -1)
-        blend_into(frame, gt_, gx_, gy_)
     br_ = np.clip(frame - 215, 0, None)
     frame += cv2.resize(cv2.GaussianBlur(cv2.resize(br_, (OW // 4, OH // 4), interpolation=cv2.INTER_AREA), (0, 0), 5), (OW, OH)) * 0.35
     frame *= VIGNETTE
@@ -975,6 +1017,7 @@ def render(t, force=None):
         tt = beatT(bt)
         if t >= tt: fl_ = max(fl_, math.exp(-(t - tt) * 5))
     if fl_ > 0.003: frame = frame * (1 - 0.7 * fl_) + 255 * 0.7 * fl_
+    if force is None: draw_gags(frame, t)
     fade = max(1 - smooth(t / 1.4), smooth((t - (DUR - 1.8)) / 1.6))
     if fade > 0.003: frame *= 1 - fade
     return np.clip(frame, 0, 255).astype(np.uint8)

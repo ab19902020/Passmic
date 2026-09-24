@@ -9,5 +9,6 @@ See `README.md` for the project overview, layout and open issues.
 - Iterate with single frames: `python3 render/render.py test <t_seconds> ...` → `out/f_<t>.jpg`, then look at the JPGs.
 - Short clip check: `python3 render/render.py raw <f0> <f1> | ffmpeg -f rawvideo -pix_fmt bgr24 -s 1280x720 -r 24 -i - out/clip.mp4`
 - Full render: `bash render/run.sh` → `out/pass_mic.mp4`. Segments are resumable via `out/segNN.done`; delete those after changing `render.py`. Segments render in parallel (`JOBS=n` to limit).
+- Lip sync: `python3 tools/build_mouth_curve.py` (needs the demucs vocal stem + data/subs.srt; commands are in its header).
 - Sprites are generated: edit `tools/build_assets.py` / `masks/clean.json` / `masks/maskc_*.png`, then run `python3 tools/build_assets.py` (deterministic).
 - `out/` and `*.mp4` are git-ignored — rendered output is never committed.

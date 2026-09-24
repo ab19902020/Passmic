@@ -32,7 +32,8 @@ Pose choice lives in `pose()` in `render.py` (`pose=0..3`).
 - `GARY`: Gary spotlight + the others lean in.
 - `CHAMP`: champagne pop on each "champagne socialist" line.
 - `SECTIONS` (in beats, 145.09 BPM): drives moves, lighting, scenes (`scene_for`: studio / grid / pitch).
-- No lyrics are drawn on screen.
+- No lyrics are drawn on screen. `GAGS` adds four short comedy captions (Stick-to-Football lower thirds) timed to the lyric they riff on.
+- An awkward Inbetweeners-style trio dance (`inbet_*` moves) plays in the reveal (beats 16-32), with a callback at beats 368-376.
 - Polish: glossy floor reflections (studio/grid), a scrolling LED board on the pitch rail, a sparkle trail on mic tosses, and an RGB-split kick on the beat in the big sections.
 
 ## Checking changes
@@ -40,7 +41,7 @@ Pose choice lives in `pose()` in `render.py` (`pose=0..3`).
 
 ## Open issues / next steps
 - Fixed: Gary's "weird shadow". `build_assets.py` now paints a short skin-toned neck and collar under each head (it used to paint a dark shirt-coloured block), extends the head over the head/body seam, and trims hair slivers. Background scraps are erased via `masks/clean.json`.
-- Lip sync: mouth anchors in `assets/mouths.json` sit on each pose's drawn mouth, so the jaw opens there. It is syllable-timed, not phoneme-accurate.
+- Lip sync: `data/mouth_curve.npz` is built by `tools/build_mouth_curve.py` from the demucs-isolated vocal stem (real syllables, mouth shuts between them) plus the lyric track for who sings: the mic holder sings verses, everyone sings choruses, and quoted/spoken lines (intro, "here's the thing", "Standards! Hunger! Pride!", the comedy breakdown, outro) go to the right pundit. The others keep their mouths shut. Carra/Gary are drawn mid-shout, so `mouth_shape()` squeezes the drawn mouth shut below `MOUTH_REST` and opens the jaw above it. Mouth anchors are in `assets/mouths.json`.
 - Background managers no longer lip sync (disabled on purpose). The conga line and Sir Alex never did.
 - `nev2` (Gary, pose B) loses the right edge of "UNITED!" on the hoodie. The source mask cuts it off.
 - David Moyes is not in any source artwork, so he is not in the video.
