@@ -2,3 +2,4 @@ numpy
 scipy
 pillow
 opencv-contrib-python
+soundfile
