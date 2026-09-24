@@ -1051,12 +1051,17 @@ def _render(t, force=None, shot=None, scene_=None):
 
     def draw_char(dst, cid, refl=None):
         ch = chars[cid]
-        if ch.get('prev_spr') is not None and ch['pw'] < 1:  # dissolve from the previous drawn pose
+        if ch.get('prev_spr') is not None and ch['pw'] < 1:  # dissolve whole puppet snapshots, not its overlapping parts
+            # Important: fading body/head/arms independently makes their overlap semi-transparent.
+            # Render each complete pose at full opacity against the same base, then crossfade the two snapshots.
             keep = (ch['spr'], ch['kk'])
-            ch['spr'], ch['kk'] = ch['prev_spr'], ch['prev_kk']; ch['fade'] = 1 - ch['pw']
-            _draw_char(dst, cid, refl)
-            ch['spr'], ch['kk'] = keep; ch['fade'] = ch['pw']
-            _draw_char(dst, cid, refl); ch['fade'] = 1.0
+            base = dst.copy()
+            ch['spr'], ch['kk'] = ch['prev_spr'], ch['prev_kk']
+            prev_frame = base.copy(); _draw_char(prev_frame, cid, refl)
+            ch['spr'], ch['kk'] = keep
+            next_frame = base.copy(); _draw_char(next_frame, cid, refl)
+            w_ = ch['pw']
+            dst[:] = prev_frame * (1 - w_) + next_frame * w_
             return
         _draw_char(dst, cid, refl)
     def _draw_char(dst, cid, refl=None):
