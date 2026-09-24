@@ -28,14 +28,15 @@ Each pundit has four poses: A = `*1` (18306), B = `*2` (18307), C = `*5` (18346 
 Pose choice lives in `pose()` in `render.py` (`pose=0..3`).
 
 ## Song-driven events (in `render.py`)
-- `MICEV`: mic passes, timed to the "pass the microphone" lines and the "Gary" call-outs.
-- `GARY`: Gary spotlight + the others lean in.
-- `CHAMP`: champagne pop on each "champagne socialist" line.
-- `SECTIONS` (in beats, 145.09 BPM): drives moves, lighting, scenes (`scene_for`: studio / grid / pitch).
+- `EDL` (edit decision list): one shot per lyric line, cut on the line and framed on whoever the line is about. Gary is the default, Jamie's lines go on Carra, Roy's lines on Keane, and the comedy breakdown cuts to each speaker. Cuts get a 4-frame crossfade, scene changes a 0.6 s dissolve. The camera frames each pundit from his smoothed position and a fixed head height (`cam_anchor`), so it never chases the dance bounce.
+- `SECTIONS` follow the song's structure: intro, verse, chorus, verse 2, chorus 2 (`big`), verse 3 (synthwave, "Anger creates engagement"), comedy breakdown, bridge (pitch, "You and Keane at Old Trafford"), a blackout drop, the final chorus, and the outro. Choruses are the hot sections, with bigger moves and more light. Verses move less.
+- `TOSSES`: the mic follows the story. Gary passes it to Carra for Jamie's lines, Carra to Keane for Roy's, Keane back to Gary for the England days, then the outro handoffs. Each pass gets its own two-shot.
+- `GARY`: Gary spotlight + the others lean in. `CHAMP`: champagne pop on each "champagne socialist" line.
+- Drawn poses are held for 2 beats (choruses) or 4 beats (verses) and dissolve into each other over 3 frames, so the cut-outs don't flicker between drawings.
 - No lyrics are drawn on screen. `GAGS` adds four short comedy captions (Stick-to-Football lower thirds) timed to the lyric they riff on.
-- Pundits blink on a random per-character schedule (`BLINKS`; the eyes are found automatically in each head sprite), and when one pundit sings or speaks a solo line the other two tilt their heads towards him (`listen_dir`).
+- Pundits blink (`BLINKS`), and when one pundit sings or speaks a solo line the other two tilt their heads towards him (`listen_dir`). In single close-ups the others are dimmed slightly.
 - An awkward Inbetweeners-style trio dance (`inbet_*` moves) plays in the reveal (beats 16-32), with a callback at beats 368-376.
-- Polish: glossy floor reflections (studio/grid), a scrolling LED board on the pitch rail, a sparkle trail on mic tosses, and an RGB-split kick on the beat in the big sections.
+- Polish: glossy floor reflections (studio/grid), a scrolling LED board on the pitch rail, and a sparkle trail on mic tosses.
 
 ## Checking changes
 `python3 tools/contact_sheet.py 0.5 225 3 out/sheet.jpg` renders a labelled thumbnail every 3 s (time, beat, section, shot) across all cores. It's the fastest way to review the whole video.
@@ -44,6 +45,7 @@ Pose choice lives in `pose()` in `render.py` (`pose=0..3`).
 - Fixed: Gary's "weird shadow". `build_assets.py` now paints a short skin-toned neck and collar under each head (it used to paint a dark shirt-coloured block), extends the head over the head/body seam, and trims hair slivers. Background scraps are erased via `masks/clean.json`.
 - Lip sync: `data/mouth_curve.npz` is built by `tools/build_mouth_curve.py` from the demucs-isolated vocal stem (real syllables, mouth shuts between them) plus the lyric track for who sings: the mic holder sings verses, everyone sings choruses, and quoted/spoken lines (intro, "here's the thing", "Standards! Hunger! Pride!", the comedy breakdown, outro) go to the right pundit. The others keep their mouths shut. Carra/Gary are drawn mid-shout, so `mouth_shape()` squeezes the drawn mouth shut below `MOUTH_REST` and opens the jaw above it. Mouth anchors are in `assets/mouths.json`.
 - Background managers no longer lip sync (disabled on purpose). The conga line and Sir Alex never did.
+- Gary's pointing fist (pose A) had a fingernail that read as a talking mouth; it is painted out via `retouch` in `masks/clean.json`.
 - `nev2` (Gary, pose B) loses the right edge of "UNITED!" on the hoodie. The source mask cuts it off.
 - David Moyes is not in any source artwork, so he is not in the video.
 - Render speed ~0.27 s/frame per core; `run.sh` renders 350-frame segments in parallel (`JOBS=n` to limit). Delete `out/*.done` after changing `render.py`.

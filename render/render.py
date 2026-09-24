@@ -119,8 +119,8 @@ cv2.circle(PITCH_TEX, (PT_W // 2, 420), 190, (235, 235, 235), 6); cv2.circle(PIT
 H_PITCH = cv2.getPerspectiveTransform(np.float32([[0, 0], [PT_W, 0], [PT_W, PT_H], [0, PT_H]]), np.float32([[-900, 700], [3130, 700], [6200, 1560], [-3970, 1560]]))
 def scene_for(b):
     s = section(b)
-    if s in ('bridge', 'freeze', 'solos'): return 'grid'
-    if b >= 448: return 'pitch'
+    if s == 'verse3': return 'grid'      # "Anger creates engagement": the online world
+    if b >= BRIDGE_B: return 'pitch'     # "You and Keane at Old Trafford" through the final chorus
     return 'studio'
 for n_, sp_ in SPR.items():
     sp_['name'] = n_
@@ -383,7 +383,7 @@ def _cork():
 CORK = _cork()
 NEV_UP = {'nev1': (1290, 335), 'nev2': (1082, 300), 'nev5': (1253, 447), 'nev4': (1224, 456)}
 RAIL_Y, RAIL_H = 585, 90
-TOSS_H = 290  # apex height of the mic toss arc (source px)
+TOSS_H = 240  # apex height of the mic toss arc (source px)
 def _led_board():
     # stadium LED advertising board: scrolling text mask + LED dot mask (source px, tiles horizontally)
     f = ImageFont.truetype(FONTS + '/Poppins-Bold.ttf', 58); msg = 'STICK TO FOOTBALL   \u2022   '
@@ -407,22 +407,24 @@ def led_strip(xs_src, ys_src, b, t, hot):
 MGSC = {'mgr4': 1.5, 'mgr5': 1.8}
 def mgr_layer(b):
     s = section(b)
-    if s in ('chorus', 'big', 'hit', 'bridge', 'outro'): return 'mgr5'
-    if s == 'final': return 'mgr5' if int((b - 432) // 16) % 2 else 'mgr4'
-    if s == 'chorus2': return 'mgr4' if b < 204 else 'mgr5'
+    if s in ('chorus', 'big', 'outro'): return 'mgr5'
+    if s == 'final': return 'mgr5' if int((b - FINAL_B) // 16) % 2 else 'mgr4'
     return 'mgr4'
-SECTIONS = [(0, 'intro'), (16, 'reveal'), (32, 'intros'), (80, 'verse'), (96, 'dip'), (104, 'chorus'), (136, 'verse2'), (176, 'chorus2'), (232, 'bridge'), (256, 'freeze'), (264, 'big'), (320, 'solos'), (352, 'breakdown'), (368, 'build'), (424, 'drop'), (432, 'final'), (496, 'glide'), (512, 'hit'), (536, 'outro'), (99999, 'end')]
+# Sections follow the song's lyric structure (beats; 1 beat = 0.4135 s)
+CH1_B, BIG_B, BRIDGE_B, DROP_B, FINAL_B, OUTRO_B = 112, 264, 392, 436, 443, 520
+SECTIONS = [(0, 'intro'), (16, 'reveal'), (40, 'verse'), (96, 'dip'), (CH1_B, 'chorus'), (176, 'verse2'), (BIG_B, 'big'), (298, 'verse3'),
+            (374, 'breakdown'), (BRIDGE_B, 'bridge'), (DROP_B, 'drop'), (FINAL_B, 'final'), (OUTRO_B, 'outro'), (99999, 'end')]
+HOT_SECTIONS = ('chorus', 'big', 'final')
 def section(b):
     for i in range(len(SECTIONS) - 2, -1, -1):
         if b >= SECTIONS[i][0]: return SECTIONS[i][1]
     return 'intro'
-INTRO_ORDER = ['nev', 'carra', 'keane']
-def featured(b):
-    if 32 <= b < 80: return INTRO_ORDER[int((b - 32) // 16)]
-    if 320 <= b < 352: return 'keane' if b < 331 else 'carra' if b < 341 else 'nev'
-    return None
+def featured(b): return None
 def _tb(t): return round((t - PH) / P * 2) / 2
-MICEV = [(_tb(tt), a, b_) for tt, a, b_ in [(48.4, 'nev', 'carra'), (78.2, 'carra', 'nev'), (111.5, 'nev', 'keane'), (144.3, 'keane', 'nev'), (156.0, 'nev', 'carra'), (160.2, 'carra', 'nev'), (184.3, 'nev', 'keane'), (220.6, 'keane', 'nev')]]
+# Mic passes follow who the lyric is about: Gary -> Carra for Jamie's lines, -> Keane for Roy's,
+# back to Gary for the England days, then the outro handoffs. (start of throw in seconds)
+TOSSES = [(72.25, 'nev', 'carra'), (86.15, 'carra', 'keane'), (99.3, 'keane', 'nev'), (219.15, 'nev', 'carra'), (221.4, 'carra', 'keane')]
+MICEV = [(_tb(tt), a, b_) for tt, a, b_ in TOSSES]
 GARY = [(77.4, 80.2), (143.5, 146.7), (155.2, 157.8), (160.0, 161.0), (162.2, 163.0), (220.1, 222.3)]
 CUES = [(6.8, 16.8), (17.0, 222.3)]
 def gary_amt(t):
@@ -441,7 +443,7 @@ HOT_MOVES = ['pump', 'point', 'shuffle', 'headbang', 'wave', 'twist', 'kick', 'm
 CALM_MOVES = ['sway', 'step', 'cheers', 'bounce', 'lean', 'groove', 'shimmy', 'slide', 'handsup']
 IDS = ['carra', 'nev', 'keane']
 def block_moves(s, bs):
-    hot = s in ('chorus', 'chorus2', 'big', 'final', 'hit', 'build')
+    hot = s in HOT_SECTIONS
     pool = HOT_MOVES if hot else CALM_MOVES
     first = lambda x: int(hsh(int(x * 13 + 5)) * len(pool))
     i0 = first(bs)
@@ -456,12 +458,9 @@ def move_for(cid, b):
     if 16 <= b < 32 or 368 <= b < 376:
         return {'nev': 'inbet_nev', 'carra': 'inbet_carra', 'keane': 'inbet_keane'}[cid]
     if s == 'intro': return 'standby'
-    if s == 'freeze': return 'pose'
     if s == 'drop': return 'crouch'
     if s in ('outro', 'end'): return 'finalpose'
-    if s == 'final' and b < 433.6: return 'jump'
-    if s in ('intros', 'solos') and f == cid:
-        return ({'nev': 'point', 'carra': 'shimmy', 'keane': 'robot'} if s == 'intros' else {'keane': 'robot', 'carra': 'slide', 'nev': 'headbang'})[cid]
+    if s == 'final' and b < FINAL_B + 1.6: return 'jump'
     if s == 'breakdown': return 'groove' if cid == 'nev' else 'sway'
     return block_moves(s, math.floor(b / 8) * 8)[cid]
 def pose(cid, move, b, k, t):
@@ -495,10 +494,10 @@ def pose(cid, move, b, k, t):
         n = math.floor(b); side = 1 if n % 2 else -1; pop = spike(b, 9)
         p.update(pose=[0, 1, 2][n % 3], sx=1 + 0.045 * pop, sy=1 + 0.045 * pop, roll=0.045 * side * (1 - 0.6 * pop), y=18 * hop, hr=-0.1 * side, hy=5 * dip)
     elif move == 'shimmy':
-        p.update(pose=2 if int(b / 4) % 2 else 0, roll=0.065 * math.sin(4 * math.pi * b), x=16 * math.sin(8 * math.pi * b), sy=1 - 0.025 * abs(math.sin(4 * math.pi * b)), hr=0.12 * math.sin(2 * math.pi * b))
+        p.update(pose=2 if int(b / 4) % 2 else 0, roll=0.06 * math.sin(2 * math.pi * b), x=24 * math.sin(2 * math.pi * b), sy=1 - 0.025 * abs(math.sin(2 * math.pi * b)), hr=0.1 * math.sin(math.pi * b))
     elif move == 'robot':
         q = math.floor(b * 2)
-        p.update(pose=int(hsh(q * 3 + ci * 11) * 4), roll=(hsh(q * 5 + ci) - 0.5) * 0.16, x=(hsh(q * 7 + ci) - 0.5) * 50, hr=(hsh(q * 11 + ci) - 0.5) * 0.34, sy=0.97 if frac(b * 2) < 0.15 else 1)
+        p.update(pose=int(hsh(q * 3 + ci * 11) * 4), roll=(hsh(q * 5 + ci) - 0.5) * 0.08, x=(hsh(q * 7 + ci) - 0.5) * 25, hr=(hsh(q * 11 + ci) - 0.5) * 0.2, sy=0.97 if frac(b * 2) < 0.15 else 1)
     elif move == 'pump':
         up = ((1 + math.cos(2 * math.pi * b)) / 2) ** 3
         p.update(pose=1 if up > 0.35 else 2, y=70 * up, sy=1 + 0.05 * up, sx=1 - 0.02 * up, hr=0.07 * sw, hy=-5 * up)
@@ -511,14 +510,14 @@ def pose(cid, move, b, k, t):
         p.update(pose=[3, 1, 3, 2][int(b / 4 + ci) % 4], roll=0.07 * q, x=50 * q, hr=0.12 * q, sy=1 + br)
     elif move == 'pose': p.update(pose=3, sy=1 + br, hr=0.04 * math.sin(t * 1.3 + ci))
     elif move == 'crouch':
-        a = smooth((b - 430.3) / 0.8); p.update(pose=2, sy=lerp(0.96, 0.9, a), sx=lerp(1.05, 1.08, a), hy=8)
+        a = smooth((b - (FINAL_B - 1.7)) / 0.8); p.update(pose=2, sy=lerp(0.96, 0.9, a), sx=lerp(1.05, 1.08, a), hy=8)
     elif move == 'jump':
-        u = clamp((b - 432) / 1.6); arc = 4 * u * (1 - u)
+        u = clamp((b - FINAL_B) / 1.6); arc = 4 * u * (1 - u)
         p.update(pose=1, y=210 * arc, sy=1 + 0.1 * arc - (0.12 * (u - 0.92) / 0.08 if u > 0.92 else 0), sx=1 - 0.04 * arc)
     elif move == 'shuffle':
         p.update(pose=[0, 2][int(b * 2) % 2], x=55 * math.sin(2 * math.pi * b), y=10 * hop, roll=0.035 * math.sin(2 * math.pi * b), hr=0.08 * math.sin(2 * math.pi * b))
     elif move == 'headbang':
-        hb_ = math.sin(4 * math.pi * b); p.update(pose=[2, 1][int(b / 2) % 2], hr=0.16 * hb_, hy=9 * abs(hb_), sy=1 - 0.03 * abs(hb_), y=8 * hop)
+        hb_ = math.sin(2 * math.pi * b); p.update(pose=[2, 1][int(b / 2) % 2], hr=0.16 * hb_, hy=9 * abs(hb_), sy=1 - 0.03 * abs(hb_), y=8 * hop)
     elif move == 'wave':
         ph_ = b - ci * 0.33; w_ = abs(math.sin(math.pi * ph_)) ** 3
         p.update(pose=[0, 1][int(ph_) % 2], y=75 * w_, sy=1 + 0.05 * w_, roll=0.03 * math.sin(math.pi * ph_))
@@ -556,6 +555,14 @@ def pose_at(cid, b, k, t):
     if back:
         q = pose(cid, move_for(cid, b - back), b, k, t); w = smooth(back / 0.5)
         p = {kk: ((p[kk] if w >= 0.5 else q[kk]) if kk == 'pose' else lerp(q[kk], p[kk], w)) for kk in p}
+    if m not in ('standby', 'finalpose', 'crouch', 'jump') and not back:
+        q_ = 2 if section(b) in HOT_SECTIONS else 4  # hold each drawn pose for 2 (choruses) or 4 beats
+        p['pose'] = pose(cid, m, math.floor(b / q_) * q_ + 0.01, k, t)['pose']
+    # verses move less than choruses: calmer verses, and the choruses feel bigger
+    amt = 1.0 if section(b) in HOT_SECTIONS or m in ('jump', 'crouch') else 0.68
+    if amt < 1:
+        for kk in ('x', 'y', 'roll', 'hr', 'hy'): p[kk] *= amt
+        p['sx'] = 1 + (p['sx'] - 1) * amt; p['sy'] = 1 + (p['sy'] - 1) * amt
     return p
 def feature_step(cid, b):
     if featured(b) != cid: return 0.0
@@ -565,53 +572,122 @@ def feature_step(cid, b):
     while featured(en) == cid: en += 1
     return smooth((b - st) / 1.5) * (1 - smooth((b - (en - 1.5)) / 1.5))
 
+# ---- Edit decision list ------------------------------------------------------------------------------
+# One shot per lyric line (cut on the line), framed on whoever the line is about. The song is about
+# Gary, so he is the default; Jamie's lines are on Carra, Roy's lines on Keane.
+#   (start_s, kind, who)   kinds: intro outro wide group mid close two mgr champ push
+EDL = [
+    (0.0, 'intro', 'nev'),
+    (6.8, 'wide', 'nev'),     # "Gary, put the tactics board down, mate."
+    (11.2, 'mid', 'carra'),   #   (Carra says it)
+    (14.0, 'close', 'nev'),   #   (Gary's face)
+    # Verse 1: all Gary
+    (17.0, 'mid', 'nev'),     # Gary Neville underneath the studio lights
+    (19.63, 'close', 'nev'),  # Telling Manchester United how to put the whole thing right
+    (23.14, 'mid', 'nev'),    # "Sack him! Back him! ..."
+    (26.89, 'mgr', 'nev'),    # Every Monday morning there's another man to blame
+    (29.68, 'close', 'nev'),  # diagrams and arrows
+    (33.19, 'mid', 'nev'),    # what the manager should've bloody done
+    (36.3, 'group', 'nev'),   # Valencia gave him the clipboard
+    (40.29, 'push', 'nev'),   # Turns out doing it yourself / was a little harder than that
+    # Chorus 1
+    (46.5, 'group', 'nev'),   # (downbeat) Oh Gary, Gary, pass the microphone
+    (50.19, 'close', 'nev'),  # seventeen times from your phone
+    (53.78, 'mid', 'nev'),    # Drama merchant, football sermon
+    (57.29, 'group', 'nev'),  # managing it yourself didn't last
+    (60.3, 'champ', 'nev'),   # Champagne socialist
+    (63.75, 'mgr', 'nev'),    # Every manager's name goes on your little list
+    (66.78, 'mid', 'nev'),    # You know the game, Gaz
+    (70.45, 'close', 'nev'),  # talking like you'd fix it all?
+    (72.05, 'group', 'nev'),  # We both know you probably won't
+    # Verse 2: Jamie, then Roy, then Gary's England days
+    (73.17, 'mid', 'carra'),  # Jamie's on The Overlap going
+    (77.39, 'two', 'carra'),  # "Gary, here's the thing..." (mic toss Carra -> Gary)
+    (80.19, 'close', 'carra'),  # Never managed at the top
+    (82.9, 'mid', 'carra'),   # he'll explain absolutely everything
+    (87.05, 'close', 'keane'),  # Keane gives the death stare / "Standards! Hunger! Pride!"
+    (90.56, 'wide', 'nev'),   # Everybody on the sofa quietly shuffles to the side
+    (93.59, 'mid', 'keane'),  # Roy's actually had the dugout
+    (96.54, 'close', 'keane'),  # one misplaced five-yard pass / somebody's got to go
+    (100.21, 'mid', 'nev'),   # somewhere in those England days
+    (102.05, 'close', 'nev'),  # Kane's beside the flag / centre-forward taking corners
+    (105.0, 'group', 'nev'),  # Still a pretty decent gag
+    # Chorus 2
+    (109.33, 'group', 'nev'),  # (downbeat) Oh Gary, Gary, pass the microphone
+    (113.3, 'close', 'nev'),
+    (116.81, 'mid', 'nev'),
+    (120.32, 'wide', 'nev'),
+    # Verse 3 (synthwave)
+    (123.59, 'wide', 'nev'),  # Anger creates engagement
+    (126.7, 'mid', 'nev'),    # Get the fans all raging
+    (130.21, 'close', 'nev'),  # "United are in crisis!"
+    (133.32, 'group', 'nev'),  # Manchester rage
+    (137.15, 'mid', 'nev'),   # One bad game - emergency
+    (140.43, 'close', 'nev'),  # Two bad games - catastrophe
+    (143.46, 'close', 'nev'),  # Gary on the thumbnail looking absolutely stunned
+    (146.73, 'push', 'nev'),  # Anger creates engagement...
+    (151.84, 'group', 'nev'),  # And watch those numbers run (sofa dance callback)
+    # Comedy breakdown: whoever speaks
+    (155.19, 'close', 'nev'),  # Gary: "They've lost the dressing room."
+    (157.82, 'close', 'carra'),  # Jamie: "Absolutely."
+    (159.02, 'close', 'keane'),  # Keane: "They're too soft."
+    (159.97, 'close', 'nev'),  # Gary: "No leadership."
+    (161.01, 'close', 'carra'),  # Jamie: "No mentality."
+    # Bridge (the pitch)
+    (162.21, 'wide', 'nev'),  # We remember '99, Gary / what you won
+    (166.84, 'two', 'keane'),  # You and Keane at Old Trafford
+    (168.59, 'group', 'nev'),  # Those nights were bloody fun
+    (170.19, 'mid', 'nev'),   # So we know you love United
+    (173.38, 'close', 'nev'),  # sometimes watching The Overlap
+    (176.09, 'push', 'nev'),  # Feels like our funeral's playing (-> blackout)
+    # Final chorus
+    (183.35, 'wide', 'nev'),  # GARY! GARY! PASS THE MICROPHONE!
+    (185.98, 'mid', 'nev'),   # rebuilt Manchester United seventeen times
+    (189.73, 'close', 'carra'),  # Carragher is laughing
+    (191.41, 'close', 'keane'),  # Keane is looking mad
+    (193.25, 'mid', 'nev'),   # Another United crisis / still that bad
+    (196.2, 'champ', 'nev'),  # Champagne socialist
+    (199.79, 'group', 'nev'),  # Sunday-night philosopher
+    (202.64, 'champ', 'nev'),  # Pour another champagne, Gaz
+    (204.73, 'mgr', 'nev'),   # We know how this will end
+    (206.41, 'wide', 'nev'),  # Anger creates engagement
+    (210.56, 'group', 'nev'),  # So we'll see you next weekend
+    # Outro (spoken)
+    (214.79, 'close', 'nev'),  # "Serious questions need answering."
+    (220.05, 'close', 'carra'),  # Gary...
+    (222.29, 'outro', 'keane'),  # We haven't even kicked off yet.
+]
+def _with_tosses(edl):
+    """Give each mic pass its own short two-shot, then return to the lyric's shot."""
+    out = list(edl)
+    for tt, fr, to in TOSSES:
+        cur = [e for e in edl if e[0] <= tt + 1.25][-1]
+        out = [e for e in out if not (tt - 0.25 <= e[0] < tt + 1.25)]
+        out += [(tt - 0.25, 'toss', to), (tt + 1.25, cur[1], cur[2])]
+        out.append((tt - 0.25, '_ev', (fr, to)))
+    ev = {e[0]: e[2] for e in out if e[1] == '_ev'}
+    out = sorted([e for e in out if e[1] != '_ev'], key=lambda e: e[0])
+    return out, ev
+EDL, _TOSS_EV = _with_tosses(EDL)
 SHOTS = []
-def _add(b0, b1, typ, **o): SHOTS.append(dict(b0=b0, b1=b1, type=typ, seed=len(SHOTS) * 7.31 + b0, **o))
-_add(0, 16, 'intro'); _add(16, 32, 'wide', push=1)
-for i, cid in enumerate(INTRO_ORDER):
-    bb = 32 + i * 16; _add(bb, bb + 6, 'close', who=cid, side=1 if i % 2 else -1); _add(bb + 6, bb + 11, 'mid', who=cid, side=-1 if i % 2 else 1); _add(bb + 11, bb + 16, 'group')
-_LAST = []
-def _gen(b0, b1, cut, pool):
-    bb = b0; ids = ['carra', 'nev', 'keane']
-    while bb < b1:
-        i = int(hsh(bb * 13 + 7) * len(pool)); tries = 0
-        while (pool[i] in _LAST[-3:] or (pool[i] == 'split' and hsh(int(bb * 3 + 1)) < 0.55)) and tries < 2 * len(pool): i = (i + 1) % len(pool); tries += 1
-        _LAST.append(pool[i]); w0 = (int(hsh(bb * 5 + 3) * 3) + len(_LAST)) % 3
-        _add(bb, min(b1, bb + cut), pool[i], who=ids[w0], who2=ids[(w0 + 1 + int(hsh(bb + 9) * 2)) % 3], side=1 if hsh(bb + 1) > 0.5 else -1)
-        bb += cut
-calm = ['wide', 'mid', 'group', 'close', 'balcony', 'pan', 'lowwide', 'trackback', 'mgrclose', 'dutch']
-hot = ['wide', 'close', 'group', 'mid', 'balcony', 'crash', 'dutch', 'whip2', 'split', 'mgrclose', 'lowwide', 'tilt', 'pan']
-_gen(80, 96, 8, calm); _add(96, 104, 'slowpush')
-_gen(104, 136, 4, hot); _gen(136, 176, 8, calm); _gen(176, 232, 4, hot); _gen(232, 256, 8, calm)
-_add(256, 264, 'whip'); _gen(264, 320, 2, hot)
-_add(320, 326, 'close', who='keane', side=-1); _add(326, 331, 'mid', who='keane', side=1)
-_add(331, 336, 'mid', who='carra', side=1); _add(336, 341, 'close', who='carra', side=-1)
-_add(341, 346, 'close', who='nev', side=1); _add(346, 352, 'mid', who='nev', side=-1)
-_add(352, 368, 'slowpush'); _gen(368, 408, 8, calm); _gen(408, 424, 4, hot)
-_add(424, 432, 'push'); _add(432, 436, 'wide'); _gen(436, 496, 2, hot)
-_add(496, 512, 'slowpush'); _gen(512, 536, 4, hot); _add(536, 560, 'outro')
-SHOTS.sort(key=lambda s: s['b0'])
+for i_, (t0_, kind_, who_) in enumerate(EDL):
+    t1_ = EDL[i_ + 1][0] if i_ + 1 < len(EDL) else DUR + 5
+    SHOTS.append(dict(b0=(t0_ - PH) / P, b1=(t1_ - PH) / P, t0=t0_, type=kind_, who=who_, side=1 if i_ % 2 else -1, seed=i_ * 7.31, idx=i_, ev=_TOSS_EV.get(t0_)))
 def shot_at(b):
-    for (eb, fr, to) in MICEV:
-        if eb - 0.4 <= b < eb + 2.3: return dict(b0=eb - 0.4, b1=eb + 2.3, type='toss', ev=(eb, fr, to), seed=eb)
-    t_ = PH + b * P
-    for c0, c1 in CHAMP:
-        if c0 - 1.0 <= t_ < c1 + 0.6: return dict(b0=(c0 - 1.0 - PH) / P, b1=(c1 + 0.6 - PH) / P, type='champ', who='nev', side=1, seed=c0)
-    if 86.9 <= t_ < 89.7:  # "Keane gives the death stare" -> hold on Roy for the caption
-        return dict(b0=(86.9 - PH) / P, b1=(89.7 - PH) / P, type='close', who='keane', side=1, seed=86.9)
-    for g0, g1 in GARY:
-        if g0 <= t_ < min(g1, g0 + 2.2): return dict(b0=(g0 - PH) / P, b1=(min(g1, g0 + 2.2) - PH) / P, type='close', who='nev', side=-1, seed=g0)
-    for (s0, s1, _i, _c) in SCREENS:
-        if s0 <= b < s1:
-            n = s1 - s0; a1 = s0 + round(n * 0.3); a2 = s0 + round(n * 0.7)
-            if b < a1: return dict(b0=s0, b1=a1, type='screenwide', seed=s0)
-            if b < a2: return dict(b0=a1, b1=a2, type='screenclose', seed=s0)
-            return dict(b0=a2, b1=s1, type='screenwide', seed=s0 + 1)
-    s = SHOTS[0]
+    t_ = PH + b * P; s = SHOTS[0]
     for x in SHOTS:
-        if x['b0'] <= b: s = x
+        if x['t0'] <= t_: s = x
         else: break
     return s
+HEAD_H = {c['id']: max((SPR[c[k_]]['foot'][1] - SPR[c[k_]]['headc'][1]) * c['k'][k_] for k_ in 'ABCD') for c in CAST}  # tallest drawn pose
+def cam_anchor(cid, t):
+    """Where the camera looks for a pundit: his feet position smoothed over ~0.5 s and a fixed head
+    height, so the framing never chases the bounce of the dance (the dance moves inside the frame)."""
+    c = CAST[CI[cid]]; k = fval(EN, t); xs = 0.0
+    for j in range(6):
+        tj = t - j * 0.1; p_ = pose_at(cid, (tj - PH) / P, k, tj)
+        xs += p_['x'] + math.sin(p_['roll']) * HEAD_H[cid] * 0.9  # the lean moves the head sideways
+    return c['foot'][0] + xs / 6, c['foot'][1] - HEAD_H[cid]
 
 def aff(scale_x, scale_y, rot, px, py, tx, ty):
     c, s = math.cos(rot), math.sin(rot)
@@ -635,12 +711,11 @@ def lighting(sec, b):
     if sec == 'intro':
         r = smooth((b - 2) / 12); L.update(amb=0.25 + 0.75 * r, back=0.18 + 0.82 * r, beams=0.5 * smooth((b - 8) / 4), floor='sweep')
     elif sec == 'reveal': L.update(beams=0.6)
-    elif sec == 'intros': L.update(solo=featured(b), beams=0.6, floor='solo')
-    elif sec in ('dip', 'glide'): L.update(amb=0.8, back=0.7, beams=0.25, floor='calm')
-    elif sec in ('chorus', 'chorus2'): L.update(beams=0.95, floor='ripple')
-    elif sec in ('big', 'final', 'hit'): L.update(beams=1.0, floor='rainbow', strobe=1)
-    elif sec == 'freeze': L.update(amb=0.9, back=0.6, beams=0.35, floor='calm')
-    elif sec == 'solos': L.update(solo=featured(b), amb=0.95, back=0.6, beams=0.7, floor='solo')
+    elif sec == 'dip': L.update(amb=0.8, back=0.7, beams=0.25, floor='calm')
+    elif sec == 'chorus': L.update(beams=0.95, floor='ripple')
+    elif sec in ('big', 'final'): L.update(beams=1.0, floor='rainbow', strobe=1)
+    elif sec == 'verse3': L.update(beams=0.5, floor='calm')
+    elif sec == 'bridge': L.update(amb=0.95, back=0.75, beams=0.4, floor='calm')
     elif sec == 'breakdown': L.update(amb=0.65, back=0.35, beams=0.2, floor='calm', solo='__holder')
     elif sec == 'build':
         r = smooth((b - 368) / 56); L.update(amb=0.85 + 0.15 * r, back=0.6 + 0.4 * r, beams=0.3 + 0.6 * r, floor='ripple' if r > 0.5 else 'checker')
@@ -661,12 +736,13 @@ def floor_colors(L, b, t, solo_x):
             elif m == 'sweep':
                 on = smooth((b - 8) * 1.4 - abs(i - FCOLS / 2) * 0.9 - j * 0.2); c = np.array(PAL[(i + j) % 5], np.float32) * (0.1 + 0.9 * on)
             elif m == 'checker':
-                on = (i + j + math.floor(b)) % 2; c = np.array(PAL[int(b // 4) % 5], np.float32) * ((0.45 + 0.55 * dip) if on else 0.12)
+                on = 0.5 + 0.5 * math.cos(math.pi * (i + j) + math.pi * b / 2)  # checker that slowly swaps, no hard beat flips
+                c = np.array(PAL[int(b // 8) % 5], np.float32) * (0.12 + on * (0.33 + 0.55 * dip))
             elif m == 'ripple':
                 d_ = math.hypot(i - FCOLS / 2 + 0.5, (j - 1.5) * 1.6); on = max(0, 1 - abs(frac(b) * 9 - d_) * 0.7)
                 c = np.array(PAL[(math.floor(b) + int(d_)) % 5], np.float32) * (0.25 + 0.75 * on)
             elif m == 'rainbow':
-                c = hue_bgr(frac(i / FCOLS * 0.7 + j * 0.08 + t * 0.25)) * (0.4 + 0.6 * dip) * (1.25 if L['strobe'] and (math.floor(b * 2) + i + j) % 3 == 0 else 1)
+                c = hue_bgr(frac(i / FCOLS * 0.7 + j * 0.08 + t * 0.25)) * (0.4 + 0.6 * dip) * (1.1 if L['strobe'] and (math.floor(b) + i + j) % 3 == 0 else 1)
             elif m == 'calm':
                 w = 0.5 + 0.5 * math.sin(t * 0.8 + i * 0.6 + j * 0.9); c = np.array((120 * w + 60, 30 + 20 * w, 60 + 50 * w), np.float32)
             elif m == 'solo':
@@ -675,22 +751,11 @@ def floor_colors(L, b, t, solo_x):
             cols[j, i] = c
     return cols
 
-def render(t, force=None):
+def _render(t, force=None, shot=None, scene_=None):
     b = (t - PH) / P
     k = fval(EN, t); vocal = fval(VOC, t)
     sec = section(b); L = lighting(sec, b); ms = mic_state(b)
     dip = ((1 + math.cos(2 * math.pi * b)) / 2) ** 1.6
-    if force is None and shot_at(b)['type'] == 'split':
-        W3 = OW // 3; out = np.zeros((OH, OW, 3), np.uint8)
-        for i_, cid_ in enumerate(('carra', 'nev', 'keane')):
-            fx_, fy_ = CAST[CI[cid_]]['foot']
-            f_ = render(t, force=(1.9, fx_, fy_ - 560))
-            out[:, i_ * W3:(i_ + 1) * W3] = f_[:, OW // 2 - W3 // 2: OW // 2 - W3 // 2 + W3]
-        col_ = PAL[int(b) % 5]
-        for i_ in (1, 2): cv2.line(out, (i_ * W3, 0), (i_ * W3, OH), col_, 5)
-        if any(g0 <= t < g1 for g0, g1, _, _ in GAGS):
-            out = out.astype(np.float32); draw_gags(out, t); out = np.clip(out, 0, 255).astype(np.uint8)
-        return out
     champ = champ_state(t)
 
     chars = {}
@@ -714,7 +779,12 @@ def render(t, force=None):
         hr += 0.075 * listen_dir(cid, t, ms)
         if ms.get('holder') == cid and sec not in ('intro', 'drop') and singing(t):
             hr += (vocal - 0.25) * 0.14 * math.sin(t * 11 + CI[cid]); hy -= 7 * vocal
-        chars[cid] = dict(p=p, spr=spr, kk=c['k'][key] * (1 + 0.08 * fs), fx=c['foot'][0] + p['x'], fy=c['foot'][1] + 60 * fs, lift=p['y'] + y_extra, hr=hr, hy=hy)
+        prev_spr = prev_kk = None; pw = 1.0
+        for d_, w_ in ((0.1, 0.33), (0.2, 0.66)):  # ~3-frame dissolve after a pose swap
+            k2 = 'ABCD'[int(pose_at(cid, b - d_, k, t - d_ * P)['pose'])]
+            if k2 == 'D' and ms.get('holder') == cid and cid == 'nev': k2 = 'A'
+            if k2 != key and not champ: prev_spr, prev_kk, pw = SPR[c[k2]], c['k'][k2] * (1 + 0.08 * fs), w_; break
+        chars[cid] = dict(prev_spr=prev_spr, prev_kk=prev_kk, pw=pw, p=p, spr=spr, kk=c['k'][key] * (1 + 0.08 * fs), fx=c['foot'][0] + p['x'], fy=c['foot'][1] + 60 * fs, lift=p['y'] + y_extra, hr=hr, hy=hy)
     def local_to_src(ch, px, py):
         spr = ch['spr']; p = ch['p']; kk = ch['kk']
         dx = (px - spr['foot'][0]) * kk * p['sx']; dy = (py - spr['foot'][1]) * kk * p['sy']
@@ -724,51 +794,40 @@ def render(t, force=None):
         ch['head'] = local_to_src(ch, *ch['spr']['headc']); ch['hand'] = local_to_src(ch, *ch['spr']['hand'])
         if 'up' in ch['spr']: ch['up'] = local_to_src(ch, *ch['spr']['up'])
 
-    s = shot_at(b) if force is None else dict(type='forced', b0=b, b1=b + 1, seed=0); lt = t - beatT(s['b0']); u = clamp((b - s['b0']) / (s['b1'] - s['b0'])); side = s.get('side', 1)
+    s = shot if shot is not None else (shot_at(b) if force is None else dict(type='forced', b0=b, b1=b + 1, seed=0))
+    lt = t - beatT(s['b0']); u = clamp((b - s['b0']) / (s['b1'] - s['b0'])); side = s.get('side', 1)
     z, cx, cy = 1.0, SW / 2, SH / 2; typ = s['type']
-    scene = scene_for(b)
-    if scene == 'grid' and typ in ('balcony', 'mgrclose'): typ = 'group'
+    scene = scene_ or scene_for(b)
+    if scene == 'grid' and typ == 'mgr': typ = 'group'
+    who = s.get('who', 'nev'); ax, ay = cam_anchor(who, t) if typ not in ('forced',) else (0, 0)
+    focus = [who]
     if typ == 'intro': e = ease(clamp((b - 1) / 14)); z, cx, cy = lerp(1.9, 1.0, e), lerp(1183, SW / 2, e), lerp(260, SH / 2, e)
-    elif typ == 'outro': e = ease(clamp(lt / 7)); z, cx, cy = lerp(1.0, 1.8, e), lerp(SW / 2, 1183, e), lerp(SH / 2, 280, e)
-    elif typ == 'wide': z = 1.0 + 0.02 * lt * (1.5 if s.get('push') else 1); cx += 40 * math.sin(s['seed'])
-    elif typ == 'group': z, cy = 1.28 + 0.015 * lt, 650; cx += 60 * math.sin(s['seed'])
-    elif typ == 'close': hx, hyy = chars[s['who']]['head']; z = 2.0 + 0.02 * lt; cx, cy = hx + 30 * side, hyy + 110
-    elif typ == 'mid': hx, hyy = chars[s['who']]['head']; z = 1.5 + 0.02 * lt; cx, cy = hx - 40 * side, hyy + 280
-    elif typ == 'pan': z = 1.45; cx = lerp(750, 1500, u if side > 0 else 1 - u); cy = 740
-    elif typ == 'tilt': z = 1.35; cx = SW / 2 + 80 * side; cy = lerp(560, 780, ease(u))
-    elif typ == 'slowpush': z = 1.0 + 0.35 * ease(u); cy = lerp(SH / 2, 720, ease(u))
-    elif typ == 'whip': z = 1.3; cx = lerp(800, 1450, ease(u)); cy = 700
-    elif typ == 'push': z = 1.0 + 0.45 * ease(u); cy = lerp(SH / 2, 760, ease(u))
-    elif typ == 'screenwide': z = 1.0 + 0.012 * lt; cx = SW / 2 + 30 * math.sin(s['seed']); cy = SH / 2
-    elif typ == 'screenclose': z = 1.75 + 0.02 * lt; cx = SCR_X; cy = SCR_Y + SCR_H / 2 + 40
-    elif typ == 'balcony': z = 1.5 + 0.02 * lt; cx = lerp(620, 1610, 0.5 + 0.5 * math.sin(s['seed'] * 1.7)) + 60 * side * lt; cy = RAIL_Y - 90
-    elif typ == 'forced': z, cx, cy = force
-    elif typ == 'lowwide': z = 1.12 + 0.01 * lt; cy = SH / 2 + 110; cx += 50 * math.sin(s['seed'])
-    elif typ == 'trackback': hx, hyy = chars[s['who']]['head']; e = ease(u); z = lerp(1.9, 1.0, e); cx = lerp(hx, SW / 2, e); cy = lerp(hyy + 120, SH / 2, e)
-    elif typ == 'crash': hx, hyy = chars[s['who']]['head']; e = ease(clamp((b - s['b0']) / 0.35)); z = lerp(1.0, 2.05, e); cx = lerp(SW / 2, hx, e); cy = lerp(SH / 2, hyy + 110, e)
-    elif typ == 'whip2':
-        wa_ = chars[s['who']]['head']; wb_ = chars[s.get('who2', 'nev')]['head']; e = ease(clamp((u - 0.35) / 0.3))
-        z = 1.7; cx = lerp(wa_[0], wb_[0], e); cy = lerp(wa_[1], wb_[1], e) + 150
-    elif typ == 'dutch': z = 1.32 + 0.015 * lt; cy = 700; cx += 70 * side
-    elif typ == 'mgrclose':
-        gl_ = mgr_layer(b); gi_ = GSPR[gl_]
-        z = 2.0 + 0.02 * lt; cx = SW / 2 + (gi_['w'] * (0.18 + 0.64 * hsh(int(s['seed'] * 7))) - gi_['w'] / 2) * MGSC[gl_] + 40 * side * lt; cy = RAIL_Y - 150
-    elif typ == 'champ':
-        hx, hyy = chars['nev']['head']; e = ease(clamp(lt / 1.2)); z = lerp(1.28, 1.45, e); cx = hx + 110; cy = hyy + 100
+    elif typ == 'outro': e = ease(clamp(lt / 3.5)); z, cx, cy = lerp(2.0, 1.25, e), lerp(ax, SW / 2, e), lerp(ay + 110, 620, e)
+    elif typ == 'wide': z = 1.0 + 0.012 * lt; focus = IDS
+    elif typ == 'group':
+        z = 1.3 + 0.008 * lt; focus = IDS; cx = sum(cam_anchor(c_, t)[0] for c_ in IDS) / 3; cy = 640
+    elif typ == 'mid': z = 1.55 + 0.012 * lt; cx, cy = ax - 50 * side, ay + 250
+    elif typ == 'close': z = 2.0 + 0.014 * lt; cx, cy = ax + 30 * side, ay + 105
+    elif typ == 'two':
+        other = 'nev' if who != 'nev' else 'keane'; bx_, by_ = cam_anchor(other, t); focus = [who, other]
+        z = 1.42 + 0.01 * lt; cx, cy = (ax + bx_) / 2, (ay + by_) / 2 + 250
+    elif typ == 'push': z = 1.0 + 0.4 * ease(u); cy = lerp(SH / 2, 740, ease(u)); focus = IDS
+    elif typ == 'mgr': z = 1.5 + 0.015 * lt; cx = lerp(620, 1610, 0.5 + 0.5 * math.sin(s['seed'] * 1.7)) + 45 * side * lt; cy = RAIL_Y - 90
     elif typ == 'toss':
-        (_, fr, to) = s["ev"]; z = 1.08; cx = (chars[fr]['head'][0] + chars[to]['head'][0]) / 2
-        apex_ = (chars[fr]['hand'][1] + chars[to]['hand'][1]) / 2 - TOSS_H
-        cy = apex_ - 170 + OH / 2 / (BASE * z)  # keep the whole arc (plus the mic) in frame
-    shake = 0.3 if sec == 'intro' else 0.5 + k
-    cx += (math.sin(t * 1.3) * 0.6 + math.sin(t * 2.9) * 0.4) * 5 * shake
-    cy += (math.sin(t * 1.7 + 1) * 0.6 + math.sin(t * 3.3) * 0.4) * 4 * shake
-    if sec in ('chorus', 'chorus2', 'big', 'final', 'hit'): z *= 1 + 0.025 * k * spike(b, 7)
-    if sec == 'final' and 432 <= b < 434: z *= 1 + 0.06 * spike(b - 432, 2)
+        fr, to = s['ev']; f_ = cam_anchor(fr, t); g_ = cam_anchor(to, t); focus = [fr, to]
+        z = 1.15; cx = (f_[0] + g_[0]) / 2
+        cy = min(f_[1], g_[1]) + 150 - TOSS_H * 0.55 + OH / 2 / (BASE * z) - 250  # arc apex stays in frame
+    elif typ == 'champ':
+        e = ease(clamp(lt / 1.2)); z = lerp(1.3, 1.5, e); cx = ax + 110; cy = ay + 100
+    elif typ == 'forced': z, cx, cy = force
+    if typ not in ('forced', 'intro'):  # slow, gentle handheld drift instead of shake
+        cx += 7 * math.sin(t * 0.45 + s.get('seed', 0)); cy += 4 * math.sin(t * 0.37 + 1.3 * s.get('seed', 0))
+    if sec == 'final' and FINAL_B <= b < FINAL_B + 2: z *= 1 + 0.05 * spike(b - FINAL_B, 2)
     sc = BASE * z
     hw_, hh_ = OW / 2 / sc, OH / 2 / sc
-    if typ not in ('intro', 'outro', 'screenwide', 'screenclose', 'balcony', 'mgrclose', 'forced', 'champ'):
-        heads = [chars[s['who']]] if typ in ('close', 'champ', 'crash', 'trackback', 'whip2') and s.get('who') else list(chars.values())
-        top_need = min(ch['head'][1] - ch['spr']['ry'] * ch['kk'] * 1.25 for ch in heads) - 18 / sc
+    if typ in ('wide', 'group', 'mid', 'close', 'two', 'push', 'champ'):
+        # keep the heads in (fixed head heights + dance allowance, so this never jitters)
+        top_need = min(cam_anchor(c_, t)[1] if c_ != who else ay for c_ in focus) - max(SPR[CAST[CI[c_]]['A']]['ry'] for c_ in focus) * 1.25 - 75  # + room for hops
         if cy - hh_ > top_need: cy = top_need + hh_
     cx = clamp(cx, hw_, SW - hw_); cy = clamp(cy, hh_, SH - hh_)
     def to_out(x, y): return ((x - cx) * sc + OW / 2, (y - cy) * sc + OH / 2)
@@ -781,9 +840,9 @@ def render(t, force=None):
     if scene == 'studio': frame *= L['back'] * (0.94 + 0.1 * dip * (1 if L['beams'] > 0.5 else 0))
     else: frame *= 0.35 + 0.65 * L['back'] ** 0.5
     if scene == 'pitch':
-        for i_ in range(14):
-            q_ = int(t * 10) * 31 + i_
-            if hsh(q_) > 0.55:
+        for i_ in range(10):
+            q_ = int(t * 3 + i_ * 0.37) * 31 + i_
+            if hsh(q_) > 0.6:
                 fx_, fy_ = to_out(hsh(q_ * 3) * SW, 240 + hsh(q_ * 7) * 420)
                 cv2.circle(frame, (int(fx_), int(fy_)), max(1, int(5 * sc)), (255, 255, 255), -1, cv2.LINE_AA)
 
@@ -855,7 +914,7 @@ def render(t, force=None):
             frame[y0r:y1r, x0r:x1r] = frame[y0r:y1r, x0r:x1r] * 0.08 + np.array([34, 16, 30], np.float32) * grad * (0.5 + 0.5 * L['back'])
             if scene == 'pitch':
                 xs_ = cx + (np.arange(x0r, x1r, dtype=np.float32) + 0.5 - OW / 2) / sc; ys_ = cy + (np.arange(y0r, y1r, dtype=np.float32) + 0.5 - OH / 2) / sc
-                frame[y0r:y1r, x0r:x1r] = led_strip(xs_, ys_, b, t, sec in ('chorus', 'chorus2', 'big', 'final', 'hit'))
+                frame[y0r:y1r, x0r:x1r] = led_strip(xs_, ys_, b, t, sec in HOT_SECTIONS)
             ncol = np.array(PAL[int(b // 2) % 5], np.float32) * (0.55 + 0.45 * dip) * (0.3 + 0.7 * L['back'])
             th = max(2, int(7 * sc)); frame[y0r:min(OH, y0r + th), x0r:x1r] = ncol
             glow = max(3, int(18 * sc)); ys_ = np.arange(glow, dtype=np.float32)[:, None, None]
@@ -864,7 +923,8 @@ def render(t, force=None):
                 lx_, ly_ = to_out(90 + j * (SW - 180) / 35, RAIL_Y + RAIL_H * 0.55)
                 on = 0.5 + 0.5 * math.sin(t * 6 + j * 0.9 + b)
                 cv2.circle(frame, (int(lx_), int(ly_)), max(1, int(4 * sc)), tuple(float(v) for v in np.array(PAL[j % 5]) * on * (0.3 + 0.7 * L['back'])), -1, cv2.LINE_AA)
-    solo_id = L['solo'] if L['solo'] != '__holder' else (ms.get('holder') or (ms.get('fly') or (0, 0, 'nev'))[2])
+    lead_ = ms.get('holder') or (ms.get('fly') or (0, 0, 'nev'))[2]
+    solo_id = L['solo'] if L['solo'] != '__holder' else (solo_voice(t, lead_) or lead_)
     solo_x = -99
     if solo_id:
         L['solo_col'] = CAST[CI[solo_id]]['col']
@@ -919,7 +979,7 @@ def render(t, force=None):
             M = aff(sy_ * 1.25, sy_, -ang, BEAM.shape[1] / 2, 0, ox / 2, oy / 2)
             bm = cv2.warpAffine(BEAM, M, (OW // 2, OH // 2), flags=cv2.INTER_LINEAR)
             ccol = PAL[(i + int(b // 4)) % 5] if L['beams'] > 0.5 else col[::-1]
-            strobe = (1.3 if spike(b * 2, 9) > 0.45 else 0.7) if L['strobe'] else 1
+            strobe = (1.08 + 0.1 * spike(b, 6)) if L['strobe'] else 1
             add += bm[..., None] * np.array(ccol, np.float32) * (0.4 * L['beams'] * strobe * (0.75 + 0.25 * dip))
     if L['back'] > 0.3 and scene == 'studio':
         for i in range(60):
@@ -930,19 +990,30 @@ def render(t, force=None):
                 cv2.circle(add, (int(ox / 2), int(oy / 2)), 2, (230 * tw, 230 * tw, 255 * tw), -1, cv2.LINE_AA)
     bx, by = to_out(1183, 90)
     for i in range(5 if scene == 'studio' else 0):
-        q = int(t * 8)
-        if hsh(q * 5 + i) > 0.45:
+        q = int(t * 2.5)
+        if hsh(q * 5 + i) > 0.6:
             px = bx + (hsh(q * 7 + i) - 0.5) * 220 * sc; py = by + (hsh(q * 11 + i) - 0.5) * 150 * sc; L2 = 36 * sc
             cv2.line(add, (int((px - L2) / 2), int(py / 2)), (int((px + L2) / 2), int(py / 2)), (255, 255, 255), 1, cv2.LINE_AA)
             cv2.line(add, (int(px / 2), int((py - L2) / 2)), (int(px / 2), int((py + L2) / 2)), (255, 255, 255), 1, cv2.LINE_AA)
     frame += cv2.resize(cv2.GaussianBlur(add, (0, 0), 1.2), (OW, OH))
 
     def draw_char(dst, cid, refl=None):
-        ch = chars[cid]; spr = ch['spr']; p = ch['p']
+        ch = chars[cid]
+        if ch.get('prev_spr') is not None and ch['pw'] < 1:  # dissolve from the previous drawn pose
+            keep = (ch['spr'], ch['kk'])
+            ch['spr'], ch['kk'] = ch['prev_spr'], ch['prev_kk']; ch['fade'] = 1 - ch['pw']
+            _draw_char(dst, cid, refl)
+            ch['spr'], ch['kk'] = keep; ch['fade'] = ch['pw']
+            _draw_char(dst, cid, refl); ch['fade'] = 1.0
+            return
+        _draw_char(dst, cid, refl)
+    def _draw_char(dst, cid, refl=None):
+        ch = chars[cid]; spr = ch['spr']; p = ch['p']; fd = ch.get('fade', 1.0)
         amb = L['amb']
+        if s['type'] in ('close', 'mid') and s.get('who') and s['who'] != cid: amb *= 0.78
         if L['solo'] == '__holder': amb = 1.0 if cid == solo_id else 0.5
         elif L['solo']: amb = 1.05 if cid == L['solo'] else 0.65
-        if sec == 'drop' and b > 431.5: amb = 1.0
+        if sec == 'drop' and b > FINAL_B - 1.5: amb = 1.0
         ga = gary_amt(t)
         if ga > 0: amb = lerp(amb, 1.08 if cid == 'nev' else 0.72, ga)
         gain = amb * (1 + (0.05 * dip if L['strobe'] else 0))
@@ -951,9 +1022,9 @@ def render(t, force=None):
         Mbody = aff(s_ * p['sx'], s_ * p['sy'], p['roll'], spr['foot'][0], spr['foot'][1], ox, oy)
         if refl is not None: Mbody = np.array([[1, 0, 0], [0, -1, 2 * refl]], np.float64) @ np.vstack([Mbody, [0, 0, 1]])
         rimc = np.array(PAL[int(b // 2) % 5] if scene != 'pitch' else (235, 245, 255), np.float32) / 255 * (0.18 + 0.12 * dip)
-        if refl is None: draw_sprite(dst, spr['body_ol'], Mbody, 1.0)
-        draw_sprite(dst, spr['body'], Mbody, gain)
-        if refl is None: draw_sprite(dst, spr['body_rim'], Mbody, rimc, add=True)
+        if refl is None: draw_sprite(dst, spr['body_ol'] * fd, Mbody, 1.0)
+        draw_sprite(dst, spr['body'] * fd if fd < 1 else spr['body'], Mbody, gain)
+        if refl is None: draw_sprite(dst, spr['body_rim'], Mbody, rimc * fd, add=True)
         nx, ny = spr['neck']
         n_out = Mbody @ np.array([nx, ny + ch['hy'] / ch['kk'], 1.0])
         ang_h = p['roll'] + ch['hr']; ca_, sa_ = math.cos(ang_h), math.sin(ang_h); sq = s_ * (0.5 * (p['sx'] + p['sy']))
@@ -969,9 +1040,9 @@ def render(t, force=None):
             mo = spr['mouth']
             hs_img = mouth_shape(hs_img, mo, mouth_val(t, cid, amp), cid == 'keane', mouth_w(t))
         elif 'mouth' in spr: hs_img = mouth_shape(hs_img, spr['mouth'], 0.0, cid == 'keane', 1.0)
-        if refl is None: draw_sprite(dst, spr['head_ol'], Mh[:2], 1.0)
-        draw_sprite(dst, hs_img, Mh[:2], gain)
-        if refl is None: draw_sprite(dst, spr['head_rim'], Mh[:2], rimc * 0.8, add=True)
+        if refl is None: draw_sprite(dst, spr['head_ol'] * fd, Mh[:2], 1.0)
+        draw_sprite(dst, hs_img * fd if fd < 1 else hs_img, Mh[:2], gain)
+        if refl is None: draw_sprite(dst, spr['head_rim'], Mh[:2], rimc * 0.8 * fd, add=True)
         if ms.get('holder') == cid and refl is None:
             hx, hy_ = ch['hand']; hx2, hy2 = ch['head']
             ang = math.atan2(hx2 - hx, -(hy2 - hy_)) * 0.35
@@ -1034,7 +1105,7 @@ def render(t, force=None):
         frame += cv2.resize(cv2.GaussianBlur(tr_, (0, 0), 2.5), (OW, OH)) * 2.4
         draw_sprite(frame, MIC, aff(sc * 0.9, sc * 0.9, u2 * math.pi * 4, 30, 95, mox, moy))
 
-    for bt in [beatT(x) for x in (512, 432, 264, 104)]:
+    for bt in [beatT(x) for x in (FINAL_B, BIG_B, CH1_B)]:
         if t >= bt:
             age = t - bt
             if age < 9:
@@ -1062,27 +1133,33 @@ def render(t, force=None):
         tw, th = int(TITLE.shape[1] * st_), int(TITLE.shape[0] * st_)
         frame *= 1 - 0.35 * top
         blend_into(frame, cv2.resize(TITLE, (tw, th), interpolation=cv2.INTER_AREA) * top, (OW - tw) // 2, (OH - th) // 2 - 10)
-    if typ == 'dutch':
-        Mr_ = cv2.getRotationMatrix2D((OW / 2, OH / 2), 7 * side, 1.12); frame = cv2.warpAffine(frame, Mr_, (OW, OH), borderMode=cv2.BORDER_REFLECT)
-    if typ == 'whip2' and 0.35 < u < 0.65:
-        kb_ = int(2 + 46 * math.sin(math.pi * (u - 0.35) / 0.3)); frame = cv2.blur(frame, (kb_, 1))
-    if sec in ('chorus', 'chorus2', 'big', 'final', 'hit') and force is None:
-        # RGB split kick on the beat
-        ab_ = int(round(6 * k * spike(b, 10)))
-        if ab_ >= 1:
-            frame[:, ab_:, 2] = frame[:, :-ab_, 2].copy(); frame[:, :-ab_, 0] = frame[:, ab_:, 0].copy()
     br_ = np.clip(frame - 215, 0, None)
     frame += cv2.resize(cv2.GaussianBlur(cv2.resize(br_, (OW // 4, OH // 4), interpolation=cv2.INTER_AREA), (0, 0), 5), (OW, OH)) * 0.35
     frame *= VIGNETTE
     fl_ = 0.0
-    for bt in (104, 232, 264, 320, 352, 432, 448, 512):
+    for bt in (CH1_B, BIG_B, FINAL_B):  # a soft flash where the choruses hit
         tt = beatT(bt)
-        if t >= tt: fl_ = max(fl_, math.exp(-(t - tt) * 5))
-    if fl_ > 0.003: frame = frame * (1 - 0.7 * fl_) + 255 * 0.7 * fl_
+        if t >= tt: fl_ = max(fl_, math.exp(-(t - tt) * 6))
+    if fl_ > 0.003: frame = frame * (1 - 0.35 * fl_) + 255 * 0.35 * fl_
     if force is None: draw_gags(frame, t)
     fade = max(1 - smooth(t / 1.4), smooth((t - (DUR - 1.8)) / 1.6))
     if fade > 0.003: frame *= 1 - fade
     return np.clip(frame, 0, 255).astype(np.uint8)
+
+XF_CUT, XF_SCENE = 0.16, 0.6
+def render(t, force=None):
+    """One frame. Cuts get a short crossfade; scene changes (studio/grid/pitch) a longer dissolve."""
+    if force is not None: return _render(t, force)
+    b = (t - PH) / P; s = shot_at(b); i = s['idx']; sc1 = shot_scene(s)
+    if i > 0:
+        prev = SHOTS[i - 1]; dt = t - s['t0']; sc0 = shot_scene(prev)
+        xf = XF_SCENE if sc0 != sc1 else XF_CUT
+        if 0 <= dt < xf:
+            A_ = _render(t, shot=prev, scene_=sc0).astype(np.float32); B_ = _render(t, shot=s, scene_=sc1).astype(np.float32)
+            w = smooth(dt / xf)
+            return np.clip(A_ * (1 - w) + B_ * w, 0, 255).astype(np.uint8)
+    return _render(t, shot=s, scene_=sc1)
+def shot_scene(s): return scene_for(s['b0'] + 0.3)
 
 if __name__ == '__main__':
     if sys.argv[1] == 'test':
