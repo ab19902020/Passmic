@@ -442,7 +442,10 @@ def pose(cid, move, b, k, t):
     dip = ((1 + math.cos(2 * math.pi * b)) / 2) ** 1.6
     sw = math.sin(math.pi * b); hop = abs(sw); br = math.sin(t * 2.1 + ci * 1.7) * 0.006
     if move == 'standby': p.update(sy=1 + br, hr=0.03 * math.sin(t * 0.9 + ci))
-    elif move == 'breakdance': return breakdance(cid, break_u(b), p)
+    elif move == 'breakdance':
+        u_ = break_u(b)
+        if u_ is None: u_ = 0.0 if min(abs(b - b0) for b0 in BREAKS) < min(abs(b - b0 - 12) for b0 in BREAKS) else 12.0  # blending in/out
+        return breakdance(cid, min(u_, 11.999), p)
     elif move == 'inbet_nev':
         # Gary: stiff side shuffle, knee dip and over-confident arm-swing pose changes.
         q = math.sin(math.pi * b); q2 = math.sin(2 * math.pi * b)
@@ -847,11 +850,8 @@ def _render(t, force=None, shot=None, scene_=None):
                 frame[Y0c:Y1c, X0c:X1c] = img_ * pulse * L['back'] ** 0.3
     if scene != 'grid':
         # balcony: managers dancing behind a neon rail
-        gname = mgr_layer(b); G_ = GSPR[gname]
-        swap_b = b
-        for d in (0.1, 0.2, 0.3):
-            if mgr_layer(b - d) != gname: swap_b = d; break
-        pop = 1 - smooth(swap_b / 0.3) if swap_b < 0.35 else 0
+        gname = mgr_layer(s['b0'] + 0.3); G_ = GSPR[gname]  # the balcony group only changes on a cut
+        pop = 0.0
         gk = MGSC[gname]
         glift = (10 + 16 * k) * abs(math.sin(math.pi * b)) + 30 * pop
         groll = 0.012 * math.sin(math.pi * b)
