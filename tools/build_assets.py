@@ -65,6 +65,11 @@ for n,(iid,cx,cy,rx,ry,nx,ny) in HEADS.items():
         rm=np.zeros(crop.shape[:2],np.uint8); cv2.fillPoly(rm,[np.array(poly,np.int32)],255)
         crop=cv2.inpaint(crop,rm,5,cv2.INPAINT_TELEA)
     H,W=mm.shape
+    for pt in CLEAN.get(n, {}).get('paint', []):  # redraw a missing piece (e.g. a sleeve the source mask lost)
+        pm_=np.zeros((H,W),np.uint8); cv2.fillPoly(pm_,[np.array(pt['poly'],np.int32)],255,cv2.LINE_AA)
+        a_=cv2.GaussianBlur(pm_.astype(np.float32)/255,(0,0),0.7)[...,None]
+        crop=(crop*(1-a_)+np.array(pt['color'],np.float32)*a_).astype(np.uint8)
+        mm=np.maximum(mm,(pm_>127).astype(np.uint8)*255)
     # head mask
     hm=np.zeros((H,W),np.uint8)
     k={'carra2':1.04,'nev1':1.22,'nev2':1.32,'nev5':1.32,'nev4':1.32}.get(n,1.16)
@@ -87,7 +92,7 @@ for n,(iid,cx,cy,rx,ry,nx,ny) in HEADS.items():
     # remain on the body/arm layer, otherwise they move with his head. Subtract the traced arm
     # polygons before selecting the connected head blob.
     if n.startswith('nev') and n in RIG:
-        for arm in RIG[n]:
+        for arm in [a_ for a_ in RIG[n] if a_.get('mode')=='full']:  # only raised hands; never cut into the face
             am=np.zeros((H,W),np.uint8)
             cv2.fillPoly(am,[np.array(arm['poly'],np.int32)],255)
             hm[am>0]=0

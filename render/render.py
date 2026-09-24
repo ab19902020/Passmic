@@ -73,7 +73,10 @@ def _ol_rim_body(img, head_a):
     a = np.minimum(a, cv2.GaussianBlur(np.maximum(img[..., 3], head_a), (0, 0), 0.7) + 60)
     tmp = np.zeros_like(img); tmp[..., 3] = a
     ol, rim = _ol_rim(tmp)
-    return ol, rim * (img[..., 3:4] / 255)
+    # no outline where the head sits: the head draws its own, and a body outline there would stay behind as a
+    # dark head-shaped ghost whenever the head bobs or tilts
+    hk = cv2.GaussianBlur(cv2.dilate((head_a > 60).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 9))).astype(np.float32), (0, 0), 1.2)
+    return ol * (1 - hk[..., None]), rim * (img[..., 3:4] / 255)
 for n_, sp_ in SPR.items():
     sp_['head_a'] = sp_['head'][..., 3].copy()
     sp_['body_ol'], sp_['body_rim'] = _ol_rim_body(sp_['body'], sp_['head_a']); sp_['head_ol'], sp_['head_rim'] = _ol_rim(sp_['head'])
@@ -108,10 +111,12 @@ def _build_rig(sp, arms):
     skinish = ((hsv[..., 1] > 55) & (hsv[..., 2] > 110) & (hsv[..., 0] < 35)).astype(np.uint8)  # skin, hands, beer
     offtorso = ((a > 8) & (hull == 0)).astype(np.uint8)
     out = []; rem_all = np.zeros((H_, W_), np.float32); fill_all = np.zeros((H_, W_), np.float32)
+    headm = cv2.dilate((sp['head'][..., 3] > 60).astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)))
     hull_dil = cv2.dilate(hull, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (21, 21))) & (a > 128).astype(np.uint8)
     for arm in arms:
         poly = np.array(arm['poly'], np.float32) + SPR_PAD; pv = np.array(arm['pivot'], np.float32) + SPR_PAD
         pm = np.zeros((H_, W_), np.uint8); cv2.fillPoly(pm, [poly.astype(np.int32)], 1)
+        pm &= (headm == 0).astype(np.uint8)  # the face and beard belong to the head, never to an arm
         pm_big = cv2.dilate(pm, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15)))
         # the arm is: its skin/hand (+ the drawn outline around it) inside the traced polygon, plus everything
         # of the drawing that lies off the torso (sleeves in the air, edge pixels) -- never a slice of shirt
@@ -418,8 +423,11 @@ def make_mic():
     dr.rounded_rectangle((20, 70, 40, 186), 8, fill=(24, 24, 30, 255), outline=(8, 8, 10, 255), width=3)
     dr.rectangle((18, 62, 42, 80), fill=(255, 182, 39, 255), outline=(8, 8, 10, 255), width=3)
     dr.ellipse((6, 4, 54, 66), fill=(200, 205, 215, 255), outline=(8, 8, 10, 255), width=4)
-    for i in range(12, 54, 9): dr.line((i, 10, i, 60), fill=(150, 155, 168, 255), width=2)
-    for j in range(14, 62, 9): dr.line((10, j, 50, j), fill=(150, 155, 168, 255), width=2)
+    grid = Image.new('RGBA', (60, 190), (0, 0, 0, 0)); dg = ImageDraw.Draw(grid)
+    for i in range(12, 54, 9): dg.line((i, 4, i, 66), fill=(150, 155, 168, 255), width=2)
+    for j in range(14, 62, 9): dg.line((6, j, 54, j), fill=(150, 155, 168, 255), width=2)
+    clip = Image.new('L', (60, 190), 0); ImageDraw.Draw(clip).ellipse((10, 8, 50, 62), fill=255)
+    im.paste(grid, (0, 0), Image.fromarray(np.minimum(np.array(grid)[..., 3], np.array(clip))))
     dr.ellipse((14, 12, 26, 24), fill=(255, 255, 255, 200))
     return to_bgra(im)
 MIC = make_mic()
@@ -1263,7 +1271,7 @@ def _render(t, force=None, shot=None, scene_=None):
                     if y > SH + 40: continue
                     ox, oy = to_out(x, y)
                     if not (-20 < ox < OW + 20 and -20 < oy < OH + 20): continue
-                    ang = a * (3 + r1 * 4) + i; w_ = 7 * z * RS; h_ = 11 * z * RS * abs(math.cos(a * (2 + r2 * 3) + i)) + 1
+                    ang = a * (3 + r1 * 4) + i; w_ = 7 * z ** 0.5 * RS; h_ = 11 * z ** 0.5 * RS * abs(math.cos(a * (2 + r2 * 3) + i)) + 1
                     ca, sa = math.cos(ang), math.sin(ang)
                     pts = np.array([[ox + ca * dx - sa * dy, oy + sa * dx + ca * dy] for dx, dy in ((-w_, -h_), (w_, -h_), (w_, h_), (-w_, h_))], np.int32)
                     cv2.fillConvexPoly(frame, pts, [(255, 62, 165), (25, 227, 214), (39, 182, 255), (255, 255, 255), (255, 92, 139)][i % 5], cv2.LINE_AA)
@@ -1281,7 +1289,7 @@ def _render(t, force=None, shot=None, scene_=None):
     if fade > 0.003: frame *= 1 - fade
     return np.clip(frame, 0, 255).astype(np.uint8)
 
-XF_CUT, XF_SCENE = 0.16, 0.6
+XF_CUT, XF_SCENE = 0.085, 0.6  # 2-frame soft cut (longer dissolves leave a see-through copy of the characters); scene dissolve
 def render(t, force=None):
     """One frame. Cuts get a short crossfade; scene changes (studio/grid/pitch) a longer dissolve."""
     if force is not None: return _render(t, force)

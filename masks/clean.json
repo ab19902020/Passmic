@@ -1,5 +1,5 @@
 {
- "_doc": "Hand-traced polygons in sprite-local px (same frame as assets/<name>_body.png). 'body' erases background scraps from the body sprite only, 'head' erases from both, 'retouch' paints over (inpaints) art details that read wrong in motion.",
+ "_doc": "Hand-traced polygons in sprite-local px (same frame as assets/<name>_body.png). 'body' erases background scraps from the body sprite only, 'head' erases from both, 'retouch' paints over (inpaints) art details that read wrong in motion. 'paint' redraws a missing piece: polygon filled with a flat colour and added to the cut-out.",
  "carra2": {
   "body": [
    [
@@ -141,6 +141,24 @@
      459,
      632
     ]
+   ],
+   [
+    [
+     399,
+     240
+    ],
+    [
+     411,
+     240
+    ],
+    [
+     411,
+     302
+    ],
+    [
+     400,
+     302
+    ]
    ]
   ]
  },
@@ -271,25 +289,50 @@
      300,
      622
     ]
-   ],
-   [
-    [
-     330,
-     258
-    ],
-    [
-     366,
-     255
-    ],
-    [
-     366,
-     290
-    ],
-    [
-     330,
-     290
-    ]
    ]
+  ],
+  "paint": [
+   {
+    "poly": [
+     [
+      318,
+      258
+     ],
+     [
+      352,
+      254
+     ],
+     [
+      396,
+      256
+     ],
+     [
+      404,
+      268
+     ],
+     [
+      402,
+      290
+     ],
+     [
+      388,
+      296
+     ],
+     [
+      352,
+      300
+     ],
+     [
+      318,
+      312
+     ]
+    ],
+    "color": [
+     26,
+     23,
+     28
+    ]
+   }
   ]
  },
  "keane2": {
@@ -690,6 +733,26 @@
      294
     ]
    ]
+  ],
+  "head": [
+   [
+    [
+     60,
+     126
+    ],
+    [
+     99,
+     126
+    ],
+    [
+     99,
+     160
+    ],
+    [
+     64,
+     160
+    ]
+   ]
   ]
  },
  "nev4": {
@@ -900,6 +963,46 @@
     [
      356,
      570
+    ]
+   ],
+   [
+    [
+     340,
+     279
+    ],
+    [
+     364,
+     279
+    ],
+    [
+     364,
+     300
+    ],
+    [
+     346,
+     300
+    ]
+   ],
+   [
+    [
+     315,
+     231
+    ],
+    [
+     338,
+     224
+    ],
+    [
+     338,
+     268
+    ],
+    [
+     309,
+     272
+    ],
+    [
+     309,
+     253
     ]
    ]
   ]
