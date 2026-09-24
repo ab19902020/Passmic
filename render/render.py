@@ -95,6 +95,14 @@ def _build_rig(sp, arms):
     cs_, _ = cv2.findContours(hull, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE); hull = np.zeros_like(torso)
     cv2.drawContours(hull, cs_, -1, 1, -1)
     hull &= (a > 128).astype(np.uint8)
+    # a hole is body only if torso lies on both sides of it (left+right or above+below): an arm crossing the
+    # chest is enclosed, a fist raised beside the head is not (that is air)
+    hsv0 = cv2.cvtColor(np.clip(body[..., :3] * 255 / np.maximum(a[..., None], 1), 0, 255).astype(np.uint8), cv2.COLOR_BGR2HSV)
+    skin0 = cv2.dilate(((hsv0[..., 1] > 55) & (hsv0[..., 2] > 110) & (hsv0[..., 0] < 35)).astype(np.uint8), np.ones((5, 5), np.uint8))
+    tb = torso.astype(bool) & (skin0 == 0)  # bits of hand outside the traced polygon are not torso
+    lr = np.maximum.accumulate(tb, 1) & np.maximum.accumulate(tb[:, ::-1], 1)[:, ::-1]
+    ud = np.maximum.accumulate(tb, 0) & np.maximum.accumulate(tb[::-1], 0)[::-1]
+    hull &= (lr | ud).astype(np.uint8)
     rgb = np.clip(body[..., :3] * 255 / np.maximum(a[..., None], 1), 0, 255).astype(np.uint8)
     hsv = cv2.cvtColor(rgb, cv2.COLOR_BGR2HSV)
     skinish = ((hsv[..., 1] > 55) & (hsv[..., 2] > 110) & (hsv[..., 0] < 35)).astype(np.uint8)  # skin, hands, beer
@@ -131,8 +139,16 @@ def _build_rig(sp, arms):
         amf = cv2.GaussianBlur(am.astype(np.float32), (0, 0), 0.7)
         img = body * amf[..., None]
         amr = cv2.GaussianBlur(cv2.dilate(am, np.ones((5, 5), np.uint8)).astype(np.float32), (0, 0), 0.7)  # remove the arm's edge fully (no ghost outline)
+        if arm.get('mode', 'skin') == 'skin':
+            # dark off-torso scraps behind a raised fist (not arm, not body) would show once the fist moves: drop them
+            junk = (pm & offtorso & (skinish == 0)).astype(np.float32) * (d > d0 + 0.2 * (L - d0))
+            img = img * (1 - junk[..., None])
+            amr = np.maximum(amr, cv2.GaussianBlur(junk, (0, 0), 0.7))
         rem_all = np.maximum(rem_all, amr * _smooth01(w / 0.1))
-        if arm.get('mode', 'skin') == 'skin': fz = hull_dil  # a bare elbow's surroundings are body too
+        if arm.get('mode', 'skin') == 'skin':
+            # only where the arm lay over the torso (plus a small band at the joint) is body; beside a raised
+            # fist it is air, so nothing is painted there
+            fz = hull | (hull_dil & (d < d0 + 0.22 * (L - d0)).astype(np.uint8) & (lr | ud).astype(np.uint8))
         else: fz = hull & (d < d0 + 0.3 * (L - d0)).astype(np.uint8)  # raised arms: only the shoulder is body, the rest is air
         fill_all = np.maximum(fill_all, amr * _smooth01(w / 0.1) * cv2.GaussianBlur(fz.astype(np.float32), (0, 0), 0.8))
         out.append(dict(img=img, w=w, pivot=(float(pv[0]), float(pv[1])), side=arm['side'], rng=arm.get('range', 1.0), poly=poly, L=L))

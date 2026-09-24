@@ -721,7 +721,8 @@
      300
     ]
    ],
-   "mode": "skin"
+   "mode": "skin",
+   "range": 0.7
   }
  ],
  "keane2": [
@@ -791,7 +792,8 @@
      380
     ]
    ],
-   "mode": "skin"
+   "mode": "skin",
+   "range": 0.7
   }
  ],
  "keane5": [
@@ -869,7 +871,8 @@
      160
     ]
    ],
-   "mode": "skin"
+   "mode": "skin",
+   "range": 0.7
   }
  ],
  "keane4": [
@@ -905,7 +908,8 @@
      160
     ]
    ],
-   "mode": "skin"
+   "mode": "skin",
+   "range": 0.7
   },
   {
    "side": "L",
