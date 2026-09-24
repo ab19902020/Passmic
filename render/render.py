@@ -6,8 +6,10 @@ from PIL import Image, ImageDraw, ImageFont
 
 A = ASSETS + ''
 OUTD = OUTDIR + ''
-OW, OH = 1280, 720
-FPS = 24
+RS = float(_os.environ.get('PASSMIC_SCALE', '1'))        # render scale: 1 = 1280x720, 1.5 = 1080p, 3 = 4K
+OUT_FPS = float(_os.environ.get('PASSMIC_FPS', '24'))     # output frame rate (motion is continuous in time)
+OW, OH = int(round(1280 * RS)), int(round(720 * RS))
+FPS = 24  # rate of the analysis data (audio features, mouth curve)
 BPM, PH, DUR = 145.0947, 0.15507, 225.54
 P = 60 / BPM
 beatT = lambda n: PH + n * P
@@ -27,7 +29,9 @@ def hsh(n):
 
 feat = np.load(DATA + '/audio_feat.npz')
 VOC, EN = feat['voc'], feat['en']
-def fval(arr, t): return float(arr[int(clamp(t * FPS, 0, len(arr) - 1))])
+def fval(arr, t):
+    x = clamp(t * FPS, 0, len(arr) - 1.001); i = int(x); f = x - i
+    return float(arr[i] * (1 - f) + arr[i + 1] * f)
 
 meta = json.load(open(f'{A}/meta.json'))
 def rgba(path):
@@ -217,8 +221,7 @@ _MC = np.load(DATA + '/mouth_curve.npz'); MOPEN, MWID = _MC['open'], _MC['width'
 MWHO = _MC['who'] if 'who' in _MC else np.full(len(MOPEN), 2, np.int8)
 WHO_ID = {3: 'nev', 4: 'carra', 5: 'keane'}
 def mouth_val(t, cid_or_i, amp):
-    f = int(clamp(t * FPS, 0, len(MOPEN) - 1))
-    return float(MOPEN[f]) * amp
+    return fval(MOPEN, t) * amp
 def solo_voice(t, lead):
     """The one pundit voicing the vocal at t (None for choruses/instrumental)."""
     w = int(MWHO[int(clamp(t * FPS, 0, len(MWHO) - 1))])
@@ -239,7 +242,7 @@ def voice_amp(t, cid, lead):
     if w == 1: return 1.0 if cid == lead else 0.0
     if w == 2: return 1.0 if cid == lead else 0.85
     return 1.0 if WHO_ID.get(w) == cid else 0.0
-def mouth_w(t): return float(MWID[int(clamp(t * FPS, 0, len(MWID) - 1))])
+def mouth_w(t): return fval(MWID, t)
 for n_, (ux_, uy_) in {'nev1': (1290, 335), 'nev2': (1082, 300), 'nev5': (1253, 447), 'nev4': (1224, 456)}.items(): SPR[n_]['up'] = (ux_ - SPR[n_]['x0'], uy_ - SPR[n_]['y0'])
 
 plate = cv2.imread(f'{A}/plate_rows.png').astype(np.float32)
@@ -391,10 +394,41 @@ def block_moves(s, bs):
     if hsh(int(bs * 7 + 3)) < 0.45 or pool[i0] == 'swap': return {c: pool[i0] for c in IDS}
     alt = lambda j: pool[j % len(pool)] if pool[j % len(pool)] != 'swap' else pool[(j + 1) % len(pool)]
     return {c: (alt(i0) if k == 1 else alt(i0 + k * 2 + 1)) for k, c in enumerate(IDS)}
+# Breakdance breaks: toprock, then windmills (Carra, Keane) and a headspin (Gary), an upside-down freeze,
+# and a flip back onto their feet. (start beat; each break is 12 beats)
+BREAKS = (356, 500)   # "Anger creates engagement..." in verse 3 (synthwave) and in the final chorus (pitch)
+def break_u(b):
+    for b0 in BREAKS:
+        if b0 <= b < b0 + 12: return b - b0
+    return None
+def breakdance(cid, u, p):
+    ci = CI[cid]; hop = abs(math.sin(math.pi * u)); dip = ((1 + math.cos(2 * math.pi * u)) / 2) ** 1.6
+    hc = 0.5 * (HEAD_H[cid] + 150)                     # foot -> body centre (source px)
+    if u < 4:                                           # toprock: crossing side-steps
+        p.update(pose=[1, 2][int(u / 2) % 2], x=55 * math.sin(math.pi * u) * (1 if ci % 2 else -1), y=16 * hop,
+                 roll=0.09 * math.sin(math.pi * u), sy=1 - 0.04 * dip, sx=1 + 0.02 * dip, hr=0.1 * math.sin(math.pi * u))
+        return p
+    if cid == 'nev':                                    # headspin
+        th = math.pi * ease(clamp((u - 4) / 0.75))
+        if u >= 11.5: th = math.pi + math.pi * ease(clamp((u - 11.5) / 0.5))
+        sx = 1.0 if u < 4.75 or u >= 10 else 0.2 + 0.8 * abs(math.cos(2 * math.pi * 1.25 * (u - 4.75)))
+        pz = 1 if 4.75 <= u < 10 else 2
+    else:                                               # windmill: two full turns, then the freeze
+        d_ = 1 if cid == 'carra' else -1; st = 4 if cid == 'carra' else 4.5
+        th = d_ * 4 * math.pi * ease(clamp((u - st) / (10 - st)))
+        if u >= 10: th = d_ * (4 * math.pi + math.pi * ease(clamp((u - 10) / 0.5)) + (math.pi * ease(clamp((u - 11.5) / 0.5)) if u >= 11.5 else 0))
+        sx = 1.0; pz = 1 if u < 10 else 2
+    if 10 <= u < 11.5: pz = 2                           # freeze
+    low = smooth(clamp((u - 4) / 0.6)) * (1 - smooth(clamp((u - 11.4) / 0.6)))
+    Hc = hc * (1 - 0.12 * low)
+    sz = 1 - 0.14 * low * (1 if 4.8 < u < 9.8 else 0.4)          # a touch smaller mid-spin so the three overlap less
+    p.update(pose=pz, roll=th, x=-math.sin(th) * hc * sz, y=Hc * sz - math.cos(th) * hc * sz, sx=sx * sz, sy=sz, hr=0.0, hy=0.0)
+    return p
 def move_for(cid, b):
     s = section(b); f = featured(b)
     # Recovered Work-mode upgrade: deliberately awkward Inbetweeners-style
     # trio routine near the start, with a short callback in the build.
+    if break_u(b) is not None: return 'breakdance'
     if 16 <= b < 32 or 368 <= b < 376:
         return {'nev': 'inbet_nev', 'carra': 'inbet_carra', 'keane': 'inbet_keane'}[cid]
     if s == 'intro': return 'standby'
@@ -408,6 +442,7 @@ def pose(cid, move, b, k, t):
     dip = ((1 + math.cos(2 * math.pi * b)) / 2) ** 1.6
     sw = math.sin(math.pi * b); hop = abs(sw); br = math.sin(t * 2.1 + ci * 1.7) * 0.006
     if move == 'standby': p.update(sy=1 + br, hr=0.03 * math.sin(t * 0.9 + ci))
+    elif move == 'breakdance': return breakdance(cid, break_u(b), p)
     elif move == 'inbet_nev':
         # Gary: stiff side shuffle, knee dip and over-confident arm-swing pose changes.
         q = math.sin(math.pi * b); q2 = math.sin(2 * math.pi * b)
@@ -495,11 +530,11 @@ def pose_at(cid, b, k, t):
     if back:
         q = pose(cid, move_for(cid, b - back), b, k, t); w = smooth(back / 0.5)
         p = {kk: ((p[kk] if w >= 0.5 else q[kk]) if kk == 'pose' else lerp(q[kk], p[kk], w)) for kk in p}
-    if m not in ('standby', 'finalpose', 'crouch', 'jump') and not back:
+    if m not in ('standby', 'finalpose', 'crouch', 'jump', 'breakdance') and not back:
         q_ = 2 if section(b) in HOT_SECTIONS else 4  # hold each drawn pose for 2 (choruses) or 4 beats
         p['pose'] = pose(cid, m, math.floor(b / q_) * q_ + 0.01, k, t)['pose']
     # verses move less than choruses: calmer verses, and the choruses feel bigger
-    amt = 1.0 if section(b) in HOT_SECTIONS or m in ('jump', 'crouch') else 0.68
+    amt = 1.0 if section(b) in HOT_SECTIONS or m in ('jump', 'crouch', 'breakdance') else 0.68
     if amt < 1:
         for kk in ('x', 'y', 'roll', 'hr', 'hy'): p[kk] *= amt
         p['sx'] = 1 + (p['sx'] - 1) * amt; p['sy'] = 1 + (p['sy'] - 1) * amt
@@ -565,7 +600,7 @@ EDL = [
     (137.15, 'mid', 'nev'),   # One bad game - emergency
     (140.43, 'close', 'nev'),  # Two bad games - catastrophe
     (143.46, 'close', 'nev'),  # Gary on the thumbnail looking absolutely stunned
-    (146.73, 'push', 'nev'),  # Anger creates engagement...
+    (146.73, 'wide', 'nev'),  # Anger creates engagement... (breakdance)
     (151.84, 'group', 'nev'),  # And watch those numbers run (sofa dance callback)
     # Comedy breakdown: whoever speaks
     (155.19, 'close', 'nev'),  # Gary: "They've lost the dressing room."
@@ -590,8 +625,8 @@ EDL = [
     (199.79, 'group', 'nev'),  # Sunday-night philosopher
     (202.64, 'champ', 'nev'),  # Pour another champagne, Gaz
     (204.73, 'mgr', 'nev'),   # We know how this will end
-    (206.41, 'wide', 'nev'),  # Anger creates engagement
-    (210.56, 'group', 'nev'),  # So we'll see you next weekend
+    (206.41, 'wide', 'nev'),  # Anger creates engagement (breakdance)
+    (211.9, 'group', 'nev'),  # So we'll see you next weekend
     # Outro (spoken)
     (214.79, 'close', 'nev'),  # "Serious questions need answering."
     (220.05, 'close', 'carra'),  # Gary...
@@ -626,7 +661,8 @@ def cam_anchor(cid, t):
     c = CAST[CI[cid]]; k = fval(EN, t); xs = 0.0
     for j in range(6):
         tj = t - j * 0.1; p_ = pose_at(cid, (tj - PH) / P, k, tj)
-        xs += p_['x'] + math.sin(p_['roll']) * HEAD_H[cid] * 0.9  # the lean moves the head sideways
+        if break_u((tj - PH) / P) is None:  # (breakdance spins stay centred: the camera doesn't follow them)
+            xs += p_['x'] + math.sin(p_['roll']) * HEAD_H[cid] * 0.9  # the lean moves the head sideways
     return c['foot'][0] + xs / 6, c['foot'][1] - HEAD_H[cid]
 
 def aff(scale_x, scale_y, rot, px, py, tx, ty):
@@ -877,9 +913,9 @@ def _render(t, force=None, shot=None, scene_=None):
      fl = cv2.warpPerspective(tex, Mc @ H_FLOOR, (OW, OH), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
      fmask = np.zeros((OH, OW), np.float32)
      cv2.fillPoly(fmask, [np.array([to_out(x, y) for x, y in FLOOR_POLY], np.int32)], 1.0)
-     fmask = cv2.GaussianBlur(fmask, (0, 0), 3 * z)[..., None]
+     fmask = cv2.GaussianBlur(fmask, (0, 0), 3 * z * RS)[..., None]
      frame = frame * (1 - fmask) + (np.array([26, 12, 20], np.float32) + fl) * fmask
-     frame += cv2.GaussianBlur(cv2.resize(fl, (OW // 4, OH // 4)), (0, 0), 4).repeat(4, 0).repeat(4, 1)[:OH, :OW] * fmask * 0.35
+     frame += cv2.GaussianBlur(cv2.resize(fl, (OW // 4, OH // 4)), (0, 0), 4 * RS).repeat(4, 0).repeat(4, 1)[:OH, :OW] * fmask * 0.35
     else:
      Mc = np.array([[sc, 0, OW / 2 - cx * sc], [0, sc, OH / 2 - cy * sc], [0, 0, 1]], np.float64)
      if scene == 'grid':
@@ -887,7 +923,7 @@ def _render(t, force=None, shot=None, scene_=None):
         for gy in range(-64, GT_H + 64, 64): cv2.line(gt, (0, gy + off), (GT_W, gy + off), (255, 200, 60) if (gy // 64) % 2 else (255, 60, 220), 3, cv2.LINE_AA)
         fl = cv2.warpPerspective(gt, Mc @ H_GRID, (OW, OH), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
         fl *= 0.8 + 0.4 * dip
-        frame += fl + cv2.resize(cv2.GaussianBlur(cv2.resize(fl, (OW // 4, OH // 4)), (0, 0), 3), (OW, OH)) * 0.9
+        frame += fl + cv2.resize(cv2.GaussianBlur(cv2.resize(fl, (OW // 4, OH // 4)), (0, 0), 3 * RS), (OW, OH)) * 0.9
      else:
         pv = cv2.warpPerspective(PITCH_TEX, Mc @ H_PITCH, (OW, OH), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0))
         pm_ = cv2.warpPerspective(np.ones((PT_H, PT_W), np.float32), Mc @ H_PITCH, (OW, OH), flags=cv2.INTER_NEAREST)[..., None]
@@ -898,7 +934,7 @@ def _render(t, force=None, shot=None, scene_=None):
         ox, oy = to_out(ch['fx'], ch['fy'])
         r = 190 * sc * max(0.45, 1 - ch['lift'] / 420) / 2
         cv2.ellipse(shm, (int(ox / 2), int(oy / 2 - 2)), (max(1, int(r)), max(1, int(r * 0.2))), 0, 0, 360, 1, -1)
-    shm = cv2.resize(cv2.GaussianBlur(shm, (0, 0), 4), (OW, OH))[..., None]
+    shm = cv2.resize(cv2.GaussianBlur(shm, (0, 0), 4 * RS), (OW, OH))[..., None]
     frame *= 1 - 0.6 * shm
 
     add = np.zeros((OH // 2, OW // 2, 3), np.float32)
@@ -927,15 +963,15 @@ def _render(t, force=None, shot=None, scene_=None):
             ox, oy = to_out(1183 + math.cos(a0) * rr * 1.3, 84 + abs(math.sin(a0 * 0.7 + i)) * rr * 0.75)
             if 0 <= ox < OW and 0 <= oy < OH:
                 tw = (0.5 + 0.5 * math.sin(t * 7 + i)) * L['back']
-                cv2.circle(add, (int(ox / 2), int(oy / 2)), 2, (230 * tw, 230 * tw, 255 * tw), -1, cv2.LINE_AA)
+                cv2.circle(add, (int(ox / 2), int(oy / 2)), max(1, int(round(2 * RS))), (230 * tw, 230 * tw, 255 * tw), -1, cv2.LINE_AA)
     bx, by = to_out(1183, 90)
     for i in range(5 if scene == 'studio' else 0):
         q = int(t * 2.5)
         if hsh(q * 5 + i) > 0.6:
             px = bx + (hsh(q * 7 + i) - 0.5) * 220 * sc; py = by + (hsh(q * 11 + i) - 0.5) * 150 * sc; L2 = 36 * sc
-            cv2.line(add, (int((px - L2) / 2), int(py / 2)), (int((px + L2) / 2), int(py / 2)), (255, 255, 255), 1, cv2.LINE_AA)
-            cv2.line(add, (int(px / 2), int((py - L2) / 2)), (int(px / 2), int((py + L2) / 2)), (255, 255, 255), 1, cv2.LINE_AA)
-    frame += cv2.resize(cv2.GaussianBlur(add, (0, 0), 1.2), (OW, OH))
+            cv2.line(add, (int((px - L2) / 2), int(py / 2)), (int((px + L2) / 2), int(py / 2)), (255, 255, 255), max(1, int(RS)), cv2.LINE_AA)
+            cv2.line(add, (int(px / 2), int((py - L2) / 2)), (int(px / 2), int((py + L2) / 2)), (255, 255, 255), max(1, int(RS)), cv2.LINE_AA)
+    frame += cv2.resize(cv2.GaussianBlur(add, (0, 0), 1.2 * RS), (OW, OH))
 
     def draw_char(dst, cid, refl=None):
         ch = chars[cid]
@@ -1027,7 +1063,7 @@ def _render(t, force=None, shot=None, scene_=None):
                     colp = (235, 250, 255) if i_ % 3 else (150, 220, 255)
                     cv2.circle(spray, (int(ox_), int(oy_)), r_, colp, -1, cv2.LINE_AA); cv2.circle(sa_, (int(ox_), int(oy_)), r_, 0.85 * (1 - ag / life), -1, cv2.LINE_AA)
             if sa_.max() > 0:
-                sa_ = cv2.GaussianBlur(sa_, (0, 0), 1.0)[..., None]; spray = cv2.GaussianBlur(spray, (0, 0), 1.0)
+                sa_ = cv2.GaussianBlur(sa_, (0, 0), RS)[..., None]; spray = cv2.GaussianBlur(spray, (0, 0), RS)
                 frame = frame * (1 - sa_) + spray * sa_
     if ms.get('fly'):
         (eb, fr, to) = ms['fly']; u2 = clamp(ms['u'])
@@ -1042,7 +1078,7 @@ def _render(t, force=None, shot=None, scene_=None):
             px_ += 10 * sc * math.sin(j * 2.1 + t * 20); py_ += 10 * sc * math.cos(j * 1.7 + t * 17)
             fade_ = (1 - j / 15) ** 1.3
             cv2.circle(tr_, (int(px_ / 2), int(py_ / 2)), max(2, int((16 - j * 0.7) * sc)), tuple(float(v) * fade_ for v in PAL[j % 5]), -1, cv2.LINE_AA)
-        frame += cv2.resize(cv2.GaussianBlur(tr_, (0, 0), 2.5), (OW, OH)) * 2.4
+        frame += cv2.resize(cv2.GaussianBlur(tr_, (0, 0), 2.5 * RS), (OW, OH)) * 2.4
         draw_sprite(frame, MIC, aff(sc * 0.9, sc * 0.9, u2 * math.pi * 4, 30, 95, mox, moy))
 
     for bt in [beatT(x) for x in (FINAL_B, BIG_B, CH1_B)]:
@@ -1057,14 +1093,14 @@ def _render(t, force=None, shot=None, scene_=None):
                     if y > SH + 40: continue
                     ox, oy = to_out(x, y)
                     if not (-20 < ox < OW + 20 and -20 < oy < OH + 20): continue
-                    ang = a * (3 + r1 * 4) + i; w_ = 7 * z; h_ = 11 * z * abs(math.cos(a * (2 + r2 * 3) + i)) + 1
+                    ang = a * (3 + r1 * 4) + i; w_ = 7 * z * RS; h_ = 11 * z * RS * abs(math.cos(a * (2 + r2 * 3) + i)) + 1
                     ca, sa = math.cos(ang), math.sin(ang)
                     pts = np.array([[ox + ca * dx - sa * dy, oy + sa * dx + ca * dy] for dx, dy in ((-w_, -h_), (w_, -h_), (w_, h_), (-w_, h_))], np.int32)
                     cv2.fillConvexPoly(frame, pts, [(255, 62, 165), (25, 227, 214), (39, 182, 255), (255, 255, 255), (255, 92, 139)][i % 5], cv2.LINE_AA)
             break
 
     br_ = np.clip(frame - 215, 0, None)
-    frame += cv2.resize(cv2.GaussianBlur(cv2.resize(br_, (OW // 4, OH // 4), interpolation=cv2.INTER_AREA), (0, 0), 5), (OW, OH)) * 0.35
+    frame += cv2.resize(cv2.GaussianBlur(cv2.resize(br_, (OW // 4, OH // 4), interpolation=cv2.INTER_AREA), (0, 0), 5 * RS), (OW, OH)) * 0.35
     frame *= VIGNETTE
     fl_ = 0.0
     for bt in (CH1_B, BIG_B, FINAL_B):  # a soft flash where the choruses hit
@@ -1099,4 +1135,4 @@ if __name__ == '__main__':
         print('ms/frame', round((time.time() - t0) / 12 * 1000))
     elif sys.argv[1] == 'raw':
         f0, f1 = int(sys.argv[2]), int(sys.argv[3]); out = sys.stdout.buffer
-        for f in range(f0, f1): out.write(render(f / FPS).tobytes())
+        for f in range(f0, f1): out.write(render(f / OUT_FPS).tobytes())

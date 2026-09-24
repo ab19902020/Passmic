@@ -8,7 +8,8 @@ Everything is rendered offline with Python + OpenCV, then encoded with ffmpeg:
 ```bash
 pip install -r requirements.txt          # plus ffmpeg on PATH (auto-installed in Claude Code web sessions)
 python3 render/render.py test 62 150      # writes out/f_62.jpg, out/f_150.jpg (single frames)
-bash render/run.sh                        # full render -> out/pass_mic.mp4 (parallel over all cores, resumable)
+bash render/run.sh                        # full render -> out/pass_mic.mp4 (1080p 24 fps, parallel over all cores, resumable)
+QUALITY=4k60 bash render/run.sh           # native 3840x2160 at 60 fps -> out/pass_mic_4k60.mp4 (see below)
 ```
 
 ## Layout
@@ -35,8 +36,12 @@ Pose choice lives in `pose()` in `render.py` (`pose=0..3`).
 - Drawn poses are held for 2 beats (choruses) or 4 beats (verses) and dissolve into each other over 3 frames, so the cut-outs don't flicker between drawings.
 - Nothing is written on screen: no lyrics, captions, name cards or titles. The only text is what's painted in the original artwork.
 - Pundits blink (`BLINKS`), and when one pundit sings or speaks a solo line the other two tilt their heads towards him (`listen_dir`). In single close-ups the others are dimmed slightly.
+- `BREAKS`: two breakdance breaks on "Anger creates engagement…" (verse 3 on the synthwave stage, and the final chorus on the pitch). The moves are toprock, then windmills (Carra, Keane) and a headspin (Gary), an upside-down freeze, and a flip back onto their feet.
 - An awkward Inbetweeners-style trio dance (`inbet_*` moves) plays in the reveal (beats 16-32), with a callback at beats 368-376.
 - Polish: glossy floor reflections (studio/grid), an LED board of moving light (no text) on the pitch rail, and a sparkle trail on mic tosses.
+
+## 4K 60 fps
+`QUALITY=4k60 bash render/run.sh` renders every frame natively at 3840x2160 (`PASSMIC_SCALE=3`) and at 60 fps (`PASSMIC_FPS=60`). Motion, camera and lip sync are computed from continuous time, so the extra frames are real in-betweens, not duplicates. It costs about 5 s per frame per CPU core, so the 13,533 frames take about 19 CPU-hours: roughly 2.5 h on an 8-core machine, 1.2 h on 16 cores. Each job needs about 2 GB of RAM, so use `JOBS=n` to limit it. Segments resume if interrupted. `QUALITY=1080p60` is a quicker middle ground (about 4x faster). The output is about 1-2 GB.
 
 ## Checking changes
 `python3 tools/contact_sheet.py 0.5 225 3 out/sheet.jpg` renders a labelled thumbnail every 3 s (time, beat, section, shot) across all cores. It's the fastest way to review the whole video.
