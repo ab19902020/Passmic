@@ -341,6 +341,10 @@ def block_moves(s, bs):
     return {c: (alt(i0) if k == 1 else alt(i0 + k * 2 + 1)) for k, c in enumerate(IDS)}
 def move_for(cid, b):
     s = section(b); f = featured(b)
+    # Recovered Work-mode upgrade: deliberately awkward Inbetweeners-style
+    # trio routine near the start, with a short callback in the build.
+    if 16 <= b < 32 or 368 <= b < 376:
+        return {'nev': 'inbet_nev', 'carra': 'inbet_carra', 'keane': 'inbet_keane'}[cid]
     if s == 'intro': return 'standby'
     if s == 'freeze': return 'pose'
     if s == 'drop': return 'crouch'
@@ -355,6 +359,24 @@ def pose(cid, move, b, k, t):
     dip = ((1 + math.cos(2 * math.pi * b)) / 2) ** 1.6
     sw = math.sin(math.pi * b); hop = abs(sw); br = math.sin(t * 2.1 + ci * 1.7) * 0.006
     if move == 'standby': p.update(sy=1 + br, hr=0.03 * math.sin(t * 0.9 + ci))
+    elif move == 'inbet_nev':
+        # Gary: stiff side shuffle, knee dip and over-confident arm-swing pose changes.
+        q = math.sin(math.pi * b); q2 = math.sin(2 * math.pi * b)
+        p.update(pose=[1, 3, 1, 2][int(b * 2) % 4], x=72 * math.sin(math.pi * b / 2),
+                 y=18 * abs(q), roll=0.075 * q2, hr=-0.11 * q,
+                 sy=0.94 + 0.06 * abs(q), sx=1.04 - 0.03 * abs(q))
+    elif move == 'inbet_carra':
+        # Carra: intentionally over-enthusiastic shoulder/hip shuffle.
+        q = math.sin(math.pi * (b + 0.33)); q2 = math.sin(2 * math.pi * b + 1.1)
+        p.update(pose=[2, 0, 3, 0][int(b * 2 + 1) % 4], x=-58 * math.sin(math.pi * b / 2),
+                 y=11 * abs(q2), roll=-0.095 * q, hr=0.14 * q2,
+                 sy=0.96 - 0.035 * abs(q), sx=1.03 + 0.025 * abs(q))
+    elif move == 'inbet_keane':
+        # Roy: reluctant deadpan version of the same routine, half a beat late.
+        q = math.sin(math.pi * (b - 0.5)); q2 = math.sin(2 * math.pi * (b - 0.5))
+        p.update(pose=[0, 3, 0, 2][int((b - 0.5) * 2) % 4], x=34 * math.sin(math.pi * b / 2),
+                 y=7 * abs(q), roll=0.045 * q, hr=-0.055 * q2,
+                 sy=0.98 - 0.02 * abs(q), sx=1.015)
     elif move == 'bounce': p.update(pose=[0, 2, 1, 3][int(b / 2 + ci * 0.5) % 4], y=(18 + 34 * k) * hop, sy=1 - 0.05 * dip, sx=1 + 0.03 * dip, roll=0.035 * sw, hr=0.08 * sw, hy=6 * dip)
     elif move == 'step':
         q = math.sin(math.pi * b / 2)
@@ -929,6 +951,22 @@ def render(t, force=None):
         ab_ = int(round(6 * k * spike(b, 10)))
         if ab_ >= 1:
             frame[:, ab_:, 2] = frame[:, :-ab_, 2].copy(); frame[:, :-ab_, 0] = frame[:, ab_:, 0].copy()
+    # Recovered lyric-matched comedy beats from the unfinished Work session.
+    # Keep these short so they punctuate rather than cover the existing video.
+    gag = None
+    if 88.0 <= t < 90.4: gag = ('TACTICS BOARD: PASS IT, GARY!', (255, 243, 226))
+    elif 126.0 <= t < 128.4: gag = ('FIXED IT FROM YOUR PHONE', (226, 243, 255))
+    elif 151.0 <= t < 153.0: gag = ('ROY IS NOT IMPRESSED.', (255, 243, 226))
+    elif 173.0 <= t < 175.5: gag = ('SOFA SHUFFLE', (226, 243, 255))
+    if gag:
+        gt_ = text_rgba(gag[0], 38, gag[1])
+        ga_ = min(smooth((t % 1000 - math.floor(t % 1000)) / 0.15), 1.0)
+        gx_ = max(20, (OW - gt_.shape[1]) // 2)
+        gy_ = 42
+        # dark translucent backing keeps the joke readable without replacing the scene
+        x1_ = min(OW - 10, gx_ + gt_.shape[1] + 20)
+        cv2.rectangle(frame, (max(10, gx_ - 20), gy_ - 12), (x1_, gy_ + gt_.shape[0] + 10), (18, 8, 24), -1)
+        blend_into(frame, gt_, gx_, gy_)
     br_ = np.clip(frame - 215, 0, None)
     frame += cv2.resize(cv2.GaussianBlur(cv2.resize(br_, (OW // 4, OH // 4), interpolation=cv2.INTER_AREA), (0, 0), 5), (OW, OH)) * 0.35
     frame *= VIGNETTE
