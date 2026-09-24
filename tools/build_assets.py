@@ -3,7 +3,8 @@ ROOT = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
 ASSETS = _os.path.join(ROOT, 'assets'); MASKS = _os.path.join(ROOT, 'masks'); DATA = _os.path.join(ROOT, 'data'); SOURCE = _os.path.join(ROOT, 'source'); OUTDIR = _os.path.join(ROOT, 'out'); TOOLS = _os.path.join(ROOT, 'tools')
 import cv2, numpy as np, json, sys
 sys.path.insert(0,TOOLS); from heads import HEADS
-CLEAN=json.load(open(f'{MASKS}/clean.json'))  # {sprite: [polygon in sprite-local px, ...]}
+CLEAN=json.load(open(f'{MASKS}/clean.json'))  # hand-cleanup polygons in sprite-local px
+RIG=json.load(open(f'{MASKS}/rig.json'))      # arm polygons also protect hands from being captured by the head split
 C=MASKS; OUT=ASSETS
 imgs={k:cv2.imread(f'{SOURCE}/{k}.png') for k in ('18306','18307','18346','18349')}
 masks={n:cv2.imread(f'{C}/maskc_{n}.png',0) for n in HEADS}
@@ -39,12 +40,24 @@ for n,(iid,cx,cy,rx,ry,nx,ny) in HEADS.items():
     hm=np.zeros((H,W),np.uint8)
     k={'carra2':1.04,'nev1':1.22,'nev2':1.32,'nev5':1.32,'nev4':1.32}.get(n,1.16)
     cv2.ellipse(hm,(cx-x0,cy-y0),(int(rx*k),int(ry*k)),0,0,360,255,-1)
-    hm[(ny+4-y0):,:]=0
+    # Carra's old split ended too high: the bottom of his beard/chin stayed on the body layer and
+    # appeared to be sliced off whenever his head rotated. Give all four Carra drawings a deeper
+    # head tail; the later neck/collar fill still hides the seam underneath.
+    head_tail=int(0.16*ry) if n.startswith('carra') else 4
+    hm[(ny+head_tail-y0):,:]=0
     EXCL={'nev1':('x>',1218),'nev2':('x<',1138),'nev5':('x>',1188),'nev4':('x>',1150)}
     if n in EXCL:
         op,v=EXCL[n]; xx=np.arange(W)[None,:]+x0
         hm[np.broadcast_to((xx>v) if op=='x>' else (xx<v),hm.shape)]=0
     hm=cv2.bitwise_and(hm,mm)
+    # Gary's raised/pointing hands can enter the broad face ellipse in some drawings. They must
+    # remain on the body/arm layer, otherwise they move with his head. Subtract the traced arm
+    # polygons before selecting the connected head blob.
+    if n.startswith('nev') and n in RIG:
+        for arm in RIG[n]:
+            am=np.zeros((H,W),np.uint8)
+            cv2.fillPoly(am,[np.array(arm['poly'],np.int32)],255)
+            hm[am>0]=0
     # drop stray bits of the head mask not connected to the main blob
     nn,lab,st,_=cv2.connectedComponentsWithStats(hm,8)
     if nn>1: big=1+np.argmax(st[1:,cv2.CC_STAT_AREA]); hm=np.where(lab==big,255,0).astype(np.uint8)
