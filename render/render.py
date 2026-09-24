@@ -285,62 +285,6 @@ def blend_into(dst, src, x, y):
     if X1 <= X0 or Y1 <= Y0: return
     s = src[Y0 - y:Y1 - y, X0 - x:X1 - x]; a = s[..., 3:4] / 255
     dst[Y0:Y1, X0:X1] = dst[Y0:Y1, X0:X1] * (1 - a) + s[..., :3] if dst.shape[2] == 3 else dst[Y0:Y1, X0:X1] * (1 - a) + s
-def logo_rgba(col, h):
-    src = cv2.imread(SOURCE + '/18307.png')[18:282, 168:410].astype(np.float32)
-    a = np.clip((src.mean(2) - 115) / 75, 0, 1); a[258:] = 0
-    a = cv2.GaussianBlur(a, (0, 0), 0.6)
-    w = int(a.shape[1] * h / a.shape[0]); a = cv2.resize(a, (w, h), interpolation=cv2.INTER_AREA)
-    out = np.zeros((h, w, 4), np.float32); out[..., 3] = a * 255
-    for i in range(3): out[..., i] = col[i] * a
-    return out
-def text_rgba(txt, size, col, font=FONTS + '/Poppins-Bold.ttf'):
-    f = ImageFont.truetype(font, size); bb = f.getbbox(txt)
-    im = Image.new('RGBA', (bb[2] - bb[0] + 20, bb[3] - bb[1] + 20), (0, 0, 0, 0))
-    ImageDraw.Draw(im).text((10 - bb[0], 10 - bb[1]), txt, font=f, fill=col + (255,))
-    return to_bgra(im)
-def title_card():
-    W, H = 900, 640; out = np.zeros((H, W, 4), np.float32)
-    x = None
-    for col, dx, dy in (((139, 62, 255), 12, 12), ((214, 227, 25), -8, -8), ((39, 182, 255), 0, 0)):
-        lg = logo_rgba(col, 470); x = (W - lg.shape[1]) // 2; blend_into(out, lg, x + dx, 20 + dy)
-    tt = text_rgba('Gary, Pass the Microphone', 52, (226, 243, 255), FONTS + '/Poppins-BoldItalic.ttf')
-    blend_into(out, tt, (W - tt.shape[1]) // 2, 530)
-    return out
-def name_card(c):
-    t = text_rgba(c['name'], 92, (20, 10, 30)); w = t.shape[1] + 90; h = 150
-    im = Image.new('RGBA', (w + 40, h + 60), (0, 0, 0, 0)); dr = ImageDraw.Draw(im)
-    rgb = tuple(int(v) for v in c['col'][::-1])
-    dr.polygon([(0, 10), (w, 10), (w - 34, h), (0, h)], fill=rgb + (255,))
-    dr.rectangle((0, h + 6, w + 30, h + 52), fill=(14, 7, 24, 235))
-    a = to_bgra(im); blend_into(a, t, 26, 12)
-    blend_into(a, text_rgba('STICK TO FOOTBALL', 30, (255, 243, 226)), 26, h + 8)
-    return a
-TITLE = title_card()
-# Comedy captions (recovered from the unfinished Work-mode session), re-timed onto the lyric they
-# riff on and drawn as a Stick-to-Football style lower third that slides in and fades out.
-GAGS = [(11.3, 14.3, 'TACTICS BOARD: PASS IT, GARY!', 1),   # "Gary, put the tactics board down, mate."
-        (50.3, 53.7, 'FIXED IT FROM YOUR PHONE', 0),        # "...seventeen times from your phone."
-        (87.0, 89.6, 'ROY IS NOT IMPRESSED.', 2),           # "Keane gives the death stare"
-        (90.6, 93.5, 'SOFA SHUFFLE', 1)]                    # "...quietly shuffles to the side."
-def _gag_card(txt, col):
-    t_ = text_rgba(txt, 44, (255, 246, 236)); tag = text_rgba('STICK TO FOOTBALL', 22, (20, 10, 30))
-    w = t_.shape[1] + 60; h = t_.shape[0] + 16; th = tag.shape[0] + 4
-    im = Image.new('RGBA', (w + 30, th + h), (0, 0, 0, 0)); dr = ImageDraw.Draw(im)
-    rgb = tuple(int(v) for v in col[::-1])
-    dr.polygon([(0, 0), (tag.shape[1] + 30, 0), (tag.shape[1] + 18, th), (0, th)], fill=rgb + (255,))
-    dr.polygon([(0, th), (w + 26, th), (w, th + h), (0, th + h)], fill=(16, 8, 26, 235))
-    dr.rectangle((0, th, 8, th + h), fill=rgb + (255,))
-    a_ = to_bgra(im); blend_into(a_, tag, 10, 0); blend_into(a_, t_, 26, th + 6)
-    return a_
-GAG_CARDS = [_gag_card(txt, CAST[ci]['col']) for (_, _, txt, ci) in GAGS]
-def draw_gags(frame, t):
-    for (g0, g1, _, _), card in zip(GAGS, GAG_CARDS):
-        if g0 <= t < g1:
-            u_in = ease(clamp((t - g0) / 0.35)); u_out = smooth(clamp((g1 - t) / 0.3))
-            x_ = int(lerp(-card.shape[1], 40, u_in)); y_ = OH - card.shape[0] - 46
-            blend_into(frame, card * u_out, x_, y_)
-NAMECARD = {c['id']: name_card(c) for c in CAST}
-
 SCREEN_SRC = {k: cv2.imread(f'{SOURCE}/{k}.png').astype(np.float32) for k in ('18346', '18348', '18349')}
 SCREENS = []
 SCR_X, SCR_Y, SCR_W, SCR_H = 1130, 30, 780, 300
@@ -385,12 +329,9 @@ NEV_UP = {'nev1': (1290, 335), 'nev2': (1082, 300), 'nev5': (1253, 447), 'nev4':
 RAIL_Y, RAIL_H = 585, 90
 TOSS_H = 240  # apex height of the mic toss arc (source px)
 def _led_board():
-    # stadium LED advertising board: scrolling text mask + LED dot mask (source px, tiles horizontally)
-    f = ImageFont.truetype(FONTS + '/Poppins-Bold.ttf', 58); msg = 'STICK TO FOOTBALL   \u2022   '
-    w = int(f.getlength(msg)); im = Image.new('L', (w, RAIL_H), 0)
-    ImageDraw.Draw(im).text((0, RAIL_H // 2), msg, font=f, fill=255, anchor='lm')
-    T = np.array(im, np.float32) / 255
-    yy, xx = np.mgrid[0:RAIL_H, 0:w].astype(np.float32)
+    # stadium LED board: soft light blobs + LED dot mask (no text), tiles horizontally
+    w = 600; yy, xx = np.mgrid[0:RAIL_H, 0:w].astype(np.float32)
+    T = np.clip(0.5 + 0.5 * np.sin(xx / w * 2 * np.pi * 3) * np.cos((yy - RAIL_H / 2) / RAIL_H * np.pi), 0, 1) ** 1.5
     D = np.clip(1.6 - np.hypot((xx % 5) - 2, (yy % 5) - 2) / 1.6, 0.25, 1.0)
     return T, D
 LED_T, LED_D = _led_board()
@@ -401,7 +342,6 @@ def led_strip(xs_src, ys_src, b, t, hot):
     T = LED_T[ty][:, tx][..., None]; D = LED_D[ty][:, tx][..., None]
     blk = int(b // 8)
     fg = np.array(PAL[blk % 5], np.float32); bg = np.array((24, 8, 20), np.float32)
-    if hot and int(b) % 2 == 1: fg, bg = np.array((30, 12, 24), np.float32), np.array(PAL[(blk + 2) % 5], np.float32) * 0.8
     pulse = 0.8 + 0.2 * ((1 + math.cos(2 * math.pi * b)) / 2) ** 2
     return (fg * T + bg * (1 - T)) * D * pulse
 MGSC = {'mgr4': 1.5, 'mgr5': 1.8}
@@ -1123,16 +1063,6 @@ def _render(t, force=None, shot=None, scene_=None):
                     cv2.fillConvexPoly(frame, pts, [(255, 62, 165), (25, 227, 214), (39, 182, 255), (255, 255, 255), (255, 92, 139)][i % 5], cv2.LINE_AA)
             break
 
-    for (s0, s1, cid) in []:
-        if s0 <= b < s1:
-            uu = min(smooth((b - s0) / 1.4), smooth((s1 - b) / 1.4)); nc = NAMECARD[cid]
-            blend_into(frame, nc * uu, int(lerp(-nc.shape[1], 60, ease(uu))), OH - nc.shape[0] - 50)
-    top = 0.0
-    if top > 0.003:
-        st_ = 0.62 * (0.94 + 0.06 * top)
-        tw, th = int(TITLE.shape[1] * st_), int(TITLE.shape[0] * st_)
-        frame *= 1 - 0.35 * top
-        blend_into(frame, cv2.resize(TITLE, (tw, th), interpolation=cv2.INTER_AREA) * top, (OW - tw) // 2, (OH - th) // 2 - 10)
     br_ = np.clip(frame - 215, 0, None)
     frame += cv2.resize(cv2.GaussianBlur(cv2.resize(br_, (OW // 4, OH // 4), interpolation=cv2.INTER_AREA), (0, 0), 5), (OW, OH)) * 0.35
     frame *= VIGNETTE
@@ -1141,7 +1071,6 @@ def _render(t, force=None, shot=None, scene_=None):
         tt = beatT(bt)
         if t >= tt: fl_ = max(fl_, math.exp(-(t - tt) * 6))
     if fl_ > 0.003: frame = frame * (1 - 0.35 * fl_) + 255 * 0.35 * fl_
-    if force is None: draw_gags(frame, t)
     fade = max(1 - smooth(t / 1.4), smooth((t - (DUR - 1.8)) / 1.6))
     if fade > 0.003: frame *= 1 - fade
     return np.clip(frame, 0, 255).astype(np.uint8)

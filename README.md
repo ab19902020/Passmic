@@ -33,10 +33,10 @@ Pose choice lives in `pose()` in `render.py` (`pose=0..3`).
 - `TOSSES`: the mic follows the story. Gary passes it to Carra for Jamie's lines, Carra to Keane for Roy's, Keane back to Gary for the England days, then the outro handoffs. Each pass gets its own two-shot.
 - `GARY`: Gary spotlight + the others lean in. `CHAMP`: champagne pop on each "champagne socialist" line.
 - Drawn poses are held for 2 beats (choruses) or 4 beats (verses) and dissolve into each other over 3 frames, so the cut-outs don't flicker between drawings.
-- No lyrics are drawn on screen. `GAGS` adds four short comedy captions (Stick-to-Football lower thirds) timed to the lyric they riff on.
+- Nothing is written on screen: no lyrics, captions, name cards or titles. The only text is what's painted in the original artwork.
 - Pundits blink (`BLINKS`), and when one pundit sings or speaks a solo line the other two tilt their heads towards him (`listen_dir`). In single close-ups the others are dimmed slightly.
 - An awkward Inbetweeners-style trio dance (`inbet_*` moves) plays in the reveal (beats 16-32), with a callback at beats 368-376.
-- Polish: glossy floor reflections (studio/grid), a scrolling LED board on the pitch rail, and a sparkle trail on mic tosses.
+- Polish: glossy floor reflections (studio/grid), an LED board of moving light (no text) on the pitch rail, and a sparkle trail on mic tosses.
 
 ## Checking changes
 `python3 tools/contact_sheet.py 0.5 225 3 out/sheet.jpg` renders a labelled thumbnail every 3 s (time, beat, section, shot) across all cores. It's the fastest way to review the whole video.
