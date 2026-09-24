@@ -1,0 +1,5 @@
+out/
+*.mp4
+__pycache__/
+data/song22.wav
+data/subs.srt
