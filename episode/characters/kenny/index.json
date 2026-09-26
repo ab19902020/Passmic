@@ -1,0 +1,1582 @@
+{
+ "name": "Kenny McCormick",
+ "sheet": "sheets/kenny.png",
+ "sprites": {
+  "turnaround": {
+   "front": {
+    "label": "FRONT",
+    "file": "characters/kenny/turnaround/front.png",
+    "sheet_rect": [
+     26,
+     72,
+     155,
+     203
+    ],
+    "size": [
+     155,
+     203
+    ],
+    "feet": [
+     78,
+     199
+    ],
+    "center": [
+     77,
+     101
+    ]
+   },
+   "three_quarter_front": {
+    "label": "3/4 FRONT",
+    "file": "characters/kenny/turnaround/three_quarter_front.png",
+    "sheet_rect": [
+     213,
+     79,
+     150,
+     196
+    ],
+    "size": [
+     150,
+     196
+    ],
+    "feet": [
+     74,
+     192
+    ],
+    "center": [
+     74,
+     98
+    ]
+   },
+   "side_left": {
+    "label": "SIDE (LEFT)",
+    "file": "characters/kenny/turnaround/side_left.png",
+    "sheet_rect": [
+     405,
+     74,
+     151,
+     201
+    ],
+    "size": [
+     151,
+     201
+    ],
+    "feet": [
+     80,
+     196
+    ],
+    "center": [
+     78,
+     96
+    ]
+   },
+   "back": {
+    "label": "BACK",
+    "file": "characters/kenny/turnaround/back.png",
+    "sheet_rect": [
+     593,
+     72,
+     150,
+     203
+    ],
+    "size": [
+     150,
+     203
+    ],
+    "feet": [
+     76,
+     199
+    ],
+    "center": [
+     74,
+     101
+    ]
+   },
+   "three_quarter_back": {
+    "label": "3/4 BACK",
+    "file": "characters/kenny/turnaround/three_quarter_back.png",
+    "sheet_rect": [
+     784,
+     72,
+     148,
+     203
+    ],
+    "size": [
+     148,
+     203
+    ],
+    "feet": [
+     74,
+     199
+    ],
+    "center": [
+     73,
+     101
+    ]
+   },
+   "side_right": {
+    "label": "SIDE (RIGHT)",
+    "file": "characters/kenny/turnaround/side_right.png",
+    "sheet_rect": [
+     962,
+     72,
+     146,
+     203
+    ],
+    "size": [
+     146,
+     203
+    ],
+    "feet": [
+     69,
+     199
+    ],
+    "center": [
+     70,
+     95
+    ]
+   }
+  },
+  "head": {
+   "front": {
+    "label": "front",
+    "file": "characters/kenny/head/front.png",
+    "sheet_rect": [
+     1163,
+     84,
+     191,
+     211
+    ],
+    "size": [
+     191,
+     211
+    ],
+    "feet": [
+     92,
+     207
+    ],
+    "center": [
+     95,
+     100
+    ]
+   },
+   "side": {
+    "label": "side",
+    "file": "characters/kenny/head/side.png",
+    "sheet_rect": [
+     1361,
+     83,
+     165,
+     212
+    ],
+    "size": [
+     165,
+     212
+    ],
+    "feet": [
+     82,
+     208
+    ],
+    "center": [
+     82,
+     94
+    ]
+   }
+  },
+  "mouths": {
+   "a_ah": {
+    "label": "A (AH)",
+    "file": "characters/kenny/mouths/a_ah.png",
+    "sheet_rect": [
+     18,
+     327,
+     129,
+     132
+    ],
+    "size": [
+     129,
+     132
+    ],
+    "feet": [
+     65,
+     127
+    ],
+    "center": [
+     64,
+     67
+    ]
+   },
+   "e_eh": {
+    "label": "E (EH)",
+    "file": "characters/kenny/mouths/e_eh.png",
+    "sheet_rect": [
+     167,
+     327,
+     130,
+     132
+    ],
+    "size": [
+     130,
+     132
+    ],
+    "feet": [
+     65,
+     127
+    ],
+    "center": [
+     64,
+     67
+    ]
+   },
+   "i_ee": {
+    "label": "I (EE)",
+    "file": "characters/kenny/mouths/i_ee.png",
+    "sheet_rect": [
+     315,
+     327,
+     130,
+     132
+    ],
+    "size": [
+     130,
+     132
+    ],
+    "feet": [
+     64,
+     127
+    ],
+    "center": [
+     64,
+     67
+    ]
+   },
+   "o_oh": {
+    "label": "O (OH)",
+    "file": "characters/kenny/mouths/o_oh.png",
+    "sheet_rect": [
+     465,
+     327,
+     130,
+     132
+    ],
+    "size": [
+     130,
+     132
+    ],
+    "feet": [
+     64,
+     127
+    ],
+    "center": [
+     64,
+     67
+    ]
+   },
+   "u_oo": {
+    "label": "U (OO)",
+    "file": "characters/kenny/mouths/u_oo.png",
+    "sheet_rect": [
+     619,
+     327,
+     130,
+     132
+    ],
+    "size": [
+     130,
+     132
+    ],
+    "feet": [
+     64,
+     127
+    ],
+    "center": [
+     64,
+     67
+    ]
+   },
+   "m_closed": {
+    "label": "M (CLOSED)",
+    "file": "characters/kenny/mouths/m_closed.png",
+    "sheet_rect": [
+     774,
+     327,
+     131,
+     132
+    ],
+    "size": [
+     131,
+     132
+    ],
+    "feet": [
+     64,
+     127
+    ],
+    "center": [
+     64,
+     68
+    ]
+   },
+   "l_tongue": {
+    "label": "L (TONGUE)",
+    "file": "characters/kenny/mouths/l_tongue.png",
+    "sheet_rect": [
+     923,
+     327,
+     132,
+     132
+    ],
+    "size": [
+     132,
+     132
+    ],
+    "feet": [
+     66,
+     127
+    ],
+    "center": [
+     65,
+     67
+    ]
+   },
+   "f_v": {
+    "label": "F / V",
+    "file": "characters/kenny/mouths/f_v.png",
+    "sheet_rect": [
+     1079,
+     327,
+     132,
+     132
+    ],
+    "size": [
+     132,
+     132
+    ],
+    "feet": [
+     66,
+     127
+    ],
+    "center": [
+     66,
+     67
+    ]
+   },
+   "th_teeth": {
+    "label": "TH (TEETH)",
+    "file": "characters/kenny/mouths/th_teeth.png",
+    "sheet_rect": [
+     1229,
+     327,
+     132,
+     132
+    ],
+    "size": [
+     132,
+     132
+    ],
+    "feet": [
+     65,
+     127
+    ],
+    "center": [
+     65,
+     67
+    ]
+   },
+   "w_rounded": {
+    "label": "W (ROUNDED)",
+    "file": "characters/kenny/mouths/w_rounded.png",
+    "sheet_rect": [
+     1386,
+     326,
+     132,
+     133
+    ],
+    "size": [
+     132,
+     133
+    ],
+    "feet": [
+     65,
+     128
+    ],
+    "center": [
+     65,
+     68
+    ]
+   }
+  },
+  "expressions": {
+   "neutral": {
+    "label": "NEUTRAL",
+    "file": "characters/kenny/expressions/neutral.png",
+    "sheet_rect": [
+     15,
+     510,
+     115,
+     119
+    ],
+    "size": [
+     115,
+     119
+    ],
+    "feet": [
+     58,
+     114
+    ],
+    "center": [
+     57,
+     60
+    ]
+   },
+   "happy": {
+    "label": "HAPPY",
+    "file": "characters/kenny/expressions/happy.png",
+    "sheet_rect": [
+     146,
+     510,
+     114,
+     119
+    ],
+    "size": [
+     114,
+     119
+    ],
+    "feet": [
+     56,
+     114
+    ],
+    "center": [
+     57,
+     60
+    ]
+   },
+   "angry": {
+    "label": "ANGRY",
+    "file": "characters/kenny/expressions/angry.png",
+    "sheet_rect": [
+     279,
+     510,
+     115,
+     119
+    ],
+    "size": [
+     115,
+     119
+    ],
+    "feet": [
+     56,
+     114
+    ],
+    "center": [
+     57,
+     60
+    ]
+   },
+   "sad": {
+    "label": "SAD",
+    "file": "characters/kenny/expressions/sad.png",
+    "sheet_rect": [
+     408,
+     510,
+     115,
+     119
+    ],
+    "size": [
+     115,
+     119
+    ],
+    "feet": [
+     57,
+     114
+    ],
+    "center": [
+     57,
+     61
+    ]
+   },
+   "surprised": {
+    "label": "SURPRISED",
+    "file": "characters/kenny/expressions/surprised.png",
+    "sheet_rect": [
+     533,
+     510,
+     115,
+     119
+    ],
+    "size": [
+     115,
+     119
+    ],
+    "feet": [
+     57,
+     114
+    ],
+    "center": [
+     57,
+     61
+    ]
+   },
+   "confused": {
+    "label": "CONFUSED",
+    "file": "characters/kenny/expressions/confused.png",
+    "sheet_rect": [
+     659,
+     510,
+     114,
+     119
+    ],
+    "size": [
+     114,
+     119
+    ],
+    "feet": [
+     56,
+     114
+    ],
+    "center": [
+     57,
+     61
+    ]
+   },
+   "smug": {
+    "label": "SMUG",
+    "file": "characters/kenny/expressions/smug.png",
+    "sheet_rect": [
+     784,
+     510,
+     114,
+     119
+    ],
+    "size": [
+     114,
+     119
+    ],
+    "feet": [
+     56,
+     114
+    ],
+    "center": [
+     57,
+     61
+    ]
+   },
+   "serious": {
+    "label": "SERIOUS",
+    "file": "characters/kenny/expressions/serious.png",
+    "sheet_rect": [
+     908,
+     510,
+     113,
+     119
+    ],
+    "size": [
+     113,
+     119
+    ],
+    "feet": [
+     56,
+     114
+    ],
+    "center": [
+     56,
+     61
+    ]
+   },
+   "laughing": {
+    "label": "LAUGHING",
+    "file": "characters/kenny/expressions/laughing.png",
+    "sheet_rect": [
+     1031,
+     510,
+     114,
+     119
+    ],
+    "size": [
+     114,
+     119
+    ],
+    "feet": [
+     56,
+     114
+    ],
+    "center": [
+     56,
+     61
+    ]
+   },
+   "disgusted": {
+    "label": "DISGUSTED",
+    "file": "characters/kenny/expressions/disgusted.png",
+    "sheet_rect": [
+     1156,
+     510,
+     114,
+     119
+    ],
+    "size": [
+     114,
+     119
+    ],
+    "feet": [
+     56,
+     114
+    ],
+    "center": [
+     56,
+     61
+    ]
+   },
+   "shouting": {
+    "label": "SHOUTING",
+    "file": "characters/kenny/expressions/shouting.png",
+    "sheet_rect": [
+     1282,
+     510,
+     114,
+     119
+    ],
+    "size": [
+     114,
+     119
+    ],
+    "feet": [
+     56,
+     114
+    ],
+    "center": [
+     56,
+     61
+    ]
+   },
+   "determined": {
+    "label": "DETERMINED",
+    "file": "characters/kenny/expressions/determined.png",
+    "sheet_rect": [
+     1408,
+     511,
+     114,
+     118
+    ],
+    "size": [
+     114,
+     118
+    ],
+    "feet": [
+     56,
+     113
+    ],
+    "center": [
+     56,
+     60
+    ]
+   }
+  },
+  "gestures": {
+   "arms_down": {
+    "label": "ARMS DOWN",
+    "file": "characters/kenny/gestures/arms_down.png",
+    "sheet_rect": [
+     25,
+     681,
+     85,
+     115
+    ],
+    "size": [
+     85,
+     115
+    ],
+    "feet": [
+     42,
+     111
+    ],
+    "center": [
+     42,
+     58
+    ]
+   },
+   "pointing_left": {
+    "label": "POINTING (LEFT)",
+    "file": "characters/kenny/gestures/pointing_left.png",
+    "sheet_rect": [
+     142,
+     681,
+     103,
+     115
+    ],
+    "size": [
+     103,
+     115
+    ],
+    "feet": [
+     40,
+     111
+    ],
+    "center": [
+     43,
+     57
+    ]
+   },
+   "pointing_right": {
+    "label": "POINTING (RIGHT)",
+    "file": "characters/kenny/gestures/pointing_right.png",
+    "sheet_rect": [
+     255,
+     681,
+     114,
+     115
+    ],
+    "size": [
+     114,
+     115
+    ],
+    "feet": [
+     67,
+     111
+    ],
+    "center": [
+     66,
+     58
+    ]
+   },
+   "both_hands_out": {
+    "label": "BOTH HANDS OUT",
+    "file": "characters/kenny/gestures/both_hands_out.png",
+    "sheet_rect": [
+     392,
+     682,
+     119,
+     114
+    ],
+    "size": [
+     119,
+     114
+    ],
+    "feet": [
+     59,
+     110
+    ],
+    "center": [
+     60,
+     57
+    ]
+   },
+   "one_hand_up": {
+    "label": "ONE HAND UP",
+    "file": "characters/kenny/gestures/one_hand_up.png",
+    "sheet_rect": [
+     527,
+     682,
+     92,
+     114
+    ],
+    "size": [
+     92,
+     114
+    ],
+    "feet": [
+     43,
+     110
+    ],
+    "center": [
+     43,
+     57
+    ]
+   },
+   "both_hands_up": {
+    "label": "BOTH HANDS UP",
+    "file": "characters/kenny/gestures/both_hands_up.png",
+    "sheet_rect": [
+     634,
+     681,
+     124,
+     116
+    ],
+    "size": [
+     124,
+     116
+    ],
+    "feet": [
+     61,
+     111
+    ],
+    "center": [
+     61,
+     53
+    ]
+   },
+   "shrug": {
+    "label": "SHRUG",
+    "file": "characters/kenny/gestures/shrug.png",
+    "sheet_rect": [
+     766,
+     685,
+     118,
+     112
+    ],
+    "size": [
+     118,
+     112
+    ],
+    "feet": [
+     58,
+     107
+    ],
+    "center": [
+     58,
+     55
+    ]
+   },
+   "fist_angry": {
+    "label": "FIST (ANGRY)",
+    "file": "characters/kenny/gestures/fist_angry.png",
+    "sheet_rect": [
+     910,
+     684,
+     89,
+     113
+    ],
+    "size": [
+     89,
+     113
+    ],
+    "feet": [
+     44,
+     109
+    ],
+    "center": [
+     44,
+     56
+    ]
+   },
+   "open_palm": {
+    "label": "OPEN PALM",
+    "file": "characters/kenny/gestures/open_palm.png",
+    "sheet_rect": [
+     1039,
+     685,
+     87,
+     112
+    ],
+    "size": [
+     87,
+     112
+    ],
+    "feet": [
+     42,
+     108
+    ],
+    "center": [
+     43,
+     54
+    ]
+   },
+   "talking_1": {
+    "label": "TALKING 1",
+    "file": "characters/kenny/gestures/talking_1.png",
+    "sheet_rect": [
+     1157,
+     685,
+     107,
+     112
+    ],
+    "size": [
+     107,
+     112
+    ],
+    "feet": [
+     54,
+     108
+    ],
+    "center": [
+     53,
+     56
+    ]
+   },
+   "talking_2": {
+    "label": "TALKING 2",
+    "file": "characters/kenny/gestures/talking_2.png",
+    "sheet_rect": [
+     1295,
+     685,
+     87,
+     112
+    ],
+    "size": [
+     87,
+     112
+    ],
+    "feet": [
+     42,
+     108
+    ],
+    "center": [
+     44,
+     55
+    ]
+   },
+   "talking_3": {
+    "label": "TALKING 3",
+    "file": "characters/kenny/gestures/talking_3.png",
+    "sheet_rect": [
+     1423,
+     685,
+     86,
+     112
+    ],
+    "size": [
+     86,
+     112
+    ],
+    "feet": [
+     42,
+     108
+    ],
+    "center": [
+     42,
+     55
+    ]
+   }
+  },
+  "poses": {
+   "standing": {
+    "label": "STANDING",
+    "file": "characters/kenny/poses/standing.png",
+    "sheet_rect": [
+     11,
+     856,
+     85,
+     119
+    ],
+    "size": [
+     85,
+     119
+    ],
+    "feet": [
+     42,
+     114
+    ],
+    "center": [
+     42,
+     58
+    ]
+   },
+   "walk_cycle_1": {
+    "label": "WALK CYCLE 1",
+    "file": "characters/kenny/poses/walk_cycle_1.png",
+    "sheet_rect": [
+     110,
+     854,
+     82,
+     126
+    ],
+    "size": [
+     82,
+     126
+    ],
+    "feet": [
+     16,
+     121
+    ],
+    "center": [
+     40,
+     56
+    ]
+   },
+   "walk_cycle_2": {
+    "label": "WALK CYCLE 2",
+    "file": "characters/kenny/poses/walk_cycle_2.png",
+    "sheet_rect": [
+     202,
+     854,
+     81,
+     127
+    ],
+    "size": [
+     81,
+     127
+    ],
+    "feet": [
+     35,
+     122
+    ],
+    "center": [
+     39,
+     57
+    ]
+   },
+   "walk_cycle_3": {
+    "label": "WALK CYCLE 3",
+    "file": "characters/kenny/poses/walk_cycle_3.png",
+    "sheet_rect": [
+     294,
+     855,
+     81,
+     126
+    ],
+    "size": [
+     81,
+     126
+    ],
+    "feet": [
+     36,
+     121
+    ],
+    "center": [
+     40,
+     57
+    ]
+   },
+   "running": {
+    "label": "RUNNING",
+    "file": "characters/kenny/poses/running.png",
+    "sheet_rect": [
+     382,
+     856,
+     99,
+     123
+    ],
+    "size": [
+     99,
+     123
+    ],
+    "feet": [
+     52,
+     119
+    ],
+    "center": [
+     51,
+     57
+    ]
+   },
+   "sitting_front": {
+    "label": "SITTING (FRONT)",
+    "file": "characters/kenny/poses/sitting_front.png",
+    "sheet_rect": [
+     487,
+     860,
+     88,
+     117
+    ],
+    "size": [
+     88,
+     117
+    ],
+    "feet": [
+     44,
+     112
+    ],
+    "center": [
+     43,
+     60
+    ]
+   },
+   "sitting_side": {
+    "label": "SITTING (SIDE)",
+    "file": "characters/kenny/poses/sitting_side.png",
+    "sheet_rect": [
+     585,
+     858,
+     83,
+     118
+    ],
+    "size": [
+     83,
+     118
+    ],
+    "feet": [
+     46,
+     114
+    ],
+    "center": [
+     42,
+     58
+    ]
+   },
+   "lean_forward_talk": {
+    "label": "LEAN FORWARD (TALK)",
+    "file": "characters/kenny/poses/lean_forward_talk.png",
+    "sheet_rect": [
+     680,
+     858,
+     106,
+     117
+    ],
+    "size": [
+     106,
+     117
+    ],
+    "feet": [
+     47,
+     113
+    ],
+    "center": [
+     52,
+     60
+    ]
+   },
+   "lean_back": {
+    "label": "LEAN BACK",
+    "file": "characters/kenny/poses/lean_back.png",
+    "sheet_rect": [
+     796,
+     854,
+     83,
+     122
+    ],
+    "size": [
+     83,
+     122
+    ],
+    "feet": [
+     46,
+     117
+    ],
+    "center": [
+     42,
+     59
+    ]
+   },
+   "crossed_arms": {
+    "label": "CROSSED ARMS",
+    "file": "characters/kenny/poses/crossed_arms.png",
+    "sheet_rect": [
+     897,
+     857,
+     86,
+     118
+    ],
+    "size": [
+     86,
+     118
+    ],
+    "feet": [
+     42,
+     113
+    ],
+    "center": [
+     42,
+     57
+    ]
+   },
+   "hands_on_hips": {
+    "label": "HANDS ON HIPS",
+    "file": "characters/kenny/poses/hands_on_hips.png",
+    "sheet_rect": [
+     995,
+     857,
+     85,
+     118
+    ],
+    "size": [
+     85,
+     118
+    ],
+    "feet": [
+     41,
+     113
+    ],
+    "center": [
+     42,
+     58
+    ]
+   }
+  },
+  "parts": {
+   "hood_front": {
+    "label": "hood front",
+    "file": "characters/kenny/parts/hood_front.png",
+    "sheet_rect": [
+     1093,
+     850,
+     76,
+     75
+    ],
+    "size": [
+     76,
+     75
+    ],
+    "feet": [
+     37,
+     70
+    ],
+    "center": [
+     38,
+     36
+    ]
+   },
+   "hood_side": {
+    "label": "hood side",
+    "file": "characters/kenny/parts/hood_side.png",
+    "sheet_rect": [
+     1178,
+     851,
+     66,
+     74
+    ],
+    "size": [
+     66,
+     74
+    ],
+    "feet": [
+     32,
+     69
+    ],
+    "center": [
+     32,
+     38
+    ]
+   },
+   "eyes": {
+    "label": "eyes",
+    "file": "characters/kenny/parts/eyes.png",
+    "sheet_rect": [
+     1254,
+     857,
+     84,
+     52
+    ],
+    "size": [
+     84,
+     52
+    ],
+    "feet": [
+     42,
+     47
+    ],
+    "center": [
+     42,
+     25
+    ]
+   },
+   "brows_normal": {
+    "label": "brows normal",
+    "file": "characters/kenny/parts/brows_normal.png",
+    "sheet_rect": [
+     1373,
+     862,
+     34,
+     11
+    ],
+    "size": [
+     34,
+     11
+    ],
+    "feet": [
+     16,
+     7
+    ],
+    "center": [
+     16,
+     5
+    ]
+   },
+   "brows_angry": {
+    "label": "brows angry",
+    "file": "characters/kenny/parts/brows_angry.png",
+    "sheet_rect": [
+     1423,
+     859,
+     46,
+     19
+    ],
+    "size": [
+     46,
+     19
+    ],
+    "feet": [
+     23,
+     14
+    ],
+    "center": [
+     23,
+     9
+    ]
+   },
+   "brows_sad": {
+    "label": "brows sad",
+    "file": "characters/kenny/parts/brows_sad.png",
+    "sheet_rect": [
+     1480,
+     859,
+     42,
+     21
+    ],
+    "size": [
+     42,
+     21
+    ],
+    "feet": [
+     20,
+     16
+    ],
+    "center": [
+     21,
+     10
+    ]
+   },
+   "hand_1": {
+    "label": "hand 1",
+    "file": "characters/kenny/parts/hand_1.png",
+    "sheet_rect": [
+     1104,
+     942,
+     39,
+     44
+    ],
+    "size": [
+     39,
+     44
+    ],
+    "feet": [
+     19,
+     40
+    ],
+    "center": [
+     19,
+     23
+    ]
+   },
+   "hand_2": {
+    "label": "hand 2",
+    "file": "characters/kenny/parts/hand_2.png",
+    "sheet_rect": [
+     1150,
+     942,
+     40,
+     44
+    ],
+    "size": [
+     40,
+     44
+    ],
+    "feet": [
+     20,
+     40
+    ],
+    "center": [
+     19,
+     23
+    ]
+   },
+   "hand_3": {
+    "label": "hand 3",
+    "file": "characters/kenny/parts/hand_3.png",
+    "sheet_rect": [
+     1197,
+     944,
+     38,
+     42
+    ],
+    "size": [
+     38,
+     42
+    ],
+    "feet": [
+     18,
+     37
+    ],
+    "center": [
+     18,
+     21
+    ]
+   },
+   "hand_4": {
+    "label": "hand 4",
+    "file": "characters/kenny/parts/hand_4.png",
+    "sheet_rect": [
+     1239,
+     946,
+     33,
+     39
+    ],
+    "size": [
+     33,
+     39
+    ],
+    "feet": [
+     16,
+     34
+    ],
+    "center": [
+     16,
+     19
+    ]
+   },
+   "hand_5": {
+    "label": "hand 5",
+    "file": "characters/kenny/parts/hand_5.png",
+    "sheet_rect": [
+     1277,
+     944,
+     34,
+     42
+    ],
+    "size": [
+     34,
+     42
+    ],
+    "feet": [
+     17,
+     38
+    ],
+    "center": [
+     17,
+     22
+    ]
+   },
+   "hand_6": {
+    "label": "hand 6",
+    "file": "characters/kenny/parts/hand_6.png",
+    "sheet_rect": [
+     1316,
+     942,
+     40,
+     44
+    ],
+    "size": [
+     40,
+     44
+    ],
+    "feet": [
+     21,
+     40
+    ],
+    "center": [
+     21,
+     23
+    ]
+   },
+   "mouth_1": {
+    "label": "mouth 1",
+    "file": "characters/kenny/parts/mouth_1.png",
+    "sheet_rect": [
+     1374,
+     922,
+     40,
+     22
+    ],
+    "size": [
+     40,
+     22
+    ],
+    "feet": [
+     20,
+     17
+    ],
+    "center": [
+     19,
+     10
+    ]
+   },
+   "mouth_2": {
+    "label": "mouth 2",
+    "file": "characters/kenny/parts/mouth_2.png",
+    "sheet_rect": [
+     1428,
+     922,
+     38,
+     21
+    ],
+    "size": [
+     38,
+     21
+    ],
+    "feet": [
+     18,
+     16
+    ],
+    "center": [
+     19,
+     9
+    ]
+   },
+   "mouth_3": {
+    "label": "mouth 3",
+    "file": "characters/kenny/parts/mouth_3.png",
+    "sheet_rect": [
+     1480,
+     922,
+     38,
+     21
+    ],
+    "size": [
+     38,
+     21
+    ],
+    "feet": [
+     18,
+     17
+    ],
+    "center": [
+     19,
+     10
+    ]
+   },
+   "mouth_4": {
+    "label": "mouth 4",
+    "file": "characters/kenny/parts/mouth_4.png",
+    "sheet_rect": [
+     1375,
+     952,
+     37,
+     19
+    ],
+    "size": [
+     37,
+     19
+    ],
+    "feet": [
+     18,
+     14
+    ],
+    "center": [
+     18,
+     8
+    ]
+   },
+   "mouth_5": {
+    "label": "mouth 5",
+    "file": "characters/kenny/parts/mouth_5.png",
+    "sheet_rect": [
+     1430,
+     952,
+     35,
+     20
+    ],
+    "size": [
+     35,
+     20
+    ],
+    "feet": [
+     17,
+     15
+    ],
+    "center": [
+     16,
+     8
+    ]
+   },
+   "mouth_6": {
+    "label": "mouth 6",
+    "file": "characters/kenny/parts/mouth_6.png",
+    "sheet_rect": [
+     1481,
+     951,
+     36,
+     21
+    ],
+    "size": [
+     36,
+     21
+    ],
+    "feet": [
+     18,
+     16
+    ],
+    "center": [
+     18,
+     9
+    ]
+   }
+  }
+ }
+}

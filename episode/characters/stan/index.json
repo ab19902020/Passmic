@@ -1,0 +1,1560 @@
+{
+ "name": "Stan Marsh",
+ "sheet": "sheets/stan.png",
+ "sprites": {
+  "turnaround": {
+   "front": {
+    "label": "FRONT",
+    "file": "characters/stan/turnaround/front.png",
+    "sheet_rect": [
+     30,
+     73,
+     138,
+     204
+    ],
+    "size": [
+     138,
+     204
+    ],
+    "feet": [
+     69,
+     199
+    ],
+    "center": [
+     68,
+     110
+    ]
+   },
+   "three_quarter_front": {
+    "label": "3/4 FRONT",
+    "file": "characters/stan/turnaround/three_quarter_front.png",
+    "sheet_rect": [
+     209,
+     73,
+     137,
+     204
+    ],
+    "size": [
+     137,
+     204
+    ],
+    "feet": [
+     70,
+     199
+    ],
+    "center": [
+     69,
+     109
+    ]
+   },
+   "side_left": {
+    "label": "SIDE (LEFT)",
+    "file": "characters/stan/turnaround/side_left.png",
+    "sheet_rect": [
+     394,
+     73,
+     134,
+     204
+    ],
+    "size": [
+     134,
+     204
+    ],
+    "feet": [
+     72,
+     199
+    ],
+    "center": [
+     69,
+     103
+    ]
+   },
+   "back": {
+    "label": "BACK",
+    "file": "characters/stan/turnaround/back.png",
+    "sheet_rect": [
+     588,
+     73,
+     141,
+     204
+    ],
+    "size": [
+     141,
+     204
+    ],
+    "feet": [
+     72,
+     199
+    ],
+    "center": [
+     71,
+     109
+    ]
+   },
+   "three_quarter_back": {
+    "label": "3/4 BACK",
+    "file": "characters/stan/turnaround/three_quarter_back.png",
+    "sheet_rect": [
+     789,
+     73,
+     143,
+     204
+    ],
+    "size": [
+     143,
+     204
+    ],
+    "feet": [
+     72,
+     199
+    ],
+    "center": [
+     73,
+     110
+    ]
+   },
+   "side_right": {
+    "label": "SIDE (RIGHT)",
+    "file": "characters/stan/turnaround/side_right.png",
+    "sheet_rect": [
+     984,
+     73,
+     130,
+     204
+    ],
+    "size": [
+     130,
+     204
+    ],
+    "feet": [
+     61,
+     199
+    ],
+    "center": [
+     63,
+     103
+    ]
+   }
+  },
+  "head": {
+   "front": {
+    "label": "front",
+    "file": "characters/stan/head/front.png",
+    "sheet_rect": [
+     1175,
+     75,
+     176,
+     204
+    ],
+    "size": [
+     176,
+     204
+    ],
+    "feet": [
+     85,
+     199
+    ],
+    "center": [
+     87,
+     114
+    ]
+   },
+   "side": {
+    "label": "side",
+    "file": "characters/stan/head/side.png",
+    "sheet_rect": [
+     1374,
+     77,
+     151,
+     202
+    ],
+    "size": [
+     151,
+     202
+    ],
+    "feet": [
+     66,
+     197
+    ],
+    "center": [
+     75,
+     105
+    ]
+   }
+  },
+  "mouths": {
+   "a_ah": {
+    "label": "A (AH)",
+    "file": "characters/stan/mouths/a_ah.png",
+    "sheet_rect": [
+     15,
+     327,
+     127,
+     142
+    ],
+    "size": [
+     127,
+     142
+    ],
+    "feet": [
+     63,
+     137
+    ],
+    "center": [
+     63,
+     78
+    ]
+   },
+   "e_eh": {
+    "label": "E (EH)",
+    "file": "characters/stan/mouths/e_eh.png",
+    "sheet_rect": [
+     164,
+     327,
+     129,
+     142
+    ],
+    "size": [
+     129,
+     142
+    ],
+    "feet": [
+     64,
+     137
+    ],
+    "center": [
+     65,
+     78
+    ]
+   },
+   "i_ee": {
+    "label": "I (EE)",
+    "file": "characters/stan/mouths/i_ee.png",
+    "sheet_rect": [
+     315,
+     327,
+     129,
+     142
+    ],
+    "size": [
+     129,
+     142
+    ],
+    "feet": [
+     64,
+     137
+    ],
+    "center": [
+     65,
+     78
+    ]
+   },
+   "o_oh": {
+    "label": "O (OH)",
+    "file": "characters/stan/mouths/o_oh.png",
+    "sheet_rect": [
+     463,
+     327,
+     131,
+     142
+    ],
+    "size": [
+     131,
+     142
+    ],
+    "feet": [
+     65,
+     137
+    ],
+    "center": [
+     65,
+     78
+    ]
+   },
+   "u_oo": {
+    "label": "U (OO)",
+    "file": "characters/stan/mouths/u_oo.png",
+    "sheet_rect": [
+     616,
+     327,
+     130,
+     142
+    ],
+    "size": [
+     130,
+     142
+    ],
+    "feet": [
+     64,
+     137
+    ],
+    "center": [
+     65,
+     78
+    ]
+   },
+   "m_closed": {
+    "label": "M (CLOSED)",
+    "file": "characters/stan/mouths/m_closed.png",
+    "sheet_rect": [
+     767,
+     327,
+     133,
+     142
+    ],
+    "size": [
+     133,
+     142
+    ],
+    "feet": [
+     66,
+     137
+    ],
+    "center": [
+     66,
+     78
+    ]
+   },
+   "l_tongue": {
+    "label": "L (TONGUE)",
+    "file": "characters/stan/mouths/l_tongue.png",
+    "sheet_rect": [
+     921,
+     327,
+     130,
+     142
+    ],
+    "size": [
+     130,
+     142
+    ],
+    "feet": [
+     64,
+     137
+    ],
+    "center": [
+     65,
+     78
+    ]
+   },
+   "f_v": {
+    "label": "F / V",
+    "file": "characters/stan/mouths/f_v.png",
+    "sheet_rect": [
+     1073,
+     327,
+     130,
+     142
+    ],
+    "size": [
+     130,
+     142
+    ],
+    "feet": [
+     64,
+     137
+    ],
+    "center": [
+     64,
+     78
+    ]
+   },
+   "th_teeth": {
+    "label": "TH (TEETH)",
+    "file": "characters/stan/mouths/th_teeth.png",
+    "sheet_rect": [
+     1225,
+     327,
+     133,
+     142
+    ],
+    "size": [
+     133,
+     142
+    ],
+    "feet": [
+     66,
+     137
+    ],
+    "center": [
+     67,
+     79
+    ]
+   },
+   "w_rounded": {
+    "label": "W (ROUNDED)",
+    "file": "characters/stan/mouths/w_rounded.png",
+    "sheet_rect": [
+     1380,
+     327,
+     135,
+     142
+    ],
+    "size": [
+     135,
+     142
+    ],
+    "feet": [
+     67,
+     137
+    ],
+    "center": [
+     68,
+     79
+    ]
+   }
+  },
+  "expressions": {
+   "neutral": {
+    "label": "NEUTRAL",
+    "file": "characters/stan/expressions/neutral.png",
+    "sheet_rect": [
+     18,
+     514,
+     107,
+     126
+    ],
+    "size": [
+     107,
+     126
+    ],
+    "feet": [
+     54,
+     121
+    ],
+    "center": [
+     53,
+     70
+    ]
+   },
+   "happy": {
+    "label": "HAPPY",
+    "file": "characters/stan/expressions/happy.png",
+    "sheet_rect": [
+     142,
+     513,
+     107,
+     127
+    ],
+    "size": [
+     107,
+     127
+    ],
+    "feet": [
+     52,
+     122
+    ],
+    "center": [
+     53,
+     71
+    ]
+   },
+   "angry": {
+    "label": "ANGRY",
+    "file": "characters/stan/expressions/angry.png",
+    "sheet_rect": [
+     268,
+     513,
+     107,
+     127
+    ],
+    "size": [
+     107,
+     127
+    ],
+    "feet": [
+     53,
+     122
+    ],
+    "center": [
+     53,
+     71
+    ]
+   },
+   "sad": {
+    "label": "SAD",
+    "file": "characters/stan/expressions/sad.png",
+    "sheet_rect": [
+     398,
+     513,
+     108,
+     127
+    ],
+    "size": [
+     108,
+     127
+    ],
+    "feet": [
+     53,
+     122
+    ],
+    "center": [
+     53,
+     70
+    ]
+   },
+   "surprised": {
+    "label": "SURPRISED",
+    "file": "characters/stan/expressions/surprised.png",
+    "sheet_rect": [
+     527,
+     513,
+     106,
+     127
+    ],
+    "size": [
+     106,
+     127
+    ],
+    "feet": [
+     53,
+     122
+    ],
+    "center": [
+     53,
+     69
+    ]
+   },
+   "confused": {
+    "label": "CONFUSED",
+    "file": "characters/stan/expressions/confused.png",
+    "sheet_rect": [
+     653,
+     513,
+     108,
+     127
+    ],
+    "size": [
+     108,
+     127
+    ],
+    "feet": [
+     52,
+     122
+    ],
+    "center": [
+     53,
+     70
+    ]
+   },
+   "smug": {
+    "label": "SMUG",
+    "file": "characters/stan/expressions/smug.png",
+    "sheet_rect": [
+     774,
+     516,
+     108,
+     124
+    ],
+    "size": [
+     108,
+     124
+    ],
+    "feet": [
+     55,
+     119
+    ],
+    "center": [
+     54,
+     69
+    ]
+   },
+   "serious": {
+    "label": "SERIOUS",
+    "file": "characters/stan/expressions/serious.png",
+    "sheet_rect": [
+     895,
+     513,
+     107,
+     126
+    ],
+    "size": [
+     107,
+     126
+    ],
+    "feet": [
+     52,
+     122
+    ],
+    "center": [
+     53,
+     70
+    ]
+   },
+   "laughing": {
+    "label": "LAUGHING",
+    "file": "characters/stan/expressions/laughing.png",
+    "sheet_rect": [
+     1017,
+     513,
+     110,
+     126
+    ],
+    "size": [
+     110,
+     126
+    ],
+    "feet": [
+     58,
+     122
+    ],
+    "center": [
+     55,
+     70
+    ]
+   },
+   "disgusted": {
+    "label": "DISGUSTED",
+    "file": "characters/stan/expressions/disgusted.png",
+    "sheet_rect": [
+     1148,
+     513,
+     109,
+     126
+    ],
+    "size": [
+     109,
+     126
+    ],
+    "feet": [
+     54,
+     122
+    ],
+    "center": [
+     54,
+     70
+    ]
+   },
+   "shouting": {
+    "label": "SHOUTING",
+    "file": "characters/stan/expressions/shouting.png",
+    "sheet_rect": [
+     1271,
+     513,
+     117,
+     126
+    ],
+    "size": [
+     117,
+     126
+    ],
+    "feet": [
+     58,
+     122
+    ],
+    "center": [
+     58,
+     71
+    ]
+   },
+   "determined": {
+    "label": "DETERMINED",
+    "file": "characters/stan/expressions/determined.png",
+    "sheet_rect": [
+     1406,
+     513,
+     109,
+     127
+    ],
+    "size": [
+     109,
+     127
+    ],
+    "feet": [
+     54,
+     122
+    ],
+    "center": [
+     54,
+     70
+    ]
+   }
+  },
+  "gestures": {
+   "arms_down": {
+    "label": "ARMS DOWN",
+    "file": "characters/stan/gestures/arms_down.png",
+    "sheet_rect": [
+     24,
+     684,
+     82,
+     122
+    ],
+    "size": [
+     82,
+     122
+    ],
+    "feet": [
+     42,
+     117
+    ],
+    "center": [
+     40,
+     65
+    ]
+   },
+   "pointing_left": {
+    "label": "POINTING (LEFT)",
+    "file": "characters/stan/gestures/pointing_left.png",
+    "sheet_rect": [
+     136,
+     683,
+     105,
+     122
+    ],
+    "size": [
+     105,
+     122
+    ],
+    "feet": [
+     39,
+     118
+    ],
+    "center": [
+     43,
+     64
+    ]
+   },
+   "pointing_right": {
+    "label": "POINTING (RIGHT)",
+    "file": "characters/stan/gestures/pointing_right.png",
+    "sheet_rect": [
+     261,
+     683,
+     112,
+     124
+    ],
+    "size": [
+     112,
+     124
+    ],
+    "feet": [
+     56,
+     119
+    ],
+    "center": [
+     55,
+     65
+    ]
+   },
+   "both_hands_out": {
+    "label": "BOTH HANDS OUT",
+    "file": "characters/stan/gestures/both_hands_out.png",
+    "sheet_rect": [
+     393,
+     683,
+     119,
+     123
+    ],
+    "size": [
+     119,
+     123
+    ],
+    "feet": [
+     61,
+     118
+    ],
+    "center": [
+     59,
+     66
+    ]
+   },
+   "one_hand_up": {
+    "label": "ONE HAND UP",
+    "file": "characters/stan/gestures/one_hand_up.png",
+    "sheet_rect": [
+     526,
+     683,
+     92,
+     123
+    ],
+    "size": [
+     92,
+     123
+    ],
+    "feet": [
+     42,
+     118
+    ],
+    "center": [
+     43,
+     64
+    ]
+   },
+   "both_hands_up": {
+    "label": "BOTH HANDS UP",
+    "file": "characters/stan/gestures/both_hands_up.png",
+    "sheet_rect": [
+     624,
+     683,
+     130,
+     125
+    ],
+    "size": [
+     130,
+     125
+    ],
+    "feet": [
+     64,
+     120
+    ],
+    "center": [
+     63,
+     63
+    ]
+   },
+   "shrug": {
+    "label": "SHRUG",
+    "file": "characters/stan/gestures/shrug.png",
+    "sheet_rect": [
+     766,
+     683,
+     106,
+     127
+    ],
+    "size": [
+     106,
+     127
+    ],
+    "feet": [
+     54,
+     123
+    ],
+    "center": [
+     53,
+     68
+    ]
+   },
+   "fist_angry": {
+    "label": "FIST (ANGRY)",
+    "file": "characters/stan/gestures/fist_angry.png",
+    "sheet_rect": [
+     896,
+     683,
+     101,
+     127
+    ],
+    "size": [
+     101,
+     127
+    ],
+    "feet": [
+     54,
+     123
+    ],
+    "center": [
+     51,
+     68
+    ]
+   },
+   "open_palm": {
+    "label": "OPEN PALM",
+    "file": "characters/stan/gestures/open_palm.png",
+    "sheet_rect": [
+     1024,
+     683,
+     94,
+     126
+    ],
+    "size": [
+     94,
+     126
+    ],
+    "feet": [
+     48,
+     122
+    ],
+    "center": [
+     47,
+     68
+    ]
+   },
+   "talking_1": {
+    "label": "TALKING 1",
+    "file": "characters/stan/gestures/talking_1.png",
+    "sheet_rect": [
+     1150,
+     683,
+     107,
+     126
+    ],
+    "size": [
+     107,
+     126
+    ],
+    "feet": [
+     55,
+     122
+    ],
+    "center": [
+     53,
+     67
+    ]
+   },
+   "talking_2": {
+    "label": "TALKING 2",
+    "file": "characters/stan/gestures/talking_2.png",
+    "sheet_rect": [
+     1287,
+     683,
+     98,
+     127
+    ],
+    "size": [
+     98,
+     127
+    ],
+    "feet": [
+     46,
+     122
+    ],
+    "center": [
+     46,
+     67
+    ]
+   },
+   "talking_3": {
+    "label": "TALKING 3",
+    "file": "characters/stan/gestures/talking_3.png",
+    "sheet_rect": [
+     1410,
+     683,
+     97,
+     126
+    ],
+    "size": [
+     97,
+     126
+    ],
+    "feet": [
+     54,
+     121
+    ],
+    "center": [
+     52,
+     67
+    ]
+   }
+  },
+  "poses": {
+   "standing": {
+    "label": "STANDING",
+    "file": "characters/stan/poses/standing.png",
+    "sheet_rect": [
+     16,
+     862,
+     76,
+     117
+    ],
+    "size": [
+     76,
+     117
+    ],
+    "feet": [
+     38,
+     112
+    ],
+    "center": [
+     37,
+     62
+    ]
+   },
+   "walk_cycle_1": {
+    "label": "WALK CYCLE 1",
+    "file": "characters/stan/poses/walk_cycle_1.png",
+    "sheet_rect": [
+     105,
+     860,
+     79,
+     124
+    ],
+    "size": [
+     79,
+     124
+    ],
+    "feet": [
+     19,
+     120
+    ],
+    "center": [
+     37,
+     60
+    ]
+   },
+   "walk_cycle_2": {
+    "label": "WALK CYCLE 2",
+    "file": "characters/stan/poses/walk_cycle_2.png",
+    "sheet_rect": [
+     203,
+     858,
+     76,
+     126
+    ],
+    "size": [
+     76,
+     126
+    ],
+    "feet": [
+     34,
+     122
+    ],
+    "center": [
+     38,
+     62
+    ]
+   },
+   "walk_cycle_3": {
+    "label": "WALK CYCLE 3",
+    "file": "characters/stan/poses/walk_cycle_3.png",
+    "sheet_rect": [
+     298,
+     860,
+     75,
+     123
+    ],
+    "size": [
+     75,
+     123
+    ],
+    "feet": [
+     33,
+     119
+    ],
+    "center": [
+     37,
+     61
+    ]
+   },
+   "running": {
+    "label": "RUNNING",
+    "file": "characters/stan/poses/running.png",
+    "sheet_rect": [
+     388,
+     858,
+     95,
+     124
+    ],
+    "size": [
+     95,
+     124
+    ],
+    "feet": [
+     49,
+     119
+    ],
+    "center": [
+     52,
+     60
+    ]
+   },
+   "sitting_front": {
+    "label": "SITTING (FRONT)",
+    "file": "characters/stan/poses/sitting_front.png",
+    "sheet_rect": [
+     489,
+     860,
+     88,
+     120
+    ],
+    "size": [
+     88,
+     120
+    ],
+    "feet": [
+     44,
+     115
+    ],
+    "center": [
+     43,
+     66
+    ]
+   },
+   "sitting_side": {
+    "label": "SITTING (SIDE)",
+    "file": "characters/stan/poses/sitting_side.png",
+    "sheet_rect": [
+     594,
+     859,
+     76,
+     121
+    ],
+    "size": [
+     76,
+     121
+    ],
+    "feet": [
+     39,
+     116
+    ],
+    "center": [
+     38,
+     63
+    ]
+   },
+   "lean_forward_talk": {
+    "label": "LEAN FORWARD (TALK)",
+    "file": "characters/stan/poses/lean_forward_talk.png",
+    "sheet_rect": [
+     703,
+     858,
+     78,
+     119
+    ],
+    "size": [
+     78,
+     119
+    ],
+    "feet": [
+     32,
+     115
+    ],
+    "center": [
+     37,
+     62
+    ]
+   },
+   "lean_back": {
+    "label": "LEAN BACK",
+    "file": "characters/stan/poses/lean_back.png",
+    "sheet_rect": [
+     797,
+     858,
+     74,
+     121
+    ],
+    "size": [
+     74,
+     121
+    ],
+    "feet": [
+     38,
+     117
+    ],
+    "center": [
+     37,
+     62
+    ]
+   },
+   "crossed_arms": {
+    "label": "CROSSED ARMS",
+    "file": "characters/stan/poses/crossed_arms.png",
+    "sheet_rect": [
+     897,
+     858,
+     76,
+     120
+    ],
+    "size": [
+     76,
+     120
+    ],
+    "feet": [
+     36,
+     116
+    ],
+    "center": [
+     37,
+     61
+    ]
+   },
+   "hands_on_hips": {
+    "label": "HANDS ON HIPS",
+    "file": "characters/stan/poses/hands_on_hips.png",
+    "sheet_rect": [
+     989,
+     858,
+     77,
+     120
+    ],
+    "size": [
+     77,
+     120
+    ],
+    "feet": [
+     38,
+     115
+    ],
+    "center": [
+     38,
+     62
+    ]
+   }
+  },
+  "parts": {
+   "hat": {
+    "label": "hat",
+    "file": "characters/stan/parts/hat.png",
+    "sheet_rect": [
+     1090,
+     860,
+     78,
+     62
+    ],
+    "size": [
+     78,
+     62
+    ],
+    "feet": [
+     30,
+     57
+    ],
+    "center": [
+     38,
+     36
+    ]
+   },
+   "hat_back": {
+    "label": "hat back",
+    "file": "characters/stan/parts/hat_back.png",
+    "sheet_rect": [
+     1165,
+     871,
+     72,
+     47
+    ],
+    "size": [
+     72,
+     47
+    ],
+    "feet": [
+     36,
+     42
+    ],
+    "center": [
+     36,
+     24
+    ]
+   },
+   "eyes": {
+    "label": "eyes",
+    "file": "characters/stan/parts/eyes.png",
+    "sheet_rect": [
+     1250,
+     866,
+     84,
+     52
+    ],
+    "size": [
+     84,
+     52
+    ],
+    "feet": [
+     41,
+     48
+    ],
+    "center": [
+     41,
+     26
+    ]
+   },
+   "brows_normal": {
+    "label": "brows normal",
+    "file": "characters/stan/parts/brows_normal.png",
+    "sheet_rect": [
+     1362,
+     868,
+     42,
+     18
+    ],
+    "size": [
+     42,
+     18
+    ],
+    "feet": [
+     21,
+     13
+    ],
+    "center": [
+     20,
+     8
+    ]
+   },
+   "brows_angry": {
+    "label": "brows angry",
+    "file": "characters/stan/parts/brows_angry.png",
+    "sheet_rect": [
+     1418,
+     867,
+     47,
+     19
+    ],
+    "size": [
+     47,
+     19
+    ],
+    "feet": [
+     24,
+     15
+    ],
+    "center": [
+     23,
+     9
+    ]
+   },
+   "brows_sad": {
+    "label": "brows sad",
+    "file": "characters/stan/parts/brows_sad.png",
+    "sheet_rect": [
+     1479,
+     867,
+     40,
+     21
+    ],
+    "size": [
+     40,
+     21
+    ],
+    "feet": [
+     20,
+     16
+    ],
+    "center": [
+     20,
+     10
+    ]
+   },
+   "hand_1": {
+    "label": "hand 1",
+    "file": "characters/stan/parts/hand_1.png",
+    "sheet_rect": [
+     1092,
+     945,
+     40,
+     50
+    ],
+    "size": [
+     40,
+     50
+    ],
+    "feet": [
+     20,
+     46
+    ],
+    "center": [
+     20,
+     27
+    ]
+   },
+   "hand_2": {
+    "label": "hand 2",
+    "file": "characters/stan/parts/hand_2.png",
+    "sheet_rect": [
+     1142,
+     945,
+     40,
+     50
+    ],
+    "size": [
+     40,
+     50
+    ],
+    "feet": [
+     19,
+     46
+    ],
+    "center": [
+     19,
+     26
+    ]
+   },
+   "hand_3": {
+    "label": "hand 3",
+    "file": "characters/stan/parts/hand_3.png",
+    "sheet_rect": [
+     1194,
+     947,
+     42,
+     47
+    ],
+    "size": [
+     42,
+     47
+    ],
+    "feet": [
+     16,
+     42
+    ],
+    "center": [
+     18,
+     25
+    ]
+   },
+   "hand_4": {
+    "label": "hand 4",
+    "file": "characters/stan/parts/hand_4.png",
+    "sheet_rect": [
+     1246,
+     946,
+     43,
+     47
+    ],
+    "size": [
+     43,
+     47
+    ],
+    "feet": [
+     18,
+     42
+    ],
+    "center": [
+     19,
+     24
+    ]
+   },
+   "hand_5": {
+    "label": "hand 5",
+    "file": "characters/stan/parts/hand_5.png",
+    "sheet_rect": [
+     1294,
+     947,
+     44,
+     47
+    ],
+    "size": [
+     44,
+     47
+    ],
+    "feet": [
+     24,
+     42
+    ],
+    "center": [
+     24,
+     23
+    ]
+   },
+   "mouth_1": {
+    "label": "mouth 1",
+    "file": "characters/stan/parts/mouth_1.png",
+    "sheet_rect": [
+     1367,
+     930,
+     41,
+     22
+    ],
+    "size": [
+     41,
+     22
+    ],
+    "feet": [
+     20,
+     18
+    ],
+    "center": [
+     20,
+     10
+    ]
+   },
+   "mouth_2": {
+    "label": "mouth 2",
+    "file": "characters/stan/parts/mouth_2.png",
+    "sheet_rect": [
+     1422,
+     929,
+     40,
+     23
+    ],
+    "size": [
+     40,
+     23
+    ],
+    "feet": [
+     20,
+     19
+    ],
+    "center": [
+     20,
+     11
+    ]
+   },
+   "mouth_3": {
+    "label": "mouth 3",
+    "file": "characters/stan/parts/mouth_3.png",
+    "sheet_rect": [
+     1476,
+     930,
+     39,
+     22
+    ],
+    "size": [
+     39,
+     22
+    ],
+    "feet": [
+     20,
+     18
+    ],
+    "center": [
+     20,
+     10
+    ]
+   },
+   "mouth_4": {
+    "label": "mouth 4",
+    "file": "characters/stan/parts/mouth_4.png",
+    "sheet_rect": [
+     1369,
+     961,
+     38,
+     19
+    ],
+    "size": [
+     38,
+     19
+    ],
+    "feet": [
+     19,
+     14
+    ],
+    "center": [
+     19,
+     8
+    ]
+   },
+   "mouth_5": {
+    "label": "mouth 5",
+    "file": "characters/stan/parts/mouth_5.png",
+    "sheet_rect": [
+     1424,
+     961,
+     37,
+     20
+    ],
+    "size": [
+     37,
+     20
+    ],
+    "feet": [
+     18,
+     16
+    ],
+    "center": [
+     18,
+     9
+    ]
+   },
+   "mouth_6": {
+    "label": "mouth 6",
+    "file": "characters/stan/parts/mouth_6.png",
+    "sheet_rect": [
+     1477,
+     959,
+     37,
+     23
+    ],
+    "size": [
+     37,
+     23
+    ],
+    "feet": [
+     19,
+     18
+    ],
+    "center": [
+     18,
+     9
+    ]
+   }
+  }
+ }
+}

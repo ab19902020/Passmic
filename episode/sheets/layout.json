@@ -1,0 +1,834 @@
+{
+  "_doc": "Panel layout of each character model sheet. 'headers' are the [top, bottom] rows of the five dark section title bars; 'split' is where the side-by-side panels meet on rows 1 and 5. Labels are listed left to right exactly as printed on the sheet.",
+  "rows": [
+    [
+      "turnaround",
+      "head"
+    ],
+    [
+      "mouths"
+    ],
+    [
+      "expressions"
+    ],
+    [
+      "gestures"
+    ],
+    [
+      "poses",
+      "extras"
+    ]
+  ],
+  "labels": {
+    "head": [
+      "front",
+      "side"
+    ],
+    "mouths": [
+      "A (AH)",
+      "E (EH)",
+      "I (EE)",
+      "O (OH)",
+      "U (OO)",
+      "M (CLOSED)",
+      "L (TONGUE)",
+      "F / V",
+      "TH (TEETH)",
+      "W (ROUNDED)"
+    ],
+    "gestures": [
+      "ARMS DOWN",
+      "POINTING (LEFT)",
+      "POINTING (RIGHT)",
+      "BOTH HANDS OUT",
+      "ONE HAND UP",
+      "BOTH HANDS UP",
+      "SHRUG",
+      "FIST (ANGRY)",
+      "OPEN PALM",
+      "TALKING 1",
+      "TALKING 2",
+      "TALKING 3"
+    ],
+    "poses": [
+      "STANDING",
+      "WALK CYCLE 1",
+      "WALK CYCLE 2",
+      "WALK CYCLE 3",
+      "RUNNING",
+      "SITTING (FRONT)",
+      "SITTING (SIDE)",
+      "LEAN FORWARD (TALK)",
+      "LEAN BACK",
+      "CROSSED ARMS",
+      "HANDS ON HIPS"
+    ],
+    "expressions": [
+      "NEUTRAL",
+      "HAPPY",
+      "ANGRY",
+      "SAD",
+      "SURPRISED",
+      "CONFUSED",
+      "SMUG",
+      "SERIOUS",
+      "LAUGHING",
+      "DISGUSTED",
+      "SHOUTING",
+      "DETERMINED"
+    ],
+    "turnaround": [
+      "FRONT",
+      "3/4 FRONT",
+      "SIDE (LEFT)",
+      "BACK",
+      "3/4 BACK",
+      "SIDE (RIGHT)"
+    ]
+  },
+  "characters": {
+    "cartman": {
+      "name": "Eric Cartman",
+      "sheet": "cartman.png",
+      "headers": [
+        [
+          49,
+          72
+        ],
+        [
+          283,
+          303
+        ],
+        [
+          444,
+          463
+        ],
+        [
+          599,
+          618
+        ],
+        [
+          731,
+          750
+        ]
+      ],
+      "split": [
+        1314,
+        1309
+      ],
+      "_clip_doc": "Cartman's cells print their labels on a lighter strip that the drawings run into; everything from this sheet row down is label strip, not drawing.",
+      "clip_bottom": {
+        "head": 253,
+        "mouths": 416,
+        "expressions": 569,
+        "gestures": 701,
+        "poses": 850
+      },
+      "labels": {
+        "turnaround": [
+          "FRONT",
+          "3/4 FRONT",
+          "SIDE (LEFT)",
+          "3/4 BACK",
+          "BACK",
+          "3/4 RIGHT",
+          "SIDE (RIGHT)"
+        ]
+      },
+      "parts": {
+        "hat": [
+          [
+            1371,
+            783
+          ]
+        ],
+        "hat_top": [
+          [
+            1446,
+            772
+          ]
+        ],
+        "eyes": [
+          [
+            1515,
+            775
+          ]
+        ],
+        "brows_normal": [
+          [
+            1590,
+            762
+          ],
+          [
+            1617,
+            762
+          ]
+        ],
+        "brows_angry": [
+          [
+            1671,
+            762
+          ]
+        ],
+        "brows_sad": [
+          [
+            1734,
+            762
+          ]
+        ],
+        "hand_1": [
+          [
+            1340,
+            840
+          ]
+        ],
+        "hand_2": [
+          [
+            1381,
+            840
+          ]
+        ],
+        "hand_3": [
+          [
+            1423,
+            840
+          ]
+        ],
+        "hand_4": [
+          [
+            1461,
+            840
+          ]
+        ],
+        "hand_5": [
+          [
+            1500,
+            838
+          ]
+        ],
+        "hand_6": [
+          [
+            1544,
+            838
+          ]
+        ],
+        "mouth_1": [
+          [
+            1608,
+            819
+          ]
+        ],
+        "mouth_2": [
+          [
+            1656,
+            818
+          ]
+        ],
+        "mouth_3": [
+          [
+            1693,
+            819
+          ]
+        ],
+        "mouth_4": [
+          [
+            1737,
+            817
+          ]
+        ],
+        "mouth_5": [
+          [
+            1608,
+            849
+          ]
+        ],
+        "mouth_6": [
+          [
+            1657,
+            847
+          ]
+        ],
+        "mouth_7": [
+          [
+            1737,
+            844
+          ]
+        ]
+      }
+    },
+    "kyle": {
+      "name": "Kyle Broflovski",
+      "sheet": "kyle.png",
+      "headers": [
+        [
+          48,
+          69
+        ],
+        [
+          302,
+          323
+        ],
+        [
+          478,
+          498
+        ],
+        [
+          646,
+          666
+        ],
+        [
+          813,
+          834
+        ]
+      ],
+      "split": [
+        1147,
+        1100
+      ],
+      "labels": {
+        "expressions": [
+          "NEUTRAL",
+          "HAPPY",
+          "ANGRY",
+          "SAD",
+          "SURPRISED",
+          "CONFUSED",
+          "SERIOUS",
+          "LAUGHING",
+          "DISGUSTED",
+          "SHOUTING",
+          "DETERMINED"
+        ]
+      },
+      "parts": {
+        "hat_front": [
+          [
+            1143,
+            873
+          ]
+        ],
+        "hat_back": [
+          [
+            1221,
+            872
+          ]
+        ],
+        "eyes": [
+          [
+            1307,
+            868
+          ]
+        ],
+        "brows_normal": [
+          [
+            1388,
+            857
+          ]
+        ],
+        "brows_angry": [
+          [
+            1433,
+            856
+          ],
+          [
+            1457,
+            856
+          ]
+        ],
+        "brows_sad": [
+          [
+            1498,
+            856
+          ]
+        ],
+        "hand_1": [
+          [
+            1128,
+            949
+          ]
+        ],
+        "hand_2": [
+          [
+            1173,
+            949
+          ]
+        ],
+        "hand_3": [
+          [
+            1219,
+            949
+          ]
+        ],
+        "hand_4": [
+          [
+            1265,
+            944
+          ]
+        ],
+        "hand_5": [
+          [
+            1310,
+            949
+          ]
+        ],
+        "hand_6": [
+          [
+            1350,
+            949
+          ]
+        ],
+        "mouth_1": [
+          [
+            1399,
+            924
+          ]
+        ],
+        "mouth_2": [
+          [
+            1447,
+            925
+          ]
+        ],
+        "mouth_3": [
+          [
+            1496,
+            924
+          ]
+        ],
+        "mouth_4": [
+          [
+            1400,
+            951
+          ]
+        ],
+        "mouth_5": [
+          [
+            1447,
+            955
+          ]
+        ],
+        "mouth_6": [
+          [
+            1497,
+            957
+          ]
+        ]
+      }
+    },
+    "stan": {
+      "name": "Stan Marsh",
+      "sheet": "stan.png",
+      "headers": [
+        [
+          49,
+          72
+        ],
+        [
+          304,
+          326
+        ],
+        [
+          492,
+          512
+        ],
+        [
+          662,
+          682
+        ],
+        [
+          836,
+          857
+        ]
+      ],
+      "split": [
+        1149,
+        1079
+      ],
+      "parts": {
+        "hat": [
+          [
+            1129,
+            891
+          ]
+        ],
+        "hat_back": [
+          [
+            1201,
+            894
+          ]
+        ],
+        "eyes": [
+          [
+            1292,
+            892
+          ]
+        ],
+        "brows_normal": [
+          [
+            1374,
+            877
+          ],
+          [
+            1392,
+            877
+          ]
+        ],
+        "brows_angry": [
+          [
+            1442,
+            876
+          ]
+        ],
+        "brows_sad": [
+          [
+            1499,
+            877
+          ]
+        ],
+        "hand_1": [
+          [
+            1112,
+            970
+          ]
+        ],
+        "hand_2": [
+          [
+            1162,
+            970
+          ]
+        ],
+        "hand_3": [
+          [
+            1215,
+            970
+          ]
+        ],
+        "hand_4": [
+          [
+            1267,
+            970
+          ]
+        ],
+        "hand_5": [
+          [
+            1316,
+            970
+          ]
+        ],
+        "mouth_1": [
+          [
+            1387,
+            941
+          ]
+        ],
+        "mouth_2": [
+          [
+            1442,
+            940
+          ]
+        ],
+        "mouth_3": [
+          [
+            1495,
+            941
+          ]
+        ],
+        "mouth_4": [
+          [
+            1388,
+            971
+          ]
+        ],
+        "mouth_5": [
+          [
+            1442,
+            971
+          ]
+        ],
+        "mouth_6": [
+          [
+            1495,
+            970
+          ]
+        ]
+      }
+    },
+    "kenny": {
+      "name": "Kenny McCormick",
+      "sheet": "kenny.png",
+      "headers": [
+        [
+          47,
+          69
+        ],
+        [
+          303,
+          324
+        ],
+        [
+          485,
+          507
+        ],
+        [
+          657,
+          679
+        ],
+        [
+          826,
+          847
+        ]
+      ],
+      "split": [
+        1148,
+        1087
+      ],
+      "parts": {
+        "hood_front": [
+          [
+            1131,
+            887
+          ]
+        ],
+        "hood_side": [
+          [
+            1211,
+            888
+          ]
+        ],
+        "eyes": [
+          [
+            1296,
+            883
+          ]
+        ],
+        "brows_normal": [
+          [
+            1390,
+            868
+          ]
+        ],
+        "brows_angry": [
+          [
+            1446,
+            868
+          ]
+        ],
+        "brows_sad": [
+          [
+            1501,
+            869
+          ]
+        ],
+        "hand_1": [
+          [
+            1123,
+            964
+          ]
+        ],
+        "hand_2": [
+          [
+            1170,
+            964
+          ]
+        ],
+        "hand_3": [
+          [
+            1215,
+            965
+          ]
+        ],
+        "hand_4": [
+          [
+            1255,
+            965
+          ]
+        ],
+        "hand_5": [
+          [
+            1294,
+            965
+          ]
+        ],
+        "hand_6": [
+          [
+            1336,
+            964
+          ]
+        ],
+        "mouth_1": [
+          [
+            1394,
+            933
+          ]
+        ],
+        "mouth_2": [
+          [
+            1447,
+            932
+          ]
+        ],
+        "mouth_3": [
+          [
+            1499,
+            932
+          ]
+        ],
+        "mouth_4": [
+          [
+            1393,
+            961
+          ]
+        ],
+        "mouth_5": [
+          [
+            1447,
+            962
+          ]
+        ],
+        "mouth_6": [
+          [
+            1499,
+            961
+          ]
+        ]
+      }
+    },
+    "butters": {
+      "name": "Butters Stotch",
+      "sheet": "butters.png",
+      "headers": [
+        [
+          49,
+          70
+        ],
+        [
+          304,
+          325
+        ],
+        [
+          488,
+          509
+        ],
+        [
+          660,
+          680
+        ],
+        [
+          834,
+          853
+        ]
+      ],
+      "split": [
+        1148,
+        1084
+      ],
+      "parts": {
+        "hair": [
+          [
+            1155,
+            892
+          ]
+        ],
+        "eyes": [
+          [
+            1274,
+            889
+          ]
+        ],
+        "brows_normal": [
+          [
+            1359,
+            871
+          ],
+          [
+            1385,
+            871
+          ]
+        ],
+        "brows_angry": [
+          [
+            1424,
+            871
+          ],
+          [
+            1448,
+            871
+          ]
+        ],
+        "brows_sad": [
+          [
+            1498,
+            872
+          ]
+        ],
+        "hand_1": [
+          [
+            1111,
+            965
+          ]
+        ],
+        "hand_2": [
+          [
+            1153,
+            965
+          ]
+        ],
+        "hand_3": [
+          [
+            1204,
+            966
+          ]
+        ],
+        "hand_4": [
+          [
+            1269,
+            965
+          ]
+        ],
+        "hand_5": [
+          [
+            1315,
+            965
+          ]
+        ],
+        "mouth_1": [
+          [
+            1379,
+            940
+          ]
+        ],
+        "mouth_2": [
+          [
+            1437,
+            939
+          ]
+        ],
+        "mouth_3": [
+          [
+            1494,
+            939
+          ]
+        ],
+        "mouth_4": [
+          [
+            1379,
+            967
+          ]
+        ],
+        "mouth_5": [
+          [
+            1437,
+            966
+          ]
+        ],
+        "mouth_6": [
+          [
+            1495,
+            966
+          ]
+        ]
+      }
+    }
+  },
+  "_parts_doc": "'parts' names each separate asset in the Extra Details panel by one point (sheet x, y) inside the bounding box of each of its pieces; the labels printed there are never picked."
+}
