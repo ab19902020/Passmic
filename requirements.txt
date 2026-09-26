@@ -3,3 +3,4 @@ scipy
 pillow
 opencv-contrib-python
 soundfile
+skia-python

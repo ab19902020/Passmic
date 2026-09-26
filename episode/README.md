@@ -40,13 +40,42 @@ label-strip clip rows, and one point per separate part). The cutter is determini
 `audio/clip01.mp3` … `clip08.mp3`: the voice clips for the Cartman-in-his-room scene, numbered in the order
 they were supplied.
 
-## HD redraws
+## The Cartman scene (4K vector)
+`scenes/cartman_room.py` is the cold open ("INT. CARTMAN'S BEDROOM - DAY") built straight from the script:
+door opens, Cartman walks in and shuts it, crosses the room, climbs onto his computer chair, watches a United
+video, then all eight voice clips in order with the script's action (leaning in, counting legends on his
+fingers, pointing at the computer, clicking to the owners, throwing his hands out, standing on the chair,
+sitting back down, both thumbs at himself), the typed "OPERATION: SAVE MANCHESTER UNITED" document, and the
+SOUTH MANCHESTER title card.
+
+Everything is drawn as vector art at render time (skia), so it is sharp at 4K and at any camera zoom:
+- `tools/vec/cartman.py` - Cartman as a vector puppet built from the proportions and colours of his model
+  sheet: front, side (both directions) and back views; standing, walking and sitting bodies; arms with elbows
+  and hand shapes (mitten, fist, open, point, thumb, counting 1-5); brows, eyelids, pupils; mouth shapes.
+- `tools/vec/room.py` - the bedroom (door that swings, window, bed, computer desk, monitor, swivel chair).
+- `tools/vec/screens.py` - what's on the monitor (match broadcast, red devil cartoon, legends wall, manager,
+  news pages, Monaco yacht, the word processor). No real crests or likenesses: generic cartoons + captions.
+- `tools/vec/engine.py` - timeline (voice clips + silent beats laid end to end, keyframed poses and cameras,
+  sound effects), lip sync from the voice, blinks, talking head bob, and the frame renderer.
+
+```bash
+python3 tools/render_episode.py episode/scenes/cartman_room.py           # 3840x2160 24 fps -> out/cartman_room_4k.mp4
+python3 tools/render_episode.py episode/scenes/cartman_room.py 1080p     # quick preview
+python3 tools/render_episode.py episode/scenes/cartman_room.py still 42  # one 4K frame -> out/cartman_room_42.jpg
+```
+
+**Missing audio:** the script's Monaco beat ("This motherfucker owns part of Manchester United while living in
+Monaco." / "Monaco!" / "You can't be sitting on a yacht in Monaco..." / "Well... actually, that sounds pretty
+sweet." / "No! That's not the point!") is not in any of the eight clips. The scene has a marked slot for it
+(`# MONACO` in `cartman_room.py`) and a `monaco` screen ready.
+
+## HD redraws (bitmap, first cut)
 `python3 tools/hd_sprites.py <name> [face_px]` redraws every sprite of a character as clean flat-colour art
 (palette-snapped, smooth anti-aliased edges, thin lines re-inked) at a per-panel scale so faces come out about
 `face_px` (default 800) wide → `characters_hd/<name>/`, with its own `index.json` (anchors scaled, `scale` per sprite).
 Scenes render from these.
 
-## Scenes
+## Bitmap scene renderer (first cut)
 `backgrounds/cartman_room.png` (3840x2160) is painted by `tools/draw_room.py`.
 
 `scenes/cartman_room.json` lists the voice clips in order and the shots for each (`wide` / `medium` / `close`,
