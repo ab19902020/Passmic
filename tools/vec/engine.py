@@ -229,6 +229,7 @@ class Renderer:
         self.mix()
         self.lipsync()
         self.blinks = self.plan_blinks()
+        self._cam = {}
 
     def mix(self):
         tl = self.tl
@@ -270,43 +271,50 @@ class Renderer:
                 return [0.5, 1.0, 1.0, 0.45][int(k)]
         return 0.0
 
-    def camera(self, t, p):
-        """World rect (x0, y0, w) for the shot at t."""
+    def camera(self, t, p=None):
+        """World rect (x0, y0, w) for the shot at t.
+
+        Like the show, every shot is a locked-off camera: it is framed once,
+        on where Cartman has settled a moment into the shot (his keyed pose,
+        without talking bob or fidgets), and never moves during the shot.
+        Only an explicit 'push' key zooms, smoothly."""
         s, t1 = self.tl.shot_at(t)
-        k = s['kind']
+        key = (s['t'], s['kind'])
+        if key not in self._cam:
+            self._cam[key] = self._frame_shot(s, t1)
+        cx, cy, w = self._cam[key]
+        push = s.get('push', 0.0)
+        if push:
+            u = (t - s['t']) / max(t1 - s['t'], 1e-3)
+            w = w * (1 - push * ease(u, 'inout'))
         W, H = 3840.0, 2160.0
-        s_c = p['s']
+        h = w * H / W
+        cx = min(max(cx, w / 2), W - w / 2)
+        cy = min(max(cy, h / 2), H - h / 2)
+        return cx - w / 2, cy - h / 2, w, s
+
+    def _frame_shot(self, s, t1):
+        W, H = 3840.0, 2160.0
+        k = s['kind']
         if 'rect' in s:
             x0, y0, w = s['rect']
-            cx, cy = x0 + w / 2, y0 + w * H / W / 2
-        elif k == 'wide':
-            cx, cy, w = W / 2, H / 2, W
-        elif k == 'follow':
+            return x0 + w / 2, y0 + w * H / W / 2, w
+        if k not in ('medium', 'close', 'follow'):
+            return W / 2, H / 2, W
+        p = self.tl.cartman(min(s['t'] + 0.4, t1 - 0.01))
+        s_c = p['s']
+        if k == 'follow':
             w = s.get('w', 2400)
             cx, cy = p['x'] + s.get('dx', 0), p['y'] - 85 * s_c + s.get('dy', 0)
         elif k == 'medium':
             w = s.get('w', 1500)
             cx, cy = p['x'] + s.get('dx', 60), p['y'] - 95 * s_c + s.get('dy', 0)
-        elif k == 'close':
+        else:
             w = s.get('w', 900)
             cx, cy = p['x'] + s.get('dx', 0), p['y'] - 100 * s_c + s.get('dy', 0)
-        else:
-            cx, cy, w = W / 2, H / 2, W
-        if k in ('close', 'medium') and p['view'] in ('right', 'side'):
-            cx += 48 * s_c                      # in profile, frame the face, not the back of the head
-        if s.get('lock') and 'anchor' in s:
-            cx, cy = s['anchor']
-        u = (t - s['t']) / max(t1 - s['t'], 1e-3)
-        push = s.get('push', 0.0)
-        w = w * (1 - push * ease(u, 'inout'))
-        if s.get('shake'):
-            amp = s['shake'] * math.exp(-4 * max(0, t - s['t']))
-            cx += math.sin(t * 90) * amp * w
-            cy += math.cos(t * 77) * amp * w
-        h = w * H / W
-        cx = min(max(cx, w / 2), W - w / 2)
-        cy = min(max(cy, h / 2), H - h / 2)
-        return cx - w / 2, cy - h / 2, w, s
+        if p['view'] in ('right', 'side'):
+            cx += 40 * s_c                      # in profile, frame the face, not the back of the head
+        return cx, cy, w
 
     def puppet(self, t):
         tl = self.tl
@@ -322,19 +330,16 @@ class Renderer:
                     m = p['loud_mouth']
                 p['mouth'] = m
                 p['mouth_amt'] = 0.8 + 0.45 * env
-            p['head_dy'] = p['head_dy'] - env * 2.2
-            p['head_tilt'] = p['head_tilt'] + math.sin(t * 2.3) * 1.2 * p.get('tilt_talk', 1.0)
+            p['head_dy'] = p['head_dy'] - env * 1.6          # the head bobs on each syllable
         p['blink'] = max(p['blink'], self.blink(t)) if p['lid_top'] < 0.9 else p['blink']
         if p.get('nod'):
             p['head_dy'] += math.sin(t * 9) * 2.5 * p['nod']
         if p.get('shakehead'):
             p['head_dx'] += math.sin(t * 16) * 6 * p['shakehead']
-        if p.get('jitter'):
-            p['x'] += math.sin(t * 43) * p['jitter']
+        if p.get('jitter'):                                 # shuffling about: a slow wiggle, not a vibration
+            p['x'] += math.sin(t * 11) * p['jitter']
         if p['body'] == 'walk':
             p['walk'] = (abs(p['x']) + abs(p['y']) * 0.5) / p.get('stride', 150.0)
-        if p['body'] != 'walk' and p['body'] != 'sit':
-            p['squash'] = p['squash'] + 0.012 * math.sin(t * 2.2)          # breathing
         return p
 
     def draw_world(self, pen, t, p, st):
@@ -382,7 +387,7 @@ class Renderer:
         pen.scale(self.scale_out)
         p = self.puppet(t)
         st = tl.world(t)
-        x0, y0, w, s = self.camera(t, p)
+        x0, y0, w, s = self.camera(t)
         if s['kind'] == 'screen':
             self.draw_screen_insert(pen, t, st, s)
         elif s['kind'] == 'title':

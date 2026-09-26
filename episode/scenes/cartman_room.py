@@ -93,7 +93,7 @@ def build():
     k(t + 0.45, e='step', body='sit', s=K); k(t + 0.45, squash=0.22); k(t + 0.6, squash=0.0, e='out')
     tl.sfx(t + 0.2, 'whoosh', 0.5); tl.sfx(t + 0.45, 'thud', 0.35)
     t = tl.wait(1.1)
-    k(t, jitter=6.0); k(t + 0.8, jitter=0.0)
+    k(t, jitter=5.0); k(t + 0.9, jitter=0.0)
     k(t, head_tilt=4.0); k(t + 0.4, head_tilt=-4.0); k(t + 0.8, head_tilt=0.0)
     tl.shot(t, 'rect', rect=DESK_SHOT)
 
@@ -110,10 +110,10 @@ def build():
     # ------------------------------------------------ "You know... I fucking love Manchester United."
     f = tl.say(CLIP(1))
     k(f(0), mouth='smile', e='step')
-    tl.shot(f(0), 'rect', rect=DESK_SHOT, push=0.12)
+    tl.shot(f(0), 'rect', rect=DESK_SHOT)
     # "Like, seriously." He leans toward the screen.
     k(f(4.6), lean=0.0); k(f(5.1), lean=9.0, e='out')
-    tl.shot(f(4.62), 'rect', rect=DESK_TIGHT, push=0.06)
+    tl.shot(f(4.62), 'rect', rect=DESK_TIGHT)
     # "...their little red devil guy was pretty badass."
     tl.shot(f(6.6), 'screen')
     st(f(6.6), e='step', screen='devil', screen_p={})
@@ -147,7 +147,7 @@ def build():
     tl.shot(f(11.6), 'close', w=950)
     k(f(11.6), e='step', mouth='grin', lid_bot=0.2)
     # "And then there's Sir Alex Ferguson."  - unusually sincere
-    tl.shot(f(13.45), 'close', w=1000, push=0.18)
+    tl.shot(f(13.45), 'close', w=1000)
     k(f(13.45), e='step', mouth='rest', lid_bot=0.0, brows='worried', brow_amt=0.6, pupil=1.25, look=(0.0, -0.1))
     st(f(13.45), e='step', screen='manager', screen_p=dict(caption='SIR ALEX FERGUSON'))
 
@@ -199,14 +199,13 @@ def build():
     # ------------------------------------------------ the fans - increasingly worked up
     f = tl.say(CLIP(5))
     turn_to_camera(tl, f(0) - 0.3, brows='angry', mouth='frown', loud_mouth='shout')
-    tl.shot(f(0) - 0.3, 'medium', w=1600, push=0.3)
+    tl.shot(f(0) - 0.3, 'medium', w=1600)
     beats = [(0.0, 100, 100, 'open', 'open'), (2.1, 140, REST, 'fist', 'mitten'), (5.0, REST, 92, 'mitten', 'point'),
              (7.8, 135, 135, 'open', 'open'), (10.2, 112, 112, 'fist', 'fist'), (12.8, 100, 100, 'open', 'open')]
     for tb, al, ar, hl, hr in beats:
         k(f(tb), e='step', hand_l=hl, hand_r=hr)
         k(f(tb) + 0.18, arm_l=float(al), arm_r=float(ar), e='back')
-    k(f(10.2), jitter=4.0); k(f(12.7), jitter=0.0)
-    tl.shot(f(12.8), 'close', w=1000, shake=0.012)
+    tl.shot(f(12.8), 'close', w=1000)
 
     # he stands on the chair: "Those people deserve better!"
     t = tl.wait(0.25)
@@ -225,24 +224,24 @@ def build():
     k(t + 1.6, **STAND_SEAT); k(t + 2.8, e='inout', **SIT_FRONT)
     k(t + 2.2, e='step', body='sit')
     k(t + 2.8, look=(0.0, 0.0), lid_top=0.0)
-    tl.shot(t + 1.4, 'medium', w=1700, push=0.08)
+    tl.shot(t + 1.4, 'medium', w=1700)
 
     # ------------------------------------------------ mock-inspirational
     f = tl.say(CLIP(6), 2.0, None, gap=0.9)
-    tl.shot(f(2.0), 'close', w=1050, push=0.2)
+    tl.shot(f(2.0), 'close', w=1050)
     k(f(2.0), e='step', brows='raised', brow_amt=0.35, look=(0.0, -0.25), pupil=1.15)
     # "Maybe Manchester United doesn't need another billionaire." - looks directly ahead
     k(f(4.3), look=(0.0, 0.0))
-    tl.shot(f(7.7), 'close', w=900, push=0.12)
+    tl.shot(f(7.7), 'close', w=900)
     # another pause... a tiny smile appears
     k(f(11.9) + 0.3, e='step', mouth='smirk')
     f = tl.say(CLIP(7), 0.0, 6.9, gap=0.55)
-    tl.shot(f(0), 'close', w=880, push=0.22)
+    tl.shot(f(0), 'close', w=880)
     k(f(0), e='step', brows='determined', brow_amt=0.55, pupil=1.0, mouth='smirk')
     k(f(5.8), lid_top=0.22)
     # "Eric fucking Cartman." - both thumbs at himself
     f = tl.say(CLIP(7), 6.95, None, gap=1.7)
-    tl.shot(f(6.95), 'medium', w=1450, push=0.18)
+    tl.shot(f(6.95), 'medium', w=1450)
     k(f(6.95), e='step', lid_top=0.0, mouth='grin', brows='determined', brow_amt=0.8, arms_front=True,
       hand_l='thumb', hand_r='thumb', hand_rot_l=-90.0, hand_rot_r=-90.0, bend_l=140.0, bend_r=140.0)
     k(f(6.95), arm_l=REST, arm_r=REST); k(f(7.2), arm_l=50.0, arm_r=50.0, e='back')
@@ -270,15 +269,16 @@ def build():
     type_line(t + 3.3, 2, 2.7)
     t = tl.wait(1.3)                       # Cartman hammering the keyboard
     tl.shot(t, 'rect', rect=DESK_TIGHT)
-    k(t, jitter=3.0, arm_r=80.0)
-    tl.sfx(t, 'type', 0.8, dur=1.2, seed=9)
+    for i in range(14):                    # hammering the keys
+        k(t + i * 0.11, e='step', arm_r=(84.0 if i % 2 else 74.0), head_dy=(1.5 if i % 2 else 0.0))
+    k(t + 1.6, e='step', arm_r=35.0, head_dy=0.0)
+    tl.sfx(t, 'type', 0.8, dur=1.5, seed=9)
     t = tl.wait(3.2)
     tl.shot(t, 'screen')
-    k(t, jitter=0.0)
     type_line(t + 0.2, 3, 2.8)
     t = tl.wait(1.9)                       # Cartman thinks...
     tl.shot(t, 'close', w=1000)
-    k(t, e='step', jitter=0.0, arm_r=35.0, look=(0.3, -0.9), brows='raised', brow_amt=0.3, mouth='rest')
+    k(t, e='step', arm_r=35.0, look=(0.3, -0.9), brows='raised', brow_amt=0.3, mouth='rest')
     k(t + 1.3, look=(1.0, -0.2))
     t = tl.wait(3.3)                       # ...then types
     tl.shot(t, 'screen')
@@ -292,9 +292,9 @@ def build():
     turn_to_camera(tl, f(0.1), mouth='smirk', brows='determined', brow_amt=0.5)
     tl.shot(f(0.1), 'close', w=900)
     turn_to_screen(tl, f(1.2), mouth='smirk', brows='determined', brow_amt=0.5)
-    tl.shot(f(1.2), 'rect', rect=DESK_SHOT, push=0.1)
+    tl.shot(f(1.2), 'rect', rect=DESK_SHOT)
     # "And those assholes are gonna fucking love me for it."
-    tl.shot(f(3.7), 'close', w=1000, push=0.12)
+    tl.shot(f(3.7), 'close', w=1000)
     k(f(6.3), e='step', mouth='laugh', lid_top=0.3, nod=0.8)
 
     # ------------------------------------------------ title

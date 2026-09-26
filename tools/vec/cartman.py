@@ -190,8 +190,8 @@ BROWS = {   # (inner dy, outer dy) relative to the resting brow line; + = lower
 def draw_eyes(pen, cx, cy, p, profile=False):
     """Two touching eye whites (one in profile), lids, pupils."""
     blink = max(p['blink'], p['lid_top'])
-    eyes = [(cx + 16.5, cy, 1)] if profile else [(cx - 17.5, cy, -1), (cx + 18.5, cy, 1)]
-    rx, ry = (12.5, 19.5) if profile else (19.5, 21)
+    eyes = [(cx + 15, cy, 1)] if profile else [(cx - 17.5, cy, -1), (cx + 18.5, cy, 1)]
+    rx, ry = (13.5, 20.5) if profile else (19.5, 21)
     for ex, ey, s in eyes:
         eye = ellipse(ex, ey, rx, ry, 0 if profile else s * 6)
         pen.fill(eye, WHITE)
@@ -199,7 +199,7 @@ def draw_eyes(pen, cx, cy, p, profile=False):
         if blink < 0.95:
             lx, ly = p['look']
             if profile:
-                px, py = ex + 7 + lx * 3, ey + 1 + ly * 5
+                px, py = ex + 8 + lx * 2.5, ey + 1 + ly * 5
             else:
                 px, py = ex - s * 5 + lx * 7, ey + 1 + ly * 7
             pen.save()
@@ -304,8 +304,16 @@ def front_head(pen, p):
 
 
 def draw_front(pen, p):
-    pen.ellipse(0, 1, 88, 8, (0, 0, 0), alpha=60)          # contact shadow
-    front_legs(pen, p)
+    if p['body'] != 'sit':
+        pen.ellipse(0, 1, 88, 8, (0, 0, 0), alpha=60)      # contact shadow (not when he's up on a chair)
+    walking = p['body'] == 'walk'
+    if walking:                                            # South Park walk: a bouncy trot
+        bob = -abs(math.sin(p['walk'] * 2 * math.pi)) * 4
+        front_legs(pen, p)
+        pen.save()
+        pen.translate(0, bob)
+    else:
+        front_legs(pen, p)
     if p['body'] == 'sit':
         pen.save()
         pen.translate(0, -6)
@@ -326,56 +334,68 @@ def draw_front(pen, p):
         arm_r()
     if p['body'] == 'sit':
         pen.restore()
+    if walking:
+        pen.restore()
 
 
 # ------------------------------------------------------------------ side view (facing right)
 def draw_side(pen, p):
-    ph = p['walk'] * 2 * math.pi if p['body'] == 'walk' else 0.0
-    bob = -abs(math.sin(ph)) * 3 if p['body'] == 'walk' else 0.0
-    pen.ellipse(4, 1, 62, 7, (0, 0, 0), alpha=60)
-    if p['body'] == 'sit':
-        pass                                    # legs are drawn over the belly below
-    else:
-        for k, ph_off, shade in ((0, math.pi, 0.75), (1, 0.0, 1.0)):
-            dx = math.sin(ph + ph_off) * 16 if p['body'] == 'walk' else (k - 0.5) * 16
-            lift = max(0.0, math.cos(ph + ph_off)) * 5 if p['body'] == 'walk' else 0.0
-            pen.fill(capsule(dx * 0.6 - 6, -20, dx - 2, -8 - lift, 12), darker(BROWN, shade))
-            pen.ellipse(dx + 6, -4.5 - lift, 22, 7, darker(BLACK, shade) if shade < 1 else BLACK)
+    """Profile facing right, matched to the sheet's SIDE (RIGHT) drawing: big
+    round head sitting low over a rounded jacket, a tall eye flush with the
+    face edge, a small mouth tucked inside the face, the mitten resting on the
+    belly with its sleeve hidden under the head, buttons down the front."""
+    walking = p['body'] == 'walk'
+    ph = p['walk'] * 2 * math.pi if walking else 0.0
+    bob = -abs(math.sin(ph)) * 4 if walking else 0.0          # South Park walk: a bouncy trot
+    if p['body'] != 'sit':
+        pen.ellipse(6, 1, 60, 6, (0, 0, 0), alpha=55)
+    if p['body'] == 'stand':
+        pen.fill(rrect(-50, -24, 48, -5, 8), BROWN)                   # trousers, as on the sheet
+        pen.ellipse(2, -4, 56, 5, BLACK)
+    elif walking:
+        for k, ph_off, shade in ((0, math.pi, 0.72), (1, 0.0, 1.0)):
+            dx = math.sin(ph + ph_off) * 15 if walking else (k - 0.5) * 18
+            lift = max(0.0, math.cos(ph + ph_off)) * 6 if walking else 0.0
+            pen.fill(rrect(dx - 14, -24 - lift, dx + 12, -5 - lift, 6), darker(BROWN, shade))
+            pen.ellipse(dx + 4, -4 - lift, 24, 5, darker(BLACK, shade) if shade < 1 else BLACK)
     pen.save()
     pen.translate(0, bob + (-6 if p['body'] == 'sit' else 0))
-    body = smooth([(-40, -80), (-60, -56), (-64, -34), (-55, -16), (0, -13), (54, -16), (70, -34), (64, -58), (42, -80), (0, -86)])
+    body = smooth([(-44, -76), (-62, -54), (-66, -34), (-57, -17), (0, -15), (52, -17), (68, -33), (64, -56), (46, -76), (0, -84)])
     pen.fill(body, RED)
+    for by in (-52, -38, -25):                               # buttons down the jacket front
+        pen.ellipse(58 + (by + 52) * 0.25, by, 2.1, 2.1, BLACK)
+    if p['body'] == 'sit':
+        # stubby legs straight out along the seat, soles facing forward
+        pen.fill(rrect(8, -28, 50, -6, 10), BROWN)
+        pen.ellipse(55, -17, 7.5, 12.5, BLACK)
+    # the near arm: sleeve tucked under the head, mitten on the belly (or reaching forward)
+    reach = max(0.0, p['arm_r'] - 35)
+    draw_arm(pen, 6, -44, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'], length=10 + reach * 0.7, width=11.5)
     # head
     pen.save()
     pen.translate(p['head_dx'], p['head_dy'])
     pen.rotate(p['head_tilt'], 0, -70)
-    head = ellipse(4, -100, 62, 57)
+    head = ellipse(2, -100, 63, 58)
     pen.fill(head, SKIN)
-    hat_clip = ellipse(4, -100.5, 63.5, 58.5)
-    brim_top = [(-70, -86), (-30, -104), (20, -124), (70, -140)]
-    brim_bot = [(70, -130), (20, -116), (-30, -96), (-70, -78)]
-    pen.fill(intersect(hat_clip, smooth(brim_top + [(70, -175), (-70, -175)], tension=0.8)), TEAL)
+    hat_clip = ellipse(2, -100.5, 64.5, 59.5)
+    brim_top = [(-72, -84), (-30, -104), (20, -124), (72, -142)]
+    brim_bot = [(72, -132), (20, -115.5), (-30, -95.5), (-72, -76)]
+    pen.fill(intersect(hat_clip, smooth(brim_top + [(72, -178), (-72, -178)], tension=0.8)), TEAL)
     pen.fill(intersect(hat_clip, smooth(brim_top + brim_bot, tension=0.8)), YELLOW)
     pom = union(*[ellipse(x, y, r, r * 0.86) for x, y, r in
-                  ((-7, -156, 6), (1, -160, 6), (9, -158, 5.5), (-1, -155, 7.5), (-13, -153, 4.5), (15, -153, 4))])
+                  ((-9, -157, 6), (-1, -161, 6), (7, -159, 5.5), (-3, -156, 7.5), (-15, -154, 4.5), (13, -154, 4))])
     pen.fill(pom, YELLOW)
     pen.stroke(pom, darker(YELLOW, 0.8), 0.9)
-    pen.stroke(smooth([(40, -58), (54, -52), (62, -58)], close=False), CHIN, 1.2)
-    draw_eyes(pen, 44, -100, p, profile=True)
-    draw_brows(pen, 44, -120, p, profile=True)
     pen.save()
-    pen.clip(head)                          # a profile mouth never pokes out of the cheek
-    draw_mouth(pen, 50, -66, p['mouth'], p['mouth_amt'], scale=0.78)
+    pen.clip(ellipse(2, -100, 66.5, 61))    # the eye sits flush with the face edge
+    draw_eyes(pen, 36, -101, p, profile=True)
+    pen.restore()
+    draw_brows(pen, 36, -123, p, profile=True)
+    pen.save()
+    pen.clip(head)
+    draw_mouth(pen, 43, -64, p['mouth'], p['mouth_amt'], scale=0.62)
     pen.restore()
     pen.restore()
-    if p['body'] == 'sit':
-        # stubby legs straight out along the seat, soles facing forward
-        pen.fill(capsule(14, -15, 50, -14, 11.5), BROWN)
-        pen.ellipse(58, -15, 7.5, 13, BLACK)
-    # arm hangs in front of the belly
-    # profile: the near arm leaves the jacket side and can reach past the belly (to a keyboard)
-    draw_arm(pen, 24, -42, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'],
-             length=12 + max(0.0, p['arm_r'] - 35) * 0.5, width=11.5)
     pen.restore()
 
 
