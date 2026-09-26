@@ -39,3 +39,23 @@ label-strip clip rows, and one point per separate part). The cutter is determini
 ## Audio
 `audio/clip01.mp3` … `clip08.mp3`: the voice clips for the Cartman-in-his-room scene, numbered in the order
 they were supplied.
+
+## HD redraws
+`python3 tools/hd_sprites.py <name> [face_px]` redraws every sprite of a character as clean flat-colour art
+(palette-snapped, smooth anti-aliased edges, thin lines re-inked) at a per-panel scale so faces come out about
+`face_px` (default 800) wide → `characters_hd/<name>/`, with its own `index.json` (anchors scaled, `scale` per sprite).
+Scenes render from these.
+
+## Scenes
+`backgrounds/cartman_room.png` (3840x2160) is painted by `tools/draw_room.py`.
+
+`scenes/cartman_room.json` lists the voice clips in order and the shots for each (`wide` / `medium` / `close`,
+full-body `pose`/`poses` or a bust `face`). Render it with
+```bash
+python3 tools/render_scene.py episode/scenes/cartman_room.json            # -> out/cartman_room.mp4 (1080p24 + audio)
+python3 tools/render_scene.py episode/scenes/cartman_room.json still 12.5 # -> out/cartman_room_12.5.jpg
+```
+Lip sync is automatic: each drawing's own mouth is painted out and one of the ten sheet mouth shapes is pasted
+in, picked from the voice (loudness, brightness, hiss) and held two frames at a time. Cartman blinks every few seconds
+and bobs slightly on loud syllables. Cartman's gesture drawings are cut off at the belly on his sheet, so they are
+only used in waist-up shots; wide shots use his full-body turnaround and pose drawings.
