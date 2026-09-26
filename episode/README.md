@@ -37,8 +37,9 @@ label-strip clip rows, and one point per separate part). The cutter is determini
   individual sheets are the source.
 
 ## Audio
-`audio/clip01.mp3` … `clip08.mp3`: the voice clips for the Cartman-in-his-room scene, numbered in the order
-they were supplied.
+`audio/clip01.mp3` … `clip08.mp3` and `clip_monaco.mp3`: the voice clips for the Cartman-in-his-room scene.
+The Monaco clip ("This motherfucker owns part of Manchester United..." to "...that sounds pretty sweet") plays
+between clip 4 and clip 5; clip 5 opens with "No! That's not the point!".
 
 ## The Cartman scene (4K vector)
 `scenes/cartman_room.py` is the cold open ("INT. CARTMAN'S BEDROOM - DAY") built straight from the script:
@@ -64,10 +65,15 @@ python3 tools/render_episode.py episode/scenes/cartman_room.py 1080p     # quick
 python3 tools/render_episode.py episode/scenes/cartman_room.py still 42  # one 4K frame -> out/cartman_room_42.jpg
 ```
 
-**Missing audio:** the script's Monaco beat ("This motherfucker owns part of Manchester United while living in
-Monaco." / "Monaco!" / "You can't be sitting on a yacht in Monaco..." / "Well... actually, that sounds pretty
-sweet." / "No! That's not the point!") is not in any of the eight clips. The scene has a marked slot for it
-(`# MONACO` in `cartman_room.py`) and a `monaco` screen ready.
+**Lip sync** is driven by the words: `TEXT` in the scene file holds what each clip says, and
+`tools/vec/lipsync.py` lines those words up with the audio (CMU pronouncing dictionary -> syllables spread over
+the voiced time and snapped onto the loudness peaks), then gives each sound its mouth (M/B/P closed, F/V lip
+bite, TH tongue, OO/W rounded, AH wide), held on twos like the show.
+
+**Sound** (`tools/vec/sfx.py`, all synthesised): kid footsteps on carpet generated from the walk cycle (one per
+foot landing), door handle/latch/creak and the close, chair cushion and creaks, mouse clicks, keyboard typing,
+the match on his monitor heard through small computer speakers and ducked under his voice (with a cheer on the
+1999 goal), a quiet room tone, and an acoustic-guitar sting on the title. Each voice clip is levelled.
 
 ## HD redraws (bitmap, first cut)
 `python3 tools/hd_sprites.py <name> [face_px]` redraws every sprite of a character as clean flat-colour art

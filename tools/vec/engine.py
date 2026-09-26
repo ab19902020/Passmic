@@ -21,6 +21,7 @@ import room as R          # noqa: E402
 import screens            # noqa: E402
 
 SR = 44100
+WALK_CADENCE = 1.7        # walk cycles per second (two steps each): the show's quick kid trot
 VIS2MOUTH = {'a_ah': 'a', 'e_eh': 'e', 'i_ee': 'i', 'o_oh': 'o', 'u_oo': 'u', 'm_closed': None,
              'l_tongue': 'l', 'f_v': 'f', 'th_teeth': 'th', 'w_rounded': 'w'}
 
@@ -82,11 +83,14 @@ class Timeline:
         self.fps, self.W, self.H = fps, size[0], size[1]
         self.t = 0.0
         self.voice = []          # (start, samples)
+        self.lines = []          # say() calls, for lip sync
         self.fx = []             # (start, samples, gain)
         self.shots = []          # (t, dict)
         self.ck = {}             # cartman tracks
         self.wk = {}             # world tracks
         self.cues = {}
+        self.cheers = []         # (t, _) goal cheers from the monitor
+        self.stings = []         # (t, kind) music stings
 
     # -- time
     def wait(self, d):
@@ -94,12 +98,14 @@ class Timeline:
         self.t += d
         return s
 
-    def say(self, clip, a=0.0, b=None, gap=0.45, label=None):
-        """Place clip[a:b]; returns f(tc) mapping clip time to scene time."""
+    def say(self, clip, a=0.0, b=None, gap=0.45, label=None, text=None):
+        """Place clip[a:b]; returns f(tc) mapping clip time to scene time.
+        text: what is said in the whole clip, for word-driven lip sync."""
         x = load_clip(clip)
         b = len(x) / SR if b is None else b
         s = self.t
         self.voice.append((s, x[int(a * SR):int(b * SR)]))
+        self.lines.append(dict(start=s, clip=clip, a=a, b=b, text=text))
         self.t = s + (b - a) + gap
         f = lambda tc, s=s, a=a: s + (tc - a)
         if label:
@@ -129,6 +135,12 @@ class Timeline:
     def sfx(self, t, name, gain=1.0, **kw):
         self.fx.append((t, SFX[name](**kw), gain))
 
+    def cheer(self, t):
+        self.cheers.append((t, None))
+
+    def sting(self, t, kind='guitar'):
+        self.stings.append((t, kind))
+
     # -- evaluation
     def cartman(self, t):
         p = dict(C.DEFAULT)
@@ -147,76 +159,8 @@ class Timeline:
 
 
 # ------------------------------------------------------------------ sound effects
-def _env(n, a=0.002, r=0.05):
-    t = np.arange(n) / SR
-    return np.minimum(1, t / a) * np.exp(-t / r)
-
-
-def sfx_click(**kw):
-    n = int(0.05 * SR)
-    rng = np.random.RandomState(kw.get('seed', 1))
-    return (rng.randn(n) * _env(n, 0.0005, 0.006) * 0.5).astype(np.float32)
-
-
-def sfx_type(dur=2.0, rate=11, seed=2, **kw):
-    rng = np.random.RandomState(seed)
-    out = np.zeros(int(dur * SR), np.float32)
-    t = 0.0
-    while t < dur - 0.06:
-        c = sfx_click(seed=rng.randint(1e6)) * rng.uniform(0.5, 1.0)
-        i = int(t * SR)
-        out[i:i + len(c)] += c[:len(out) - i]
-        t += rng.uniform(0.6, 1.4) / rate
-    return out
-
-
-def sfx_thud(**kw):
-    n = int(0.35 * SR)
-    t = np.arange(n) / SR
-    rng = np.random.RandomState(3)
-    body = np.sin(2 * np.pi * 70 * t) * np.exp(-t / 0.08) + rng.randn(n) * np.exp(-t / 0.02) * 0.3
-    return (body * 0.7).astype(np.float32)
-
-
-def sfx_step(seed=4, **kw):
-    n = int(0.12 * SR)
-    t = np.arange(n) / SR
-    rng = np.random.RandomState(seed)
-    return ((np.sin(2 * np.pi * 110 * t) * 0.6 + rng.randn(n) * 0.25) * np.exp(-t / 0.025) * 0.35).astype(np.float32)
-
-
-def sfx_crowd(dur=3.0, cheer=0.0, **kw):
-    n = int(dur * SR)
-    rng = np.random.RandomState(5)
-    w = rng.randn(n)
-    # pinkish murmur: smooth white noise, a slow swell, optional cheer
-    from scipy.signal import lfilter
-    y = lfilter([0.05], [1, -0.95], w)
-    swell = 0.6 + 0.4 * np.sin(np.linspace(0, 3, n))
-    if cheer:
-        swell += cheer * np.clip(np.linspace(-1, 3, n), 0, 1)
-    y = y / (np.abs(y).max() + 1e-9) * swell * 0.18
-    fade = np.minimum(1, np.minimum(np.arange(n), n - np.arange(n)) / (0.3 * SR))
-    return (y * fade).astype(np.float32)
-
-
-def sfx_creak(**kw):
-    n = int(0.7 * SR)
-    t = np.arange(n) / SR
-    f = 380 + 120 * np.sin(t * 9)
-    y = np.sign(np.sin(2 * np.pi * np.cumsum(f) / SR)) * 0.08 * np.sin(np.pi * t / t[-1])
-    return y.astype(np.float32)
-
-
-def sfx_whoosh(**kw):
-    n = int(0.4 * SR)
-    rng = np.random.RandomState(6)
-    from scipy.signal import lfilter
-    y = lfilter([0.1], [1, -0.9], rng.randn(n)) * np.sin(np.pi * np.arange(n) / n) ** 2 * 0.25
-    return y.astype(np.float32)
-
-
-SFX = dict(click=sfx_click, type=sfx_type, thud=sfx_thud, step=sfx_step, crowd=sfx_crowd, creak=sfx_creak, whoosh=sfx_whoosh)
+import sfx as SFXLIB      # noqa: E402
+SFX = SFXLIB.SFX
 
 
 # ------------------------------------------------------------------ renderer
@@ -226,12 +170,12 @@ class Renderer:
         if size:
             tl.W, tl.H = size
         self.scale_out = tl.W / 3840.0
-        self.mix()
+        self.mix_voice()
         self.lipsync()
         self.blinks = self.plan_blinks()
         self._cam = {}
 
-    def mix(self):
+    def mix_voice(self):
         tl = self.tl
         tl.duration = tl.t
         n = int(tl.duration * SR) + SR
@@ -240,20 +184,106 @@ class Renderer:
             i = int(s * SR)
             v[i:i + len(x)] += x[:n - i]
         self.voice = v
-        m = v.copy()
+
+    def mix(self):
+        """Dialogue (levelled per clip), foley, footsteps from the walk cycle,
+        the monitor's audio through small speakers (ducked under the voice),
+        room tone, and the title sting."""
+        tl = self.tl
+        n = int(tl.duration * SR) + SR
+        v = np.zeros(n, np.float32)
+        for s, x in tl.voice:
+            # level each clip to the same speech loudness
+            loud = x[np.abs(x) > 0.02]
+            rms = np.sqrt(np.mean(loud ** 2)) if len(loud) else 0.1
+            x = x * min(0.12 / max(rms, 1e-4), 4.0)
+            i = int(s * SR)
+            v[i:i + len(x)] += x[:n - i]
+        self.voice = v
+        fx = np.zeros(n, np.float32)
         for s, x, g in tl.fx:
             i = int(s * SR)
-            m[i:i + len(x)] += x[:n - i] * g
+            fx[i:i + len(x)] += x[:n - i] * g
+        # footsteps: one each time a foot lands in the walk cycle
+        cad = 100
+        last = None
+        k = 0
+        for j in range(int(tl.duration * cad)):
+            t = j / cad
+            p = tl.cartman(t)
+            if p.get('visible', True) and p['body'] == 'walk':
+                phase = int(2 * t * p.get('cadence', WALK_CADENCE))
+                if last is not None and phase != last:
+                    x = SFXLIB.step(seed=k, surface='carpet')
+                    k += 1
+                    i = int(t * SR)
+                    fx[i:i + len(x)] += x[:n - i] * 1.3
+                last = phase
+            else:
+                last = None
+        # voice envelope for ducking
+        venv = np.convolve(np.abs(v), np.ones(int(0.12 * SR)) / int(0.12 * SR), 'same')
+        duck = 1.0 - 0.55 * np.clip(venv / 0.05, 0, 1)
+        # the monitor: crowd audio while football is on screen, a cheer on a goal
+        bed = np.zeros(n, np.float32)
+        crowd = SFXLIB.crowd_bed(tl.duration + 1)
+        step_ = int(0.05 * SR)
+        on = np.zeros(n, np.float32)
+        for i in range(0, n - step_, step_):
+            st = tl.world(i / SR)
+            scr, sp = st.get('screen'), st.get('screen_p') or {}
+            full = self.tl.shot_at(i / SR)[0]['kind'] == 'screen'
+            level = {'match': 0.5, 'devil': 0.25, 'manager': 0.3, 'monaco': 0.15}.get(scr, 0.0)
+            on[i:i + step_] = level * (1.6 if full else 1.0)
+        on = np.convolve(on, np.ones(int(0.15 * SR)) / int(0.15 * SR), 'same').astype(np.float32)
+        bed += crowd[:n] * on
+        for t0, _ in tl.cheers:
+            c = SFXLIB.cheer(4.0)
+            i = int(t0 * SR)
+            bed[i:i + len(c)] += c[:n - i] * 0.5
+        bed = SFXLIB.speaker(bed) * duck
+        tone = SFXLIB.room_tone(n / SR + 0.1)[:n]
+        m = v + fx + bed + tone
+        for t0, kind in tl.stings:
+            x = SFXLIB.guitar_sting()
+            i = int(t0 * SR)
+            m[i:i + len(x)] += x[:n - i]
+        # fade in / out
+        f = int(0.4 * SR)
+        m[:f] *= np.linspace(0, 1, f)
+        e = int(tl.duration * SR)
+        m[e - f:e] *= np.linspace(1, 0, f)
+        m[e:] = 0
         peak = np.abs(m).max()
-        self.audio = m / max(peak, 1.0) * 0.98 if peak > 1 else m
+        self.audio = m / peak * 0.95 if peak > 0.95 else m
 
     def lipsync(self):
+        """Per-frame mouth: word-driven where the clip's text is known (see
+        lipsync.py), from the voice's loudness and colour otherwise. The
+        loudness envelope also drives how wide the mouth opens and the bob."""
+        import lipsync as LS
         sys.path.insert(0, os.path.join(ROOT, 'tools'))
         from render_scene import mouth_track
+        fps = self.tl.fps
         spans = [(s, s + len(x) / SR) for s, x in self.tl.voice]
-        # 22 kHz analysis is plenty
         x = self.voice[::2]
-        self.vis, self.env = mouth_track(x, SR // 2, self.tl.fps, spans)
+        vis, self.env = mouth_track(x, SR // 2, fps, spans)
+        self.mouths = [VIS2MOUTH.get(v) if v else None for v in vis]
+        cache = {}
+        for ln in self.tl.lines:
+            if not ln['text']:
+                continue
+            key = (ln['clip'], ln['text'])
+            if key not in cache:
+                y = load_clip(ln['clip'])
+                ev = LS.align(y, SR, ln['text'])
+                cache[key] = LS.frames(ev, len(y) / SR, fps)
+            clip_frames = cache[key]
+            f0, f1 = int(round(ln['start'] * fps)), int((ln['start'] + ln['b'] - ln['a']) * fps)
+            for f in range(f0, min(f1, len(self.mouths))):
+                fc = int(round((f / fps - ln['start'] + ln['a']) * fps))
+                if 0 <= fc < len(clip_frames):
+                    self.mouths[f] = clip_frames[fc]
         self.spans = spans
 
     def plan_blinks(self):
@@ -319,12 +349,12 @@ class Renderer:
     def puppet(self, t):
         tl = self.tl
         p = tl.cartman(t)
-        f = min(int(t * tl.fps), len(self.vis) - 1)
+        f = min(int(t * tl.fps), len(self.mouths) - 1)
         speaking = any(a <= t < b for a, b in self.spans)
         env = float(self.env[f]) if speaking else 0.0
         mood = p['mouth']
         if speaking and p.get('talk', True):
-            m = VIS2MOUTH.get(self.vis[f])
+            m = self.mouths[min(f, len(self.mouths) - 1)]
             if m:
                 if p.get('loud_mouth') and m in ('a', 'e', 'o') and env > 0.8:
                     m = p['loud_mouth']
@@ -339,7 +369,7 @@ class Renderer:
         if p.get('jitter'):                                 # shuffling about: a slow wiggle, not a vibration
             p['x'] += math.sin(t * 11) * p['jitter']
         if p['body'] == 'walk':
-            p['walk'] = (abs(p['x']) + abs(p['y']) * 0.5) / p.get('stride', 150.0)
+            p['walk'] = t * p.get('cadence', WALK_CADENCE)
         return p
 
     def draw_world(self, pen, t, p, st):
@@ -406,6 +436,7 @@ class Renderer:
 
     # -- output
     def write_audio(self, path):
+        self.mix()
         sf.write(path, self.audio[:int(self.tl.duration * SR)], SR)
 
     def frames(self):
