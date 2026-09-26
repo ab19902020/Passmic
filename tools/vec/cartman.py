@@ -79,12 +79,14 @@ REST = 58.0              # arm angle of the model sheet's "arms down": mittens o
 SHOULDER = (60.0, -50.0)  # where the sleeve leaves the side of his jacket, below the head
 
 
-def draw_arm(pen, sx, sy, angle, side, hand, hand_rot, length=20, width=12.0, bend=0.0, hand_abs=None):
+def draw_arm(pen, sx, sy, angle, side, hand, hand_rot, length=20, width=12.0, bend=0.0, hand_abs=None,
+             explicit_length=False):
     """Stubby sleeve from the side of his body at (sx, sy); side -1 = his right
     (screen left). angle: 0 hangs down, 90 sticks straight out, 150 is up.
     Raised arms reach a little further so the mitten clears his head. bend > 0
     folds the forearm back in front of his belly (degrees)."""
-    length += max(0.0, angle - 90) * 0.3
+    if not explicit_length:
+        length += max(0.0, angle - 90) * 0.3
     if bend:
         l1, l2 = length * 0.55, length * 0.62
         a = math.radians(angle)
@@ -252,6 +254,7 @@ def front_body(pen, p):
 
 
 SIT_DROP = 14.0     # sitting, his body is this much lower than standing; the origin is the seat top
+SIDE_SHOULDER = (6.0, -44.0)   # where the near arm leaves the jacket in profile
 
 
 def front_sit_legs(pen):
@@ -373,8 +376,10 @@ def draw_side(pen, p):
         pen.fill(rrect(4, -31, 60, -12, 8), BROWN)
         pen.ellipse(64, -30, 11, 22, BLACK)
     # the near arm: sleeve tucked under the head, mitten on the belly (or reaching forward)
-    reach = max(0.0, p['arm_r'] - 35)
-    draw_arm(pen, 6, -44, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'], length=10 + reach * 0.7, width=11.5)
+    sx, sy = SIDE_SHOULDER
+    length = p.get('arm_len_r') or (10 + max(0.0, p['arm_r'] - 35) * 0.7)
+    draw_arm(pen, sx, sy, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'], length=length, width=11.5,
+             hand_abs=p['hand_abs_r'], explicit_length=bool(p.get('arm_len_r')))
     # head
     pen.save()
     pen.translate(p['head_dx'], p['head_dy'])

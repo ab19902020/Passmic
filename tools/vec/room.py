@@ -33,7 +33,7 @@ DOOR = (170, 330, 600, FLOOR_Y)            # frame outer box
 # the computer corner (desk, monitor, chair) is drawn in its own coordinates
 # and scaled up about CORNER_PIVOT so it fits a kid of Cartman's width
 CORNER_PIVOT, CORNER_SCALE = (3700, 1780), 1.35
-_CHAIR_X, _SEAT_Y = 2560, 1560             # seat top centre (corner coordinates)
+_CHAIR_X, _SEAT_Y = 2720, 1560             # seat top centre (corner coordinates), pulled up to the desk
 
 
 def corner_to_world(x, y):
@@ -42,11 +42,23 @@ def corner_to_world(x, y):
 
 
 CHAIR_X, SEAT_Y = corner_to_world(_CHAIR_X, _SEAT_Y)
+# keyboard and mouse sit at the near end of the desk, right in front of him
+# (corner coordinates: left, right edge of the keyboard; the mouse's centre)
+_KEYS = (2925, 3110)
+_MOUSE_X = 2888
 SEAT_TOP = corner_to_world(_CHAIR_X, _SEAT_Y - 10)[1]      # the cushion's top edge
-DESK = (2780, 1390, 3720, 1780)            # desktop left, top, right, feet
+DESK = (2780, 1450, 3720, 1780)            # desktop left, top, right, feet: a kid-height desk top
 # screen quad TL, TR, BR, BL. The screen is turned towards the chair (on its
 # left): its left edge is further away (shorter), its right edge nearer (taller)
-MONITOR = [(2880, 995), (3330, 930), (3330, 1385), (2880, 1330)]
+MONITOR = [(2970, 1055), (3420, 990), (3420, 1445), (2970, 1390)]
+
+
+def _top_world(x):
+    return corner_to_world(x, DESK[1] + 10)
+
+
+KEY_POINTS = [_top_world(_KEYS[0] + 25), _top_world(_KEYS[0] + 60), _top_world(_KEYS[0] + 95)]   # keys he taps
+MOUSE_POINT = _top_world(_MOUSE_X)
 
 
 def wall(pen):
@@ -195,28 +207,30 @@ def desk_back(pen, t, st):
     # drawer unit
     pen.rect(x1 - 330, top + 40, x1 - 40, feet, WOOD)
     for i in range(3):
-        yy = top + 60 + i * 110
-        pen.rect(x1 - 310, yy, x1 - 60, yy + 90, WOOD_LIGHT, r=8)
-        pen.rect(x1 - 215, yy + 38, x1 - 155, yy + 52, (230, 200, 90), r=6)
+        yy = top + 55 + i * 92
+        pen.rect(x1 - 310, yy, x1 - 60, yy + 80, WOOD_LIGHT, r=8)
+        pen.rect(x1 - 215, yy + 33, x1 - 155, yy + 47, (230, 200, 90), r=6)
     # desktop
     pen.rect(x0 - 20, top, x1 + 20, top + 48, WOOD_LIGHT, r=8)
     pen.line([(x0 - 10, top + 46), (x1 + 10, top + 46)], WOOD_DARK, 4)
     monitor(pen, t, st)
-    # keyboard, mouse, soda can
-    pen.fill(polyline([(2920, top + 6), (3230, top + 6), (3260, top + 34), (2890, top + 34)], close=True), (220, 222, 228))
+    # keyboard and mouse at the near end, soda can by the monitor
+    k0, k1 = _KEYS
+    pen.fill(polyline([(k0 + 25, top + 4), (k1 - 5, top + 4), (k1 + 20, top + 30), (k0, top + 30)], close=True), (220, 222, 228))
+    pen.fill(polyline([(k0, top + 30), (k1 + 20, top + 30), (k1 + 20, top + 37), (k0, top + 37)], close=True), (176, 178, 186))
     for i in range(3):
-        y = top + 12 + i * 7
-        pen.line([(2915 - i * 8, y), (3235 + i * 8, y)], (170, 172, 180), 3)
-    pen.ellipse(3330, top + 20, 30, 16, (220, 222, 228), line=(170, 172, 180), width=3)
-    pen.rect(3480, top - 110, 3540, top + 10, (200, 30, 40), r=10)
-    pen.rect(3480, top - 80, 3540, top - 40, (240, 240, 240))
+        y = top + 10 + i * 7
+        pen.line([(k0 + 22 - i * 8, y), (k1 - 2 + i * 8, y)], (170, 172, 180), 3)
+    pen.ellipse(_MOUSE_X, top + 18, 24, 13, (220, 222, 228), line=(170, 172, 180), width=3)
+    pen.rect(3600, top - 110, 3660, top + 10, (200, 30, 40), r=10)
+    pen.rect(3600, top - 80, 3660, top - 40, (240, 240, 240))
 
 
 def monitor(pen, t, st):
     (ax, ay), (bx, by), (cx, cy), (dx, dy) = MONITOR
     # stand
     mx = (ax + bx) / 2
-    pen.rect(mx - 35, 1330, mx + 35, DESK[1] + 4, (60, 62, 70))
+    pen.rect(mx - 35, (ay + dy) / 2 + 250, mx + 35, DESK[1] + 4, (60, 62, 70))
     pen.fill(polyline([(mx - 125, DESK[1] + 2), (mx + 135, DESK[1] + 2), (mx + 105, DESK[1] - 24), (mx - 95, DESK[1] - 24)], close=True), (60, 62, 70))
     # the monitor's right side panel, receding away from the camera
     pen.fill(polyline([(bx + 40, by - 40), (bx + 78, by - 20), (cx + 78, cy + 20), (cx + 40, cy + 40)], close=True), (22, 22, 28))

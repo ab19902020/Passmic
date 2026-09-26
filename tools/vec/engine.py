@@ -182,8 +182,9 @@ class Renderer:
         self.voice = v
 
     def mix(self):
-        """Dialogue (levelled per clip), footsteps from the walk cycle and the
-        hop / landing sounds keyed in the scene. Nothing else."""
+        """Dialogue (levelled per clip), footsteps from the walk cycle, the
+        foley keyed in the scene (door, hops, chair, mouse, keys) and the
+        title sting. No background noise and nothing from the monitor."""
         tl = self.tl
         n = int(tl.duration * SR) + SR
         v = np.zeros(n, np.float32)
@@ -216,9 +217,13 @@ class Renderer:
                 last = phase
             else:
                 last = None
-        # sound effects are footsteps and his jumps only: no room tone, no
-        # sound from the monitor, no music
+        # no room tone and no sound from the monitor (football, Monaco): only
+        # the dialogue, the foley sound effects and the title sting
         m = v + fx
+        for t0, kind in tl.stings:
+            x = SFXLIB.guitar_sting()
+            i = int(t0 * SR)
+            m[i:i + len(x)] += x[:n - i]
         # fade in / out
         f = int(0.4 * SR)
         m[:f] *= np.linspace(0, 1, f)
@@ -341,7 +346,32 @@ class Renderer:
             p['x'] += math.sin(t * 11) * p['jitter']
         if p['body'] == 'walk':
             p['walk'] = t * p.get('cadence', WALK_CADENCE)
+        self.aim_hand(p)
         return p
+
+    @staticmethod
+    def aim_hand(p):
+        """In profile, put the near mitten exactly on a world point
+        (p['reach_to']): the arm angle and length are solved from his
+        shoulder, then blended in by p['reach'] (0 = his own arm pose)."""
+        tgt, amt = p.get('reach_to'), p.get('reach') or 0.0
+        if not tgt or amt <= 0 or p['view'] not in ('right', 'side', 'left'):
+            return
+        side = -1.0 if p['view'] == 'left' else 1.0
+        # undo the lean rotation about his feet, then world -> puppet units
+        a = -math.radians(p.get('lean') or 0.0)
+        wx, wy = tgt[0] - p['x'], tgt[1] - p['y']
+        wx, wy = wx * math.cos(a) - wy * math.sin(a), wx * math.sin(a) + wy * math.cos(a)
+        lx = wx / p['s'] * side
+        ly = wy / p['s'] - (C.SIT_DROP if p['body'] == 'sit' else 0.0)
+        sx, sy = C.SIDE_SHOULDER
+        dx, dy = lx - sx, ly - sy
+        ang = math.degrees(math.atan2(dx, dy))
+        # the mitten's palm sits ~11 units past the wrist, along the arm
+        L = max(8.0, math.hypot(dx, dy) - 11.0)
+        base_len = 10 + max(0.0, p['arm_r'] - 35) * 0.7
+        p['arm_r'] = p['arm_r'] + (ang - p['arm_r']) * amt
+        p['arm_len_r'] = base_len + (L - base_len) * amt
 
     def draw_world(self, pen, t, p, st):
         R.draw_back(pen, t, st)

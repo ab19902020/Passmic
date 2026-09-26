@@ -70,10 +70,15 @@ python3 tools/render_episode.py episode/scenes/cartman_room.py still 42  # one 4
 the voiced time and snapped onto the loudness peaks), then gives each sound its mouth (M/B/P closed, F/V lip
 bite, TH tongue, OO/W rounded, AH wide), held on twos like the show.
 
-**Sound effects** are deliberately minimal: kid footsteps on carpet, generated from the walk cycle (one per
-foot landing), and his jumps (the hop up onto the chair and the cushion landing, standing up on the seat,
-dropping back into it). No room tone, no monitor audio, no music. Each voice clip is levelled. Other effects
-(door, mouse, keyboard, chair creak, guitar sting) are still available in `tools/vec/sfx.py` if wanted.
+**Sound effects** (`tools/vec/sfx.py`, all synthesised): kid footsteps on carpet generated from the walk cycle
+(one per foot landing), the door opening and shutting, his hops onto / off the chair with the cushion landing,
+a chair creak when he shuffles, mouse clicks and one key sound per key he taps, and a guitar sting on the title.
+There is no background noise and nothing from the monitor (the football and the Monaco screen are silent).
+Each voice clip is levelled.
+
+**Desk:** the keyboard and mouse sit at the near end of a kid-height desk, right in front of him, and his
+mitten is aimed at the exact key or the mouse whenever he clicks or types (`reach_to` / `reach` keys,
+solved in `Renderer.aim_hand`).
 
 ## HD redraws (bitmap, first cut)
 `python3 tools/hd_sprites.py <name> [face_px]` redraws every sprite of a character as clean flat-colour art

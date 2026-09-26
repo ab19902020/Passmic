@@ -59,14 +59,60 @@ def sc(y):
 
 
 def turn_to_screen(tl, t, **kw):
-    tl.key(t, e='step', view='right', body='sit', lean=0.0, arm_r=35.0, hand_r='mitten', look=(1.0, -0.25), **SIT_SIDE, **kw)
+    tl.key(t, e='step', view='right', body='sit', lean=0.0, arm_r=35.0, hand_r='mitten', look=(1.0, -0.25),
+           reach=0.0, hand_abs_r=None, **SIT_SIDE, **kw)
     tl.set(t, e='step', chair_view='side')
 
 
 def turn_to_camera(tl, t, **kw):
     tl.key(t, e='step', view='front', body='sit', lean=0.0, look=(0.0, 0.0), arm_l=REST, arm_r=REST,
-           hand_l='mitten', hand_r='mitten', arms_front=False, **SIT_FRONT, **kw)
+           hand_l='mitten', hand_r='mitten', arms_front=False, reach=0.0, hand_abs_r=None, **SIT_FRONT, **kw)
     tl.set(t, e='step', chair_view='front')
+
+
+# ---- the keyboard and mouse are right in front of him on the desk; his mitten
+# ---- is aimed at the exact key / the mouse (see Renderer.aim_hand)
+MOUSE = R.MOUSE_POINT
+KEYS = R.KEY_POINTS
+DESK_HAND = dict(hand_r='mitten', hand_abs_r=-30.0)
+
+
+def _up(pt, d=16.0):
+    return (pt[0], pt[1] - d)
+
+
+def click_mouse(tl, t):
+    """Reach for the mouse and click it (the click lands at t + 0.26)."""
+    tl.key(t, e='step', reach_to=_up(MOUSE), **DESK_HAND)
+    tl.key(t, reach=0.0); tl.key(t + 0.2, reach=1.0, e='out')
+    tl.key(t + 0.26, e='step', reach_to=MOUSE)
+    tl.key(t + 0.36, e='step', reach_to=_up(MOUSE, 5))
+    tl.sfx(t + 0.26, 'click', 1.0)
+
+
+def hands_to_keys(tl, t):
+    tl.key(t, e='step', reach_to=_up(KEYS[1]), **DESK_HAND)
+    tl.key(t, reach=0.0); tl.key(t + 0.2, reach=1.0, e='out')
+
+
+def hands_off(tl, t):
+    tl.key(t, reach=1.0); tl.key(t + 0.22, reach=0.0, e='inout')
+
+
+def tap_keys(tl, t0, dur, rate=8.0, seed=0):
+    """The mitten hops from key to key, pressing each; one key sound per press."""
+    import random
+    rng = random.Random(seed)
+    t, last = t0, None
+    while t < t0 + dur:
+        i = rng.randrange(len(KEYS))
+        if i == last:
+            i = (i + 1) % len(KEYS)
+        last = i
+        tl.key(t, e='step', reach_to=KEYS[i])
+        tl.key(t + 0.45 / rate, e='step', reach_to=_up(KEYS[i], 12))
+        tl.sfx(t, 'key', 1.0, seed=rng.randrange(1 << 30))
+        t += rng.uniform(0.75, 1.3) / rate
 
 
 def build():
@@ -88,6 +134,7 @@ def build():
     DOOR_X = 385.0
     t = tl.wait(0.8)
     st(t, door=0.0); st(t + 0.7, door=1.0, e='out')
+    tl.sfx(t, 'door_open', 1.0)
     t = tl.wait(0.9)
     k(t, e='step', visible=True, view='front', body='walk')
     k(t, x=DOOR_X, y=1335.0, s=sc(1335)); k(t + 0.8, e='linear', x=DOOR_X, y=1420.0, s=sc(1420))
@@ -95,6 +142,7 @@ def build():
     k(t, e='step', view='back', body='stand', arm_l=REST)
     k(t + 0.2, arm_l=100.0, e='out'); k(t + 0.85, arm_l=REST)
     st(t + 0.25, door=1.0); st(t + 0.7, door=0.0, e='in')
+    tl.sfx(t + 0.55, 'door_close', 1.0)
     t = tl.wait(1.1)
     # walks down into the room, clear of the bed...
     k(t, e='step', view='front', body='walk')
@@ -117,6 +165,7 @@ def build():
     tl.sfx(t + 0.1, 'hop', 1.0); tl.sfx(t + 0.42, 'cushion', 1.0)
     t = tl.wait(1.1)
     k(t, jitter=5.0); k(t + 0.9, jitter=0.0)
+    tl.sfx(t + 0.1, 'chair_creak', 0.8)
     k(t, head_tilt=4.0); k(t + 0.4, head_tilt=-4.0); k(t + 0.8, head_tilt=0.0)
     tl.shot(t, 'rect', rect=DESK_SHOT)
 
@@ -210,8 +259,8 @@ def build():
     # "And THEN there's Jim Ratcliffe."  - clicks his mouse
     turn_to_screen(tl, f(8.6), brows='angry', mouth='frown')
     tl.shot(f(8.6), 'rect', rect=DESK_TIGHT)
-    k(f(8.6), arm_r=35.0); k(f(8.8), arm_r=75.0, e='out')
-    st(f(8.85), e='step', screen='news', screen_p=dict(headline='NEW PART-OWNER', kind='profile', name='JIM RATCLIFFE',
+    click_mouse(tl, f(8.6))
+    st(f(8.86), e='step', screen='news', screen_p=dict(headline='NEW PART-OWNER', kind='profile', name='JIM RATCLIFFE',
                                                         facts=['Owns part of United', 'Lives in Monaco']))
     tl.shot(f(9.7), 'screen')
 
@@ -220,8 +269,9 @@ def build():
     f = tl.say(CLIP_MONACO, text=TEXT['monaco'])
     t = f(0) - 0.55
     tl.shot(t, 'rect', rect=DESK_TIGHT)
-    k(t, arm_r=35.0); k(t + 0.15, arm_r=75.0, e='out'); k(t + 0.4, arm_r=35.0)
-    st(t + 0.2, e='step', screen='monaco', screen_p=dict(caption='JIM RATCLIFFE - MONACO'))
+    click_mouse(tl, t)
+    st(t + 0.26, e='step', screen='monaco', screen_p=dict(caption='JIM RATCLIFFE - MONACO'))
+    hands_off(tl, f(1.3))
     k(t, e='step', brows='angry', brow_amt=0.8, mouth='frown', look=(1.0, -0.2), loud_mouth=None)
     tl.shot(f(1.3), 'close', w=1000)
     # "...while living in Monaco."  - the yacht on screen
@@ -306,15 +356,17 @@ def build():
     turn_to_screen(tl, t, brows='none', mouth='rest', bend_l=0.0, bend_r=0.0, hand_rot_l=0.0, hand_rot_r=0.0,
                    arms_front=False)
     tl.shot(t, 'rect', rect=DESK_TIGHT)
-    k(t, arm_r=35.0); k(t + 0.3, arm_r=75.0, e='out')
+    click_mouse(tl, t + 0.25)
     st(t, e='step', screen='desktop', screen_p={})
-    st(t + 0.55, e='step', screen='document', screen_p=dict(lines=DOC, chars=0))
+    st(t + 0.51, e='step', screen='document', screen_p=dict(lines=DOC, chars=0))
+    hands_to_keys(tl, t + 0.75)
 
     def type_line(t0, upto, dur):
         start = sum(DOC_N[:upto - 1])
         n = DOC_N[upto - 1]
         for i in range(n + 1):
             st(t0 + dur * i / n, e='step', screen_p=dict(lines=DOC, chars=start + i))
+        tap_keys(tl, t0, dur, rate=n / dur * 0.7, seed=upto)
 
     t = tl.wait(6.2)                       # the document fills up
     tl.shot(t, 'screen')
@@ -322,21 +374,22 @@ def build():
     type_line(t + 3.3, 2, 2.7)
     t = tl.wait(1.3)                       # Cartman hammering the keyboard
     tl.shot(t, 'rect', rect=DESK_TIGHT)
-    for i in range(14):                    # hammering the keys
-        k(t + i * 0.11, e='step', arm_r=(84.0 if i % 2 else 74.0), head_dy=(1.5 if i % 2 else 0.0))
-    k(t + 1.6, e='step', arm_r=35.0, head_dy=0.0)
+    tap_keys(tl, t, 1.3, rate=10.0, seed=9)
     t = tl.wait(3.2)
     tl.shot(t, 'screen')
     type_line(t + 0.2, 3, 2.8)
     t = tl.wait(1.9)                       # Cartman thinks...
     tl.shot(t, 'close', w=1000)
-    k(t, e='step', arm_r=35.0, look=(0.3, -0.9), brows='worried', brow_amt=0.5, mouth='rest')
+    hands_off(tl, t)
+    k(t, e='step', look=(0.3, -0.9), brows='worried', brow_amt=0.5, mouth='rest')
     k(t + 1.3, look=(1.0, -0.2))
+    hands_to_keys(tl, t + 1.6)
     t = tl.wait(3.3)                       # ...then types
     tl.shot(t, 'screen')
     type_line(t + 0.3, 4, 2.6)
     t = tl.wait(1.1)                       # he smiles
     tl.shot(t, 'close', w=1000)
+    hands_off(tl, t)
     k(t, e='step', mouth='grin', brows='none', lid_top=0.22, look=(1.0, -0.2))
 
     # ------------------------------------------------ "Yeah. I'm gonna save Manchester United."
@@ -352,5 +405,6 @@ def build():
     # ------------------------------------------------ title
     t = tl.wait(4.0)
     tl.shot(t, 'title', text='SOUTH MANCHESTER')
+    tl.sting(t)
     st(t + 3.2, fade=0.0); st(t + 4.0, fade=1.0)
     return tl
