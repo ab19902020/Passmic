@@ -179,7 +179,7 @@ def draw_mouth(pen, x, y, kind, amt=1.0, scale=1.0):
 BROWS = {   # (inner dy, outer dy) relative to the resting brow line; + = lower
     'none': None,
     'angry': (6, -5),
-    'determined': (4, -2),
+    'determined': (6, -3),
     'sad': (-5, 4),
     'worried': (-4, 2),
     'raised': (-6, -6),
@@ -188,41 +188,36 @@ BROWS = {   # (inner dy, outer dy) relative to the resting brow line; + = lower
 
 
 def draw_eyes(pen, cx, cy, p, profile=False):
-    """Two touching eye whites (one in profile), lids, pupils."""
-    blink = max(p['blink'], p['lid_top'])
+    """Two touching eye whites (one in profile), lids, pupils. Fully closed
+    eyes are drawn the show's way: no white at all, just a curved lid line."""
+    top = max(p['lid_top'], p['blink'])
     eyes = [(cx + 15, cy, 1)] if profile else [(cx - 17.5, cy, -1), (cx + 18.5, cy, 1)]
     rx, ry = (13.5, 20.5) if profile else (19.5, 21)
     for ex, ey, s in eyes:
+        if top >= 0.95:
+            yl = ey + ry * 0.15
+            pen.stroke(smooth([(ex - rx * 0.8, yl - 2), (ex, yl + 3.5), (ex + rx * 0.8, yl - 2)], close=False), LINE, 2.3)
+            continue
         eye = ellipse(ex, ey, rx, ry, 0 if profile else s * 6)
         pen.fill(eye, WHITE)
-        # pupils
-        if blink < 0.95:
-            lx, ly = p['look']
-            if profile:
-                px, py = ex + 8 + lx * 2.5, ey + 1 + ly * 5
-            else:
-                px, py = ex - s * 5 + lx * 7, ey + 1 + ly * 7
-            pen.save()
-            pen.clip(eye)
-            pen.ellipse(px, py, 2.9 * p['pupil'], 3.1 * p['pupil'], BLACK)
-            pen.restore()
+        lx, ly = p['look']
+        if profile:
+            px, py = ex + 8 + lx * 2.5, ey + 1 + ly * 5
+        else:
+            px, py = ex - s * 5 + lx * 7, ey + 1 + ly * 7
+        pen.save()
+        pen.clip(eye)
+        pen.ellipse(px, py, 2.9 * p['pupil'], 3.1 * p['pupil'], BLACK)
         # eyelids: skin coming down from the top / up from the bottom
-        top = max(p['lid_top'], p['blink'])
         if top > 0.01:
-            pen.save()
-            pen.clip(eye)
             ycut = ey - ry + 2 * ry * top
-            lid = rrect(ex - rx - 2, ey - ry - 2, ex + rx + 2, ycut)
-            pen.fill(lid, SKIN)
-            pen.line([(ex - rx, ycut), (ex + rx, ycut)], LINE, 1.6 if top < 0.95 else 2.2)
-            pen.restore()
+            pen.fill(rrect(ex - rx - 2, ey - ry - 2, ex + rx + 2, ycut), SKIN)
+            pen.line([(ex - rx, ycut), (ex + rx, ycut)], LINE, 1.7)
         if p['lid_bot'] > 0.01:
-            pen.save()
-            pen.clip(eye)
             ycut = ey + ry - 2 * ry * p['lid_bot']
             pen.fill(smooth([(ex - rx - 2, ycut + 3), (ex, ycut - 3), (ex + rx + 2, ycut + 3), (ex + rx + 2, ey + ry + 2), (ex - rx - 2, ey + ry + 2)]), SKIN)
             pen.stroke(smooth([(ex - rx, ycut + 3), (ex, ycut - 3), (ex + rx, ycut + 3)], close=False), LINE, 1.4)
-            pen.restore()
+        pen.restore()
         pen.stroke(eye, (150, 148, 152), 0.7)
 
 
@@ -256,12 +251,19 @@ def front_body(pen, p):
     pen.restore()
 
 
+SIT_DROP = 14.0     # sitting, his body is this much lower than standing; the origin is the seat top
+
+
+def front_sit_legs(pen):
+    """Sitting, as on the sheet's SITTING (FRONT): trousers between two big
+    soles that face the camera at the bottom corners of his jacket."""
+    pen.fill(smooth([(-50, -6), (0, -9), (50, -6), (46, 8), (0, 10), (-46, 8)]), BROWN)
+    for s in (-1, 1):
+        pen.ellipse(s * 45, 3, 23, 26, BLACK)
+
+
 def front_legs(pen, p):
     if p['body'] == 'sit':
-        # thighs toward the camera, big soles facing us
-        for s in (-1, 1):
-            pen.ellipse(s * 34, -4, 30, 13, BROWN)
-            pen.ellipse(s * 36, 6, 20, 17, BLACK)
         return
     lift = [0.0, 0.0]
     if p['body'] == 'walk':
@@ -316,8 +318,10 @@ def draw_front(pen, p):
         front_legs(pen, p)
     if p['body'] == 'sit':
         pen.save()
-        pen.translate(0, -6)
+        pen.translate(0, SIT_DROP)
     front_body(pen, p)
+    if p['body'] == 'sit':
+        front_sit_legs(pen)
     sx, sy = SHOULDER
     arm_l = lambda: draw_arm(pen, -sx, sy, p['arm_l'], -1, p['hand_l'], p['hand_rot_l'], bend=p['bend_l'], hand_abs=p['hand_abs_l'])
     arm_r = lambda: draw_arm(pen, sx, sy, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'], bend=p['bend_r'], hand_abs=p['hand_abs_r'])
@@ -359,15 +363,15 @@ def draw_side(pen, p):
             pen.fill(rrect(dx - 14, -24 - lift, dx + 12, -5 - lift, 6), darker(BROWN, shade))
             pen.ellipse(dx + 4, -4 - lift, 24, 5, darker(BLACK, shade) if shade < 1 else BLACK)
     pen.save()
-    pen.translate(0, bob + (-6 if p['body'] == 'sit' else 0))
+    pen.translate(0, bob + (SIT_DROP if p['body'] == 'sit' else 0))
     body = smooth([(-44, -76), (-62, -54), (-66, -34), (-57, -17), (0, -15), (52, -17), (68, -33), (64, -56), (46, -76), (0, -84)])
     pen.fill(body, RED)
     for by in (-52, -38, -25):                               # buttons down the jacket front
         pen.ellipse(58 + (by + 52) * 0.25, by, 2.1, 2.1, BLACK)
     if p['body'] == 'sit':
-        # stubby legs straight out along the seat, soles facing forward
-        pen.fill(rrect(8, -28, 50, -6, 10), BROWN)
-        pen.ellipse(55, -17, 7.5, 12.5, BLACK)
+        # as on the sheet's SITTING (SIDE): legs straight out along the seat, the sole standing up
+        pen.fill(rrect(4, -31, 60, -12, 8), BROWN)
+        pen.ellipse(64, -30, 11, 22, BLACK)
     # the near arm: sleeve tucked under the head, mitten on the belly (or reaching forward)
     reach = max(0.0, p['arm_r'] - 35)
     draw_arm(pen, 6, -44, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'], length=10 + reach * 0.7, width=11.5)

@@ -17,12 +17,12 @@ CLIP = lambda n: os.path.join(EP, 'audio', 'clip%02d.mp3' % n)
 
 K = 3.4                                       # Cartman units -> world px near the camera
 CX, SY = R.CHAIR_X, R.SEAT_Y
-SIT_SIDE = dict(x=CX + 10, y=SY + 92)         # seated, facing the monitor (right)
-SIT_FRONT = dict(x=CX, y=SY + 82)             # seated, turned to camera
-STAND_SEAT = dict(x=CX, y=SY + 8)             # standing on the seat
+SIT_SIDE = dict(x=CX - 30, y=R.SEAT_TOP + 6)         # seated, facing the monitor (right)
+SIT_FRONT = dict(x=CX, y=R.SEAT_TOP + 18)             # seated, turned to camera
+STAND_SEAT = dict(x=CX, y=R.SEAT_TOP + 6)             # standing on the seat
 DESK_SHOT = (1700, 580, 1850)                 # camera rects (x0, y0, width) in world px
 DESK_TIGHT = (1820, 590, 1620)
-CHAIR_WIDE = (1100, 330, 2600)
+CHAIR_WIDE = (1380, 640, 1580)
 
 DOC = ['OPERATION: SAVE MANCHESTER UNITED', 'OBJECTIVE 1: GET RID OF THE GLAZERS',
        'OBJECTIVE 2: GET RID OF JIM RATCLIFFE', 'OBJECTIVE 3: CARTMAN TAKES CONTROL']
@@ -61,28 +61,36 @@ def build():
     tl.sfx(0.2, 'crowd', gain=0.25, dur=10.5)             # the video is already playing
     tl.wait(1.1)
 
-    # the door opens, Cartman walks in and shuts it behind him
+    # the door opens, Cartman steps in, turns round and shuts it behind him
+    DOOR_X = 385.0
     t = tl.wait(0.8)
     st(t, door=0.0); st(t + 0.7, door=1.0, e='out')
     tl.sfx(t, 'creak', 0.8)
-    t = tl.wait(2.0)
-    k(t, e='step', visible=True)
-    k(t, x=385.0, y=1330.0, s=sc(1330)); k(t + 1.9, e='linear', x=640.0, y=1700.0, s=sc(1700))
-    for i in range(5):
+    t = tl.wait(0.9)
+    k(t, e='step', visible=True, view='front', body='walk')
+    k(t, x=DOOR_X, y=1335.0, s=sc(1335)); k(t + 0.8, e='linear', x=DOOR_X, y=1420.0, s=sc(1420))
+    for i in range(2):
         tl.sfx(t + 0.2 + i * 0.38, 'step', 0.6, seed=i)
-    t = tl.wait(1.2)
+    t = tl.wait(0.9)
     k(t, e='step', view='back', body='stand', arm_l=REST)
-    k(t + 0.25, arm_l=100.0, e='out'); k(t + 0.9, arm_l=REST)
-    st(t + 0.3, door=1.0); st(t + 0.75, door=0.0, e='in')
-    tl.sfx(t + 0.75, 'thud', 0.9)
+    k(t + 0.2, arm_l=100.0, e='out'); k(t + 0.85, arm_l=REST)
+    st(t + 0.25, door=1.0); st(t + 0.7, door=0.0, e='in')
+    tl.sfx(t + 0.7, 'thud', 0.9)
+    t = tl.wait(1.1)
+    # walks down into the room, clear of the bed...
+    k(t, e='step', view='front', body='walk')
+    k(t, x=DOOR_X, y=1420.0, s=sc(1420)); k(t + 1.6, e='linear', x=DOOR_X + 20, y=1740.0, s=sc(1740))
+    for i in range(4):
+        tl.sfx(t + 0.2 + i * 0.38, 'step', 0.6, seed=4 + i)
+    t = tl.wait(1.6)
 
-    # crosses the room without a word
-    t = tl.wait(4.2)
+    # ...and crosses the room to his computer without a word
+    t = tl.wait(3.6)
     k(t, e='step', view='right', body='walk', arm_r=12.0)
-    k(t, x=640.0, y=1700.0, s=sc(1700)); k(t + 4.0, e='linear', x=CX - 330, y=1800.0, s=sc(1800))
-    for i in range(11):
+    k(t, x=DOOR_X + 20, y=1740.0, s=sc(1740)); k(t + 3.5, e='linear', x=CX - 330, y=1800.0, s=sc(1800))
+    for i in range(10):
         tl.sfx(t + 0.15 + i * 0.36, 'step', 0.6, seed=10 + i)
-    tl.shot(t + 2.0, 'rect', rect=(900, 420, 3000))
+    tl.shot(t + 1.6, 'rect', rect=(900, 420, 3000))
 
     # climbs onto the computer chair and shuffles comfortable
     t = tl.wait(0.5)
@@ -229,7 +237,7 @@ def build():
     # ------------------------------------------------ mock-inspirational
     f = tl.say(CLIP(6), 2.0, None, gap=0.9)
     tl.shot(f(2.0), 'close', w=1050)
-    k(f(2.0), e='step', brows='raised', brow_amt=0.35, look=(0.0, -0.25), pupil=1.15)
+    k(f(2.0), e='step', brows='worried', brow_amt=0.7, lid_top=0.12, look=(0.0, -0.25), pupil=1.15)
     # "Maybe Manchester United doesn't need another billionaire." - looks directly ahead
     k(f(4.3), look=(0.0, 0.0))
     tl.shot(f(7.7), 'close', w=900)
@@ -237,7 +245,7 @@ def build():
     k(f(11.9) + 0.3, e='step', mouth='smirk')
     f = tl.say(CLIP(7), 0.0, 6.9, gap=0.55)
     tl.shot(f(0), 'close', w=880)
-    k(f(0), e='step', brows='determined', brow_amt=0.55, pupil=1.0, mouth='smirk')
+    k(f(0), e='step', brows='determined', brow_amt=0.8, pupil=1.0, mouth='smirk', lid_top=0.0)
     k(f(5.8), lid_top=0.22)
     # "Eric fucking Cartman." - both thumbs at himself
     f = tl.say(CLIP(7), 6.95, None, gap=1.7)
@@ -278,20 +286,20 @@ def build():
     type_line(t + 0.2, 3, 2.8)
     t = tl.wait(1.9)                       # Cartman thinks...
     tl.shot(t, 'close', w=1000)
-    k(t, e='step', arm_r=35.0, look=(0.3, -0.9), brows='raised', brow_amt=0.3, mouth='rest')
+    k(t, e='step', arm_r=35.0, look=(0.3, -0.9), brows='worried', brow_amt=0.5, mouth='rest')
     k(t + 1.3, look=(1.0, -0.2))
     t = tl.wait(3.3)                       # ...then types
     tl.shot(t, 'screen')
     type_line(t + 0.3, 4, 2.6)
     t = tl.wait(1.1)                       # he smiles
     tl.shot(t, 'close', w=1000)
-    k(t, e='step', mouth='grin', brows='determined', brow_amt=0.4, look=(1.0, -0.2))
+    k(t, e='step', mouth='grin', brows='none', lid_top=0.22, look=(1.0, -0.2))
 
     # ------------------------------------------------ "Yeah. I'm gonna save Manchester United."
     f = tl.say(CLIP(8), 0.0, None, gap=0.3)
-    turn_to_camera(tl, f(0.1), mouth='smirk', brows='determined', brow_amt=0.5)
+    turn_to_camera(tl, f(0.1), mouth='smirk', brows='none', lid_top=0.25)
     tl.shot(f(0.1), 'close', w=900)
-    turn_to_screen(tl, f(1.2), mouth='smirk', brows='determined', brow_amt=0.5)
+    turn_to_screen(tl, f(1.2), mouth='smirk', brows='none', lid_top=0.25)
     tl.shot(f(1.2), 'rect', rect=DESK_SHOT)
     # "And those assholes are gonna fucking love me for it."
     tl.shot(f(3.7), 'close', w=1000)

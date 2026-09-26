@@ -42,6 +42,7 @@ def corner_to_world(x, y):
 
 
 CHAIR_X, SEAT_Y = corner_to_world(_CHAIR_X, _SEAT_Y)
+SEAT_TOP = corner_to_world(_CHAIR_X, _SEAT_Y - 10)[1]      # the cushion's top edge
 DESK = (2780, 1390, 3720, 1780)            # desktop left, top, right, feet
 # screen quad TL, TR, BR, BL. The screen is turned towards the chair (on its
 # left): its left edge is further away (shorter), its right edge nearer (taller)
