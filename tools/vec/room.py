@@ -43,7 +43,9 @@ def corner_to_world(x, y):
 
 CHAIR_X, SEAT_Y = corner_to_world(_CHAIR_X, _SEAT_Y)
 DESK = (2780, 1390, 3720, 1780)            # desktop left, top, right, feet
-MONITOR = [(2900, 930), (3330, 1000), (3330, 1320), (2900, 1370)]   # screen quad TL, TR, BR, BL
+# screen quad TL, TR, BR, BL. The screen is turned towards the chair (on its
+# left): its left edge is further away (shorter), its right edge nearer (taller)
+MONITOR = [(2880, 995), (3330, 930), (3330, 1385), (2880, 1330)]
 
 
 def wall(pen):
@@ -212,12 +214,14 @@ def desk_back(pen, t, st):
 def monitor(pen, t, st):
     (ax, ay), (bx, by), (cx, cy), (dx, dy) = MONITOR
     # stand
-    pen.rect(3080, 1330, 3150, DESK[1] + 4, (60, 62, 70))
-    pen.fill(polyline([(2990, DESK[1] + 2), (3250, DESK[1] + 2), (3220, DESK[1] - 24), (3020, DESK[1] - 24)], close=True), (60, 62, 70))
-    # bezel: the quad grown outwards a little
-    bez = polyline([(ax - 34, ay - 40), (bx + 30, by - 30), (cx + 30, cy + 30), (dx - 34, dy + 40)], close=True)
+    mx = (ax + bx) / 2
+    pen.rect(mx - 35, 1330, mx + 35, DESK[1] + 4, (60, 62, 70))
+    pen.fill(polyline([(mx - 125, DESK[1] + 2), (mx + 135, DESK[1] + 2), (mx + 105, DESK[1] - 24), (mx - 95, DESK[1] - 24)], close=True), (60, 62, 70))
+    # the monitor's right side panel, receding away from the camera
+    pen.fill(polyline([(bx + 40, by - 40), (bx + 78, by - 20), (cx + 78, cy + 20), (cx + 40, cy + 40)], close=True), (22, 22, 28))
+    # bezel: the quad grown outwards (more on the nearer, right-hand side)
+    bez = polyline([(ax - 28, ay - 28), (bx + 40, by - 40), (cx + 40, cy + 40), (dx - 28, dy + 28)], close=True)
     pen.fill(bez, (34, 34, 40))
-    pen.fill(polyline([(bx + 30, by - 30), (bx + 70, by - 10), (cx + 70, cy + 14), (cx + 30, cy + 30)], close=True), (22, 22, 28))
     # screen content through a perspective map of the 1600x1000 screen space
     m = skia.Matrix()
     src = [skia.Point(0, 0), skia.Point(1600, 0), skia.Point(1600, 1000), skia.Point(0, 1000)]
@@ -227,11 +231,8 @@ def monitor(pen, t, st):
     pen.clip(polyline(MONITOR, close=True))
     pen.c.concat(m)
     screens.draw(pen, st.get('screen', 'off'), t, st.get('screen_p', {}))
-    pen.restore()
-    # glare
-    pen.save()
-    pen.clip(polyline(MONITOR, close=True))
-    pen.fill(polyline([(ax + 40, ay), (ax + 140, ay + 14), (dx + 60, dy - 10), (dx - 30, dy)], close=True), (255, 255, 255), alpha=22)
+    # a soft diagonal glare across the glass
+    pen.fill(polyline([(180, 0), (420, 0), (160, 1000), (-80, 1000)], close=True), (255, 255, 255), alpha=16)
     pen.restore()
 
 

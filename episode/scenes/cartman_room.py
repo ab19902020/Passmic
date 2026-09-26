@@ -20,8 +20,8 @@ CX, SY = R.CHAIR_X, R.SEAT_Y
 SIT_SIDE = dict(x=CX + 10, y=SY + 92)         # seated, facing the monitor (right)
 SIT_FRONT = dict(x=CX, y=SY + 82)             # seated, turned to camera
 STAND_SEAT = dict(x=CX, y=SY + 8)             # standing on the seat
-DESK_SHOT = (1750, 680, 1700)                 # camera rects (x0, y0, width) in world px
-DESK_TIGHT = (1860, 760, 1400)
+DESK_SHOT = (1700, 580, 1850)                 # camera rects (x0, y0, width) in world px
+DESK_TIGHT = (1820, 590, 1620)
 CHAIR_WIDE = (1100, 330, 2600)
 
 DOC = ['OPERATION: SAVE MANCHESTER UNITED', 'OBJECTIVE 1: GET RID OF THE GLAZERS',
