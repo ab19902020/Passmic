@@ -28,7 +28,7 @@ DEFAULT = dict(
     view='front', body='stand', walk=0.0, squash=0.0,
     head_dx=0.0, head_dy=0.0, head_tilt=0.0,
     # arm angle in degrees: 0 = hanging straight down, + = out to the side, 90 = horizontal, 160 = up
-    arm_l=68.0, arm_r=68.0, hand_l='mitten', hand_r='mitten', hand_rot_l=0.0, hand_rot_r=0.0,
+    arm_l=45.0, arm_r=45.0, hand_l='mitten', hand_r='mitten', hand_rot_l=0.0, hand_rot_r=0.0,
     bend_l=0.0, bend_r=0.0, hand_abs_l=None, hand_abs_r=None,
     arms_front=False,
     brows='none', brow_amt=1.0, lid_top=0.0, lid_bot=0.0, blink=0.0,
@@ -75,8 +75,30 @@ def hand_path(shape):
     return palm
 
 
-REST = 68.0              # arm angle of the model sheet's "arms down": mittens against his sides
-SHOULDER = (58.0, -55.0)  # where the sleeve leaves the side of his jacket, below the head
+REST = 45.0              # arm angle of the model sheet's "arms down": mittens at his jacket's bottom corners
+SHOULDER = (66.0, -40.0)  # (resting) where the sleeve leaves the side of his jacket
+
+# Arm rig matched to the sheet's gesture drawings. For each arm angle (0 = down,
+# 90 = straight out, 180 = straight up): where the sleeve joins the jacket, and
+# how far the mitten's centre is from there. Hanging, the mitten sits at the
+# jacket's bottom corner with no sleeve showing; straight out, it leaves from
+# mid-jacket; raised, the sleeve rises from the top of the shoulder so the
+# mitten ends up well outside his head (ONE HAND UP / BOTH HANDS UP).
+ARM_RIG = [(45.0, (66.0, -40.0), 26.0),
+           (95.0, (68.0, -56.0), 40.0),
+           (130.0, (70.0, -68.0), 55.0),
+           (160.0, (70.0, -74.0), 70.0)]
+PALM = 12.0               # mitten centre beyond the wrist
+
+
+def arm_rig(angle):
+    """(pivot x, pivot y, wrist distance) for a front/back-view arm angle."""
+    a = max(ARM_RIG[0][0], min(ARM_RIG[-1][0], angle))
+    for (a0, p0, r0), (a1, p1, r1) in zip(ARM_RIG, ARM_RIG[1:]):
+        if a <= a1:
+            u = (a - a0) / (a1 - a0)
+            return p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u, r0 + (r1 - r0) * u - PALM
+    return ARM_RIG[-1][1][0], ARM_RIG[-1][1][1], ARM_RIG[-1][2] - PALM
 
 
 def draw_arm(pen, sx, sy, angle, side, hand, hand_rot, length=20, width=12.0, bend=0.0, hand_abs=None,
@@ -328,6 +350,19 @@ def front_head(pen, p):
     pen.restore()
 
 
+def front_arm(pen, p, side):
+    """One arm in the front (or back) view, from the sheet-matched rig. Bent
+    arms (counting, thumbs at himself) fold in front of the chest."""
+    k = 'l' if side < 0 else 'r'
+    angle, bend = p['arm_' + k], p['bend_' + k]
+    if bend:
+        sx, sy, length = 60.0, -44.0, 22.0
+    else:
+        sx, sy, length = arm_rig(angle)
+    draw_arm(pen, side * sx, sy, angle, side, p['hand_' + k], p['hand_rot_' + k], length=length, bend=bend,
+             hand_abs=p['hand_abs_' + k], explicit_length=True)
+
+
 def draw_front(pen, p):
     if p['body'] != 'sit':
         pen.ellipse(0, 1, 88, 8, (0, 0, 0), alpha=60)      # contact shadow (not when he's up on a chair)
@@ -345,9 +380,8 @@ def draw_front(pen, p):
     front_body(pen, p)
     if p['body'] == 'sit':
         front_sit_legs(pen)
-    sx, sy = SHOULDER
-    arm_l = lambda: draw_arm(pen, -sx, sy, p['arm_l'], -1, p['hand_l'], p['hand_rot_l'], bend=p['bend_l'], hand_abs=p['hand_abs_l'])
-    arm_r = lambda: draw_arm(pen, sx, sy, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'], bend=p['bend_r'], hand_abs=p['hand_abs_r'])
+    arm_l = lambda: front_arm(pen, p, -1)
+    arm_r = lambda: front_arm(pen, p, 1)
     # raised arms pass behind the head; everything else is in front of the body
     raised_l, raised_r = p['arm_l'] > 110 and not p['bend_l'], p['arm_r'] > 110 and not p['bend_r']
     if raised_l:
@@ -433,8 +467,8 @@ def draw_back(pen, p):
     front_legs(pen, dict(p, body='stand' if p['body'] != 'walk' else 'walk'))
     front_body(pen, p)
     pen.line([(0, -60), (0, -12)], darker(RED, 0.8), 1.2)
-    draw_arm(pen, -SHOULDER[0], SHOULDER[1], p['arm_l'], -1, p['hand_l'], p['hand_rot_l'])
-    draw_arm(pen, SHOULDER[0], SHOULDER[1], p['arm_r'], 1, p['hand_r'], p['hand_rot_r'])
+    front_arm(pen, p, -1)
+    front_arm(pen, p, 1)
     head = ellipse(0, -100, 72.5, 57.5)
     pen.fill(head, SKIN)
     hat_clip = ellipse(0, -100.5, 73.5, 58.5)
