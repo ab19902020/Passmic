@@ -28,7 +28,7 @@ DEFAULT = dict(
     view='front', body='stand', walk=0.0, squash=0.0,
     head_dx=0.0, head_dy=0.0, head_tilt=0.0,
     # arm angle in degrees: 0 = hanging straight down, + = out to the side, 90 = horizontal, 160 = up
-    arm_l=38.0, arm_r=38.0, hand_l='mitten', hand_r='mitten', hand_rot_l=0.0, hand_rot_r=0.0,
+    arm_l=58.0, arm_r=58.0, hand_l='mitten', hand_r='mitten', hand_rot_l=0.0, hand_rot_r=0.0,
     bend_l=0.0, bend_r=0.0, hand_abs_l=None, hand_abs_r=None,
     arms_front=False,
     brows='none', brow_amt=1.0, lid_top=0.0, lid_bot=0.0, blink=0.0,
@@ -75,11 +75,16 @@ def hand_path(shape):
     return palm
 
 
-def draw_arm(pen, sx, sy, angle, side, hand, hand_rot, length=34, width=12.5, bend=0.0, hand_abs=None):
-    """Sleeve from the shoulder at (sx, sy); side -1 = his right (screen left).
-    Raised arms reach further so the hands clear his huge head. bend > 0
-    folds the forearm back towards his chest (degrees)."""
-    length += max(0.0, angle - 80) * 0.45
+REST = 58.0              # arm angle of the model sheet's "arms down": mittens out at his sides
+SHOULDER = (60.0, -50.0)  # where the sleeve leaves the side of his jacket, below the head
+
+
+def draw_arm(pen, sx, sy, angle, side, hand, hand_rot, length=20, width=12.0, bend=0.0, hand_abs=None):
+    """Stubby sleeve from the side of his body at (sx, sy); side -1 = his right
+    (screen left). angle: 0 hangs down, 90 sticks straight out, 150 is up.
+    Raised arms reach a little further so the mitten clears his head. bend > 0
+    folds the forearm back in front of his belly (degrees)."""
+    length += max(0.0, angle - 90) * 0.3
     if bend:
         l1, l2 = length * 0.55, length * 0.62
         a = math.radians(angle)
@@ -305,13 +310,20 @@ def draw_front(pen, p):
         pen.save()
         pen.translate(0, -6)
     front_body(pen, p)
-    arms = lambda: (draw_arm(pen, -58, -66, p['arm_l'], -1, p['hand_l'], p['hand_rot_l'], bend=p['bend_l'], hand_abs=p['hand_abs_l']),
-                    draw_arm(pen, 58, -66, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'], bend=p['bend_r'], hand_abs=p['hand_abs_r']))
-    if not p['arms_front']:
-        arms()
+    sx, sy = SHOULDER
+    arm_l = lambda: draw_arm(pen, -sx, sy, p['arm_l'], -1, p['hand_l'], p['hand_rot_l'], bend=p['bend_l'], hand_abs=p['hand_abs_l'])
+    arm_r = lambda: draw_arm(pen, sx, sy, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'], bend=p['bend_r'], hand_abs=p['hand_abs_r'])
+    # raised arms pass behind the head; everything else is in front of the body
+    raised_l, raised_r = p['arm_l'] > 110 and not p['bend_l'], p['arm_r'] > 110 and not p['bend_r']
+    if raised_l:
+        arm_l()
+    if raised_r:
+        arm_r()
     front_head(pen, p)
-    if p['arms_front']:
-        arms()
+    if not raised_l:
+        arm_l()
+    if not raised_r:
+        arm_r()
     if p['body'] == 'sit':
         pen.restore()
 
@@ -361,7 +373,9 @@ def draw_side(pen, p):
         pen.fill(capsule(14, -15, 50, -14, 11.5), BROWN)
         pen.ellipse(58, -15, 7.5, 13, BLACK)
     # arm hangs in front of the belly
-    draw_arm(pen, 2, -50, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'], length=24, width=11.5)
+    # profile: the near arm leaves the jacket side and can reach past the belly (to a keyboard)
+    draw_arm(pen, 24, -42, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'],
+             length=12 + max(0.0, p['arm_r'] - 35) * 0.5, width=11.5)
     pen.restore()
 
 
@@ -370,8 +384,8 @@ def draw_back(pen, p):
     front_legs(pen, dict(p, body='stand' if p['body'] != 'walk' else 'walk'))
     front_body(pen, p)
     pen.line([(0, -60), (0, -12)], darker(RED, 0.8), 1.2)
-    draw_arm(pen, -58, -66, p['arm_l'], -1, p['hand_l'], p['hand_rot_l'])
-    draw_arm(pen, 58, -66, p['arm_r'], 1, p['hand_r'], p['hand_rot_r'])
+    draw_arm(pen, -SHOULDER[0], SHOULDER[1], p['arm_l'], -1, p['hand_l'], p['hand_rot_l'])
+    draw_arm(pen, SHOULDER[0], SHOULDER[1], p['arm_r'], 1, p['hand_r'], p['hand_rot_r'])
     head = ellipse(0, -100, 72.5, 57.5)
     pen.fill(head, SKIN)
     hat_clip = ellipse(0, -100.5, 73.5, 58.5)

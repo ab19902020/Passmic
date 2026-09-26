@@ -10,6 +10,7 @@ MONACO below marks where that clip goes once it exists.
 import os
 from engine import Timeline
 import room as R
+from cartman import REST
 
 EP = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 CLIP = lambda n: os.path.join(EP, 'audio', 'clip%02d.mp3' % n)
@@ -39,7 +40,7 @@ def turn_to_screen(tl, t, **kw):
 
 
 def turn_to_camera(tl, t, **kw):
-    tl.key(t, e='step', view='front', body='sit', lean=0.0, look=(0.0, 0.0), arm_l=38.0, arm_r=38.0,
+    tl.key(t, e='step', view='front', body='sit', lean=0.0, look=(0.0, 0.0), arm_l=REST, arm_r=REST,
            hand_l='mitten', hand_r='mitten', arms_front=False, **SIT_FRONT, **kw)
     tl.set(t, e='step', chair_view='front')
 
@@ -53,7 +54,7 @@ def build():
     st(0.7, fade=0.0)
     k(0, e='step', visible=False, view='front', body='walk', x=385.0, y=1330.0, s=sc(1330), mouth='rest',
       brows='none', lid_top=0.0, lid_bot=0.0, look=(0.0, 0.0), squash=0.0, lean=0.0, jitter=0.0, nod=0.0,
-      shakehead=0.0, head_dx=0.0, head_dy=0.0, head_tilt=0.0, arm_l=30.0, arm_r=30.0, pupil=1.0, brow_amt=1.0,
+      shakehead=0.0, head_dx=0.0, head_dy=0.0, head_tilt=0.0, arm_l=REST, arm_r=REST, pupil=1.0, brow_amt=1.0,
       bend_l=0.0, bend_r=0.0, hand_abs_l=None, hand_abs_r=None, hand_rot_l=0.0, hand_rot_r=0.0,
       stride=150.0, talk=True, loud_mouth=None, tilt_talk=1.0)
     tl.shot(0, 'wide')
@@ -70,8 +71,8 @@ def build():
     for i in range(5):
         tl.sfx(t + 0.2 + i * 0.38, 'step', 0.6, seed=i)
     t = tl.wait(1.2)
-    k(t, e='step', view='back', body='stand', arm_l=30.0)
-    k(t + 0.25, arm_l=120.0, e='out'); k(t + 0.9, arm_l=30.0)
+    k(t, e='step', view='back', body='stand', arm_l=REST)
+    k(t + 0.25, arm_l=100.0, e='out'); k(t + 0.9, arm_l=REST)
     st(t + 0.3, door=1.0); st(t + 0.75, door=0.0, e='in')
     tl.sfx(t + 0.75, 'thud', 0.9)
 
@@ -124,16 +125,16 @@ def build():
     # ------------------------------------------------ counting on his fingers
     f = tl.say(CLIP(2))
     names = [0.05, 0.9, 1.6, 2.65, 3.5]
-    COUNT = dict(arms_front=True, arm_r=55.0, bend_r=115.0, hand_abs_r=180.0, arm_l=50.0, bend_l=95.0, hand_abs_l=-80.0)
+    COUNT = dict(arms_front=True, arm_r=40.0, bend_r=120.0, hand_abs_r=180.0, arm_l=40.0, bend_l=110.0, hand_abs_l=-80.0)
     k(f(0), e='step', hand_l='point', **{kk: v for kk, v in COUNT.items() if not isinstance(v, float)})
-    k(f(0), e='step', bend_r=115.0, bend_l=95.0, hand_abs_r=180.0, hand_abs_l=-80.0)
-    k(f(0), arm_r=38.0, arm_l=38.0); k(f(0.25), arm_r=55.0, arm_l=50.0, e='back')
+    k(f(0), e='step', bend_r=120.0, bend_l=110.0, hand_abs_r=180.0, hand_abs_l=-80.0)
+    k(f(0), arm_r=REST, arm_l=REST); k(f(0.25), arm_r=40.0, arm_l=40.0, e='back')
     for i, tn in enumerate(names):
         k(f(tn), e='step', hand_r='count%d' % (i + 1))
         k(f(tn), e='step', head_tilt=0.0); k(f(tn) + 0.1, head_tilt=(-3.0 if i % 2 else 3.0), e='out')
     # "The Class of '92": both hands out
     k(f(4.3), e='step', hand_r='open', hand_l='open', bend_r=0.0, bend_l=0.0, hand_abs_r=None, hand_abs_l=None)
-    k(f(4.3), arm_r=40.0, arm_l=40.0); k(f(4.6), arm_r=105.0, arm_l=105.0, e='back'); k(f(5.6), arm_r=38.0, arm_l=38.0)
+    k(f(4.3), arm_r=REST, arm_l=REST); k(f(4.6), arm_r=100.0, arm_l=100.0, e='back'); k(f(5.6), arm_r=REST, arm_l=REST)
     k(f(5.6), e='step', hand_r='mitten', hand_l='mitten', arms_front=False)
     # "That Champions League final where they scored twice at the end..."
     tl.shot(f(6.2), 'screen')
@@ -148,6 +149,7 @@ def build():
     # "And then there's Sir Alex Ferguson."  - unusually sincere
     tl.shot(f(13.45), 'close', w=1000, push=0.18)
     k(f(13.45), e='step', mouth='rest', lid_bot=0.0, brows='worried', brow_amt=0.6, pupil=1.25, look=(0.0, -0.1))
+    st(f(13.45), e='step', screen='manager', screen_p=dict(caption='SIR ALEX FERGUSON'))
 
     # ------------------------------------------------ Sir Alex
     f = tl.say(CLIP(3))
@@ -155,15 +157,15 @@ def build():
     # "You don't ask people nicely..." - points toward the computer
     tl.shot(f(1.75), 'medium', w=1600)
     k(f(1.75), e='step', brows='determined', brow_amt=0.8, pupil=1.0, arms_front=False)
-    k(f(1.75), arm_r=38.0, hand_r='mitten'); k(f(2.1), arm_r=96.0, e='back')
+    k(f(1.75), arm_r=REST, hand_r='mitten'); k(f(2.1), arm_r=92.0, e='back')
     k(f(2.1), e='step', hand_r='point', look=(0.6, 0.0))
     tl.shot(f(4.65), 'screen')
     st(f(4.65), e='step', screen='manager', screen_p=dict(caption='SIR ALEX FERGUSON'))
     tl.shot(f(6.9), 'medium', w=1500)
-    k(f(6.9), e='step', brows='angry', brow_amt=1.0, arm_r=150.0, hand_r='fist', arm_l=38.0, look=(0.0, 0.0), loud_mouth='shout')
+    k(f(6.9), e='step', brows='angry', brow_amt=1.0, arm_r=140.0, hand_r='fist', arm_l=REST, look=(0.0, 0.0), loud_mouth='shout')
     # "That's leadership."  - nods approvingly
     tl.shot(f(8.1), 'close', w=950)
-    k(f(8.1), e='step', brows='determined', brow_amt=0.6, arm_r=38.0, hand_r='mitten', mouth='smirk', nod=1.0, loud_mouth=None)
+    k(f(8.1), e='step', brows='determined', brow_amt=0.6, arm_r=REST, hand_r='mitten', mouth='smirk', nod=1.0, loud_mouth=None)
     k(f(9.3), e='step', nod=0.0)
     # "But then I started learning about the owners."
     turn_to_screen(tl, f(9.45), brows='none', mouth='rest')
@@ -182,7 +184,7 @@ def build():
         st(f(1.85 + i * 0.27), e='step', screen_p=dict(headline='THE GLAZER TAKEOVER', kind='chart', grow=i / 12))
     tl.shot(f(5.4), 'medium', w=1500)
     turn_to_camera(tl, f(5.4), brows='angry', mouth='frown')
-    k(f(5.4), e='step', arm_l=110.0, arm_r=110.0, hand_l='open', hand_r='open')
+    k(f(5.4), e='step', arm_l=100.0, arm_r=100.0, hand_l='open', hand_r='open')
     # "And THEN there's Jim Ratcliffe."  - clicks his mouse
     turn_to_screen(tl, f(8.6), brows='angry', mouth='frown')
     tl.shot(f(8.6), 'rect', rect=DESK_TIGHT)
@@ -198,8 +200,8 @@ def build():
     f = tl.say(CLIP(5))
     turn_to_camera(tl, f(0) - 0.3, brows='angry', mouth='frown', loud_mouth='shout')
     tl.shot(f(0) - 0.3, 'medium', w=1600, push=0.3)
-    beats = [(0.0, 105, 105, 'open', 'open'), (2.1, 150, 38, 'fist', 'mitten'), (5.0, 60, 120, 'mitten', 'point'),
-             (7.8, 150, 150, 'open', 'open'), (10.2, 120, 120, 'fist', 'fist'), (12.8, 100, 100, 'open', 'open')]
+    beats = [(0.0, 100, 100, 'open', 'open'), (2.1, 140, REST, 'fist', 'mitten'), (5.0, REST, 92, 'mitten', 'point'),
+             (7.8, 135, 135, 'open', 'open'), (10.2, 112, 112, 'fist', 'fist'), (12.8, 100, 100, 'open', 'open')]
     for tb, al, ar, hl, hr in beats:
         k(f(tb), e='step', hand_l=hl, hand_r=hr)
         k(f(tb) + 0.18, arm_l=float(al), arm_r=float(ar), e='back')
@@ -210,14 +212,14 @@ def build():
     t = tl.wait(0.25)
     tl.shot(t, 'rect', rect=CHAIR_WIDE)
     k(t, squash=0.15, e='out'); k(t + 0.15, e='step', body='stand', **STAND_SEAT); k(t + 0.15, squash=-0.08); k(t + 0.3, squash=0.0)
-    k(t + 0.15, arm_l=165.0, arm_r=165.0, hand_l='fist', hand_r='fist', e='back')
+    k(t + 0.15, arm_l=140.0, arm_r=140.0, hand_l='fist', hand_r='fist', e='back')
     tl.sfx(t + 0.1, 'whoosh', 0.5)
     f = tl.say(CLIP(6), 0.0, 1.95, gap=0.0)
     k(f(0), e='step', brows='angry', brow_amt=1.2, loud_mouth='shout')
 
     # pause - a thought occurs to him, the anger drains away, he sits back down
     t = tl.wait(3.2)
-    k(t + 0.4, arm_l=165.0, arm_r=165.0); k(t + 1.2, arm_l=38.0, arm_r=38.0, e='inout')
+    k(t + 0.4, arm_l=140.0, arm_r=140.0); k(t + 1.2, arm_l=REST, arm_r=REST, e='inout')
     k(t + 0.6, e='step', brows='none', loud_mouth=None, mouth='rest', look=(0.3, -0.7), lid_top=0.15)
     k(t + 0.6, e='step', hand_l='mitten', hand_r='mitten')
     k(t + 1.6, **STAND_SEAT); k(t + 2.8, e='inout', **SIT_FRONT)
@@ -242,8 +244,8 @@ def build():
     f = tl.say(CLIP(7), 6.95, None, gap=1.7)
     tl.shot(f(6.95), 'medium', w=1450, push=0.18)
     k(f(6.95), e='step', lid_top=0.0, mouth='grin', brows='determined', brow_amt=0.8, arms_front=True,
-      hand_l='thumb', hand_r='thumb', hand_rot_l=-90.0, hand_rot_r=-90.0, bend_l=150.0, bend_r=150.0)
-    k(f(6.95), arm_l=38.0, arm_r=38.0); k(f(7.2), arm_l=70.0, arm_r=70.0, e='back')
+      hand_l='thumb', hand_r='thumb', hand_rot_l=-90.0, hand_rot_r=-90.0, bend_l=140.0, bend_r=140.0)
+    k(f(6.95), arm_l=REST, arm_r=REST); k(f(7.2), arm_l=50.0, arm_r=50.0, e='back')
 
     # ------------------------------------------------ OPERATION: SAVE MANCHESTER UNITED
     t = tl.wait(1.1)
