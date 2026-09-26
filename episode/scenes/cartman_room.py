@@ -165,7 +165,6 @@ def build():
     # "That Champions League final where they scored twice at the end..."
     tl.shot(f(6.2), 'screen')
     st(f(6.2), e='step', screen='match', screen_p=dict(score='MAN UTD  2 - 1  BAYERN', clock="90+3'", caption='1999  -  THEY SCORED TWICE AT THE END', roar=1.0))
-    tl.cheer(f(6.4))
     # "...and the Germans looked all sad and shit." Cartman smiles.
     tl.shot(f(9.7), 'medium', w=1500)
     k(f(9.7), e='step', mouth='smirk', arms_front=False)

@@ -89,7 +89,6 @@ class Timeline:
         self.ck = {}             # cartman tracks
         self.wk = {}             # world tracks
         self.cues = {}
-        self.cheers = []         # (t, _) goal cheers from the monitor
         self.stings = []         # (t, kind) music stings
 
     # -- time
@@ -134,9 +133,6 @@ class Timeline:
 
     def sfx(self, t, name, gain=1.0, **kw):
         self.fx.append((t, SFX[name](**kw), gain))
-
-    def cheer(self, t):
-        self.cheers.append((t, None))
 
     def sting(self, t, kind='guitar'):
         self.stings.append((t, kind))
@@ -187,8 +183,7 @@ class Renderer:
 
     def mix(self):
         """Dialogue (levelled per clip), foley, footsteps from the walk cycle,
-        the monitor's audio through small speakers (ducked under the voice),
-        room tone, and the title sting."""
+        room tone, and the title sting. The monitor makes no sound."""
         tl = self.tl
         n = int(tl.duration * SR) + SR
         v = np.zeros(n, np.float32)
@@ -221,29 +216,9 @@ class Renderer:
                 last = phase
             else:
                 last = None
-        # voice envelope for ducking
-        venv = np.convolve(np.abs(v), np.ones(int(0.12 * SR)) / int(0.12 * SR), 'same')
-        duck = 1.0 - 0.55 * np.clip(venv / 0.05, 0, 1)
-        # the monitor: crowd audio while football is on screen, a cheer on a goal
-        bed = np.zeros(n, np.float32)
-        crowd = SFXLIB.crowd_bed(tl.duration + 1)
-        step_ = int(0.05 * SR)
-        on = np.zeros(n, np.float32)
-        for i in range(0, n - step_, step_):
-            st = tl.world(i / SR)
-            scr, sp = st.get('screen'), st.get('screen_p') or {}
-            full = self.tl.shot_at(i / SR)[0]['kind'] == 'screen'
-            level = {'match': 0.5, 'devil': 0.25, 'manager': 0.3, 'monaco': 0.15}.get(scr, 0.0)
-            on[i:i + step_] = level * (1.6 if full else 1.0)
-        on = np.convolve(on, np.ones(int(0.15 * SR)) / int(0.15 * SR), 'same').astype(np.float32)
-        bed += crowd[:n] * on
-        for t0, _ in tl.cheers:
-            c = SFXLIB.cheer(4.0)
-            i = int(t0 * SR)
-            bed[i:i + len(c)] += c[:n - i] * 0.5
-        bed = SFXLIB.speaker(bed) * duck
+        # no audio from the monitor: the football on screen is silent
         tone = SFXLIB.room_tone(n / SR + 0.1)[:n]
-        m = v + fx + bed + tone
+        m = v + fx + tone
         for t0, kind in tl.stings:
             x = SFXLIB.guitar_sting()
             i = int(t0 * SR)

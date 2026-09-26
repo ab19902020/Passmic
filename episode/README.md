@@ -72,8 +72,7 @@ bite, TH tongue, OO/W rounded, AH wide), held on twos like the show.
 
 **Sound** (`tools/vec/sfx.py`, all synthesised): kid footsteps on carpet generated from the walk cycle (one per
 foot landing), door handle/latch/creak and the close, chair cushion and creaks, mouse clicks, keyboard typing,
-the match on his monitor heard through small computer speakers and ducked under his voice (with a cheer on the
-1999 goal), a quiet room tone, and an acoustic-guitar sting on the title. Each voice clip is levelled.
+a quiet room tone, and an acoustic-guitar sting on the title. The football on his monitor is silent. Each voice clip is levelled.
 
 ## HD redraws (bitmap, first cut)
 `python3 tools/hd_sprites.py <name> [face_px]` redraws every sprite of a character as clean flat-colour art
