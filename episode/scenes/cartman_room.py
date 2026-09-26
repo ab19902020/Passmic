@@ -88,7 +88,6 @@ def build():
     DOOR_X = 385.0
     t = tl.wait(0.8)
     st(t, door=0.0); st(t + 0.7, door=1.0, e='out')
-    tl.sfx(t, 'door_open', 1.0)
     t = tl.wait(0.9)
     k(t, e='step', visible=True, view='front', body='walk')
     k(t, x=DOOR_X, y=1335.0, s=sc(1335)); k(t + 0.8, e='linear', x=DOOR_X, y=1420.0, s=sc(1420))
@@ -96,7 +95,6 @@ def build():
     k(t, e='step', view='back', body='stand', arm_l=REST)
     k(t + 0.2, arm_l=100.0, e='out'); k(t + 0.85, arm_l=REST)
     st(t + 0.25, door=1.0); st(t + 0.7, door=0.0, e='in')
-    tl.sfx(t + 0.55, 'door_close', 1.0)
     t = tl.wait(1.1)
     # walks down into the room, clear of the bed...
     k(t, e='step', view='front', body='walk')
@@ -119,7 +117,6 @@ def build():
     tl.sfx(t + 0.1, 'hop', 1.0); tl.sfx(t + 0.42, 'cushion', 1.0)
     t = tl.wait(1.1)
     k(t, jitter=5.0); k(t + 0.9, jitter=0.0)
-    tl.sfx(t + 0.1, 'chair_creak', 0.8)
     k(t, head_tilt=4.0); k(t + 0.4, head_tilt=-4.0); k(t + 0.8, head_tilt=0.0)
     tl.shot(t, 'rect', rect=DESK_SHOT)
 
@@ -214,7 +211,6 @@ def build():
     turn_to_screen(tl, f(8.6), brows='angry', mouth='frown')
     tl.shot(f(8.6), 'rect', rect=DESK_TIGHT)
     k(f(8.6), arm_r=35.0); k(f(8.8), arm_r=75.0, e='out')
-    tl.sfx(f(8.85), 'click', 1.0)
     st(f(8.85), e='step', screen='news', screen_p=dict(headline='NEW PART-OWNER', kind='profile', name='JIM RATCLIFFE',
                                                         facts=['Owns part of United', 'Lives in Monaco']))
     tl.shot(f(9.7), 'screen')
@@ -225,7 +221,6 @@ def build():
     t = f(0) - 0.55
     tl.shot(t, 'rect', rect=DESK_TIGHT)
     k(t, arm_r=35.0); k(t + 0.15, arm_r=75.0, e='out'); k(t + 0.4, arm_r=35.0)
-    tl.sfx(t + 0.2, 'click', 1.0)
     st(t + 0.2, e='step', screen='monaco', screen_p=dict(caption='JIM RATCLIFFE - MONACO'))
     k(t, e='step', brows='angry', brow_amt=0.8, mouth='frown', look=(1.0, -0.2), loud_mouth=None)
     tl.shot(f(1.3), 'close', w=1000)
@@ -271,7 +266,7 @@ def build():
     tl.shot(t, 'rect', rect=CHAIR_WIDE)
     k(t, squash=0.15, e='out'); k(t + 0.15, e='step', body='stand', **STAND_SEAT); k(t + 0.15, squash=-0.08); k(t + 0.3, squash=0.0)
     k(t + 0.15, arm_l=140.0, arm_r=140.0, hand_l='fist', hand_r='fist', e='back')
-    tl.sfx(t + 0.05, 'chair_creak', 1.0)
+    tl.sfx(t + 0.02, 'hop', 1.0); tl.sfx(t + 0.15, 'land', 1.0)
     f = tl.say(CLIP(6), 0.0, 1.95, gap=0.0, text=TEXT[6])
     k(f(0), e='step', brows='angry', brow_amt=1.2, loud_mouth='shout')
 
@@ -282,6 +277,7 @@ def build():
     k(t + 0.6, e='step', hand_l='mitten', hand_r='mitten')
     k(t + 1.6, **STAND_SEAT); k(t + 2.8, e='inout', **SIT_FRONT)
     k(t + 2.2, e='step', body='sit')
+    tl.sfx(t + 2.2, 'hop', 0.8); tl.sfx(t + 2.75, 'cushion', 0.9)
     k(t + 2.8, look=(0.0, 0.0), lid_top=0.0)
     tl.shot(t + 1.4, 'medium', w=1700)
 
@@ -311,7 +307,6 @@ def build():
                    arms_front=False)
     tl.shot(t, 'rect', rect=DESK_TIGHT)
     k(t, arm_r=35.0); k(t + 0.3, arm_r=75.0, e='out')
-    tl.sfx(t + 0.5, 'click', 1.0)
     st(t, e='step', screen='desktop', screen_p={})
     st(t + 0.55, e='step', screen='document', screen_p=dict(lines=DOC, chars=0))
 
@@ -320,7 +315,6 @@ def build():
         n = DOC_N[upto - 1]
         for i in range(n + 1):
             st(t0 + dur * i / n, e='step', screen_p=dict(lines=DOC, chars=start + i))
-        tl.sfx(t0, 'typing', 1.0, dur=dur, rate=len(DOC[upto - 1]) / dur, seed=upto)
 
     t = tl.wait(6.2)                       # the document fills up
     tl.shot(t, 'screen')
@@ -331,7 +325,6 @@ def build():
     for i in range(14):                    # hammering the keys
         k(t + i * 0.11, e='step', arm_r=(84.0 if i % 2 else 74.0), head_dy=(1.5 if i % 2 else 0.0))
     k(t + 1.6, e='step', arm_r=35.0, head_dy=0.0)
-    tl.sfx(t, 'typing', 1.2, dur=1.5, rate=13, seed=9)
     t = tl.wait(3.2)
     tl.shot(t, 'screen')
     type_line(t + 0.2, 3, 2.8)
@@ -359,6 +352,5 @@ def build():
     # ------------------------------------------------ title
     t = tl.wait(4.0)
     tl.shot(t, 'title', text='SOUTH MANCHESTER')
-    tl.sting(t)
     st(t + 3.2, fade=0.0); st(t + 4.0, fade=1.0)
     return tl

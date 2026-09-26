@@ -182,8 +182,8 @@ class Renderer:
         self.voice = v
 
     def mix(self):
-        """Dialogue (levelled per clip), foley, footsteps from the walk cycle,
-        room tone, and the title sting. The monitor makes no sound."""
+        """Dialogue (levelled per clip), footsteps from the walk cycle and the
+        hop / landing sounds keyed in the scene. Nothing else."""
         tl = self.tl
         n = int(tl.duration * SR) + SR
         v = np.zeros(n, np.float32)
@@ -216,13 +216,9 @@ class Renderer:
                 last = phase
             else:
                 last = None
-        # no audio from the monitor: the football on screen is silent
-        tone = SFXLIB.room_tone(n / SR + 0.1)[:n]
-        m = v + fx + tone
-        for t0, kind in tl.stings:
-            x = SFXLIB.guitar_sting()
-            i = int(t0 * SR)
-            m[i:i + len(x)] += x[:n - i]
+        # sound effects are footsteps and his jumps only: no room tone, no
+        # sound from the monitor, no music
+        m = v + fx
         # fade in / out
         f = int(0.4 * SR)
         m[:f] *= np.linspace(0, 1, f)

@@ -238,5 +238,15 @@ def guitar_sting(**kw):
     return _f32(out / (np.abs(out).max() + 1e-9), 0.35)
 
 
-SFX = dict(step=step, door_open=door_open, door_close=door_close, cushion=cushion, chair_creak=chair_creak,
+def land(**kw):
+    """Feet landing on a padded seat after a hop: a soft double thump."""
+    a = step(seed=91, heavy=1.6)
+    b = step(seed=92, heavy=1.3)
+    out = np.zeros(len(a) + int(0.05 * SR), np.float32)
+    out[:len(a)] += a
+    out[int(0.05 * SR):int(0.05 * SR) + len(b)] += b * 0.8
+    return out
+
+
+SFX = dict(step=step, land=land, door_open=door_open, door_close=door_close, cushion=cushion, chair_creak=chair_creak,
            click=click, key=key, typing=typing, type=typing, whoosh=whoosh, hop=hop, sting=guitar_sting)
