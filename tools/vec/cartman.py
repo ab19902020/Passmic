@@ -22,13 +22,13 @@ BLACK = (22, 20, 24)
 MOUTH = (38, 14, 20)
 TONGUE = (226, 92, 118)
 LINE = (70, 56, 52)
-CHIN = (206, 156, 112)
+CHIN = (150, 108, 84)
 
 DEFAULT = dict(
     view='front', body='stand', walk=0.0, squash=0.0,
     head_dx=0.0, head_dy=0.0, head_tilt=0.0,
     # arm angle in degrees: 0 = hanging straight down, + = out to the side, 90 = horizontal, 160 = up
-    arm_l=58.0, arm_r=58.0, hand_l='mitten', hand_r='mitten', hand_rot_l=0.0, hand_rot_r=0.0,
+    arm_l=68.0, arm_r=68.0, hand_l='mitten', hand_r='mitten', hand_rot_l=0.0, hand_rot_r=0.0,
     bend_l=0.0, bend_r=0.0, hand_abs_l=None, hand_abs_r=None,
     arms_front=False,
     brows='none', brow_amt=1.0, lid_top=0.0, lid_bot=0.0, blink=0.0,
@@ -46,9 +46,9 @@ def pose(**kw):
 # ------------------------------------------------------------------ hands
 def hand_path(shape):
     """Yellow mitten shapes, wrist at the origin, pointing along +y (down)."""
-    palm = ellipse(0, 11, 13.5, 12.5)
+    palm = ellipse(0, 12, 15, 13.5)
     if shape == 'mitten':
-        return union(palm, ellipse(-11, 6, 5.5, 7.5, -25))
+        return union(palm, ellipse(-12.5, 6.5, 6, 8, -25))
     if shape == 'fist':
         return union(rrect(-12.5, 0, 12.5, 22, 9), ellipse(-10, 8, 5, 6))
     if shape == 'open':
@@ -75,8 +75,8 @@ def hand_path(shape):
     return palm
 
 
-REST = 58.0              # arm angle of the model sheet's "arms down": mittens out at his sides
-SHOULDER = (60.0, -50.0)  # where the sleeve leaves the side of his jacket, below the head
+REST = 68.0              # arm angle of the model sheet's "arms down": mittens against his sides
+SHOULDER = (58.0, -55.0)  # where the sleeve leaves the side of his jacket, below the head
 
 
 def draw_arm(pen, sx, sy, angle, side, hand, hand_rot, length=20, width=12.0, bend=0.0, hand_abs=None,
@@ -112,47 +112,55 @@ def draw_arm(pen, sx, sy, angle, side, hand, hand_rot, length=20, width=12.0, be
 
 
 # ------------------------------------------------------------------ face parts
+def bean(w, h):
+    """The show's open mouth: a dark bean, flat-ish on top, round underneath."""
+    return smooth([(-w, -h * 0.28), (-w * 0.35, -h * 0.42), (w * 0.35, -h * 0.42), (w, -h * 0.28),
+                   (w * 0.8, h * 0.5), (0, h), (-w * 0.8, h * 0.5)])
+
+
 def mouth_path(kind, amt=1.0):
-    """Returns (outer dark shape or None, teeth, tongue, line) paths, centred at 0,0."""
+    """Returns (outer dark shape or None, teeth, tongue, line) paths, centred at 0,0.
+    Open mouths are the sheet's wide dark beans with a pink tongue; closed
+    ones are a short dark line."""
     k = amt
     if kind in ('rest', 'closed', 'm'):
-        return None, None, None, smooth([(-8, 1), (0, -1), (8, 1)], close=False)
+        return None, None, None, smooth([(-8, 1), (0, -0.5), (8, 1)], close=False)
     if kind == 'frown':
-        return None, None, None, smooth([(-9, 2.5), (0, -1.5), (9, 2.5)], close=False)
+        return None, None, None, smooth([(-9, 3), (0, -1.5), (9, 3)], close=False)
     if kind == 'smile':
-        return None, None, None, smooth([(-10, -2), (0, 2.5), (10, -2)], close=False)
+        return None, None, None, smooth([(-11, -2.5), (0, 2.5), (11, -2.5)], close=False)
     if kind == 'smirk':
-        return None, None, None, smooth([(-9, 1.5), (0, 1), (10, -3)], close=False)
+        return None, None, None, smooth([(-9, 1.5), (1, 1.5), (11, -3.5)], close=False)
     if kind == 'grin':      # big closed smile with teeth
-        o = smooth([(-13, -3), (0, -1.5), (13, -3), (7, 6), (0, 8), (-7, 6)])
-        return o, intersect(o, rrect(-14, -4, 14, 1.5)), None, None
+        o = smooth([(-14, -3.5), (0, -2), (14, -3.5), (8, 6), (0, 8.5), (-8, 6)])
+        return o, intersect(o, rrect(-15, -5, 15, 1.5)), None, None
     if kind in ('a', 'shout', 'laugh'):
-        w, h = {'a': (10, 9), 'shout': (15, 17), 'laugh': (13, 11)}[kind]
-        h *= k
-        o = smooth([(-w, -1), (0, -3), (w, -1), (w * 0.6, h * 0.7), (0, h), (-w * 0.6, h * 0.7)])
-        tongue = intersect(o, ellipse(0, h, w * 0.6, h * 0.45))
-        teeth = intersect(o, rrect(-w, -4, w, 0.5)) if kind != 'a' else None
+        w, h = {'a': (11, 11), 'shout': (15.5, 17), 'laugh': (14, 12)}[kind]
+        o = bean(w, h * k)
+        tongue = intersect(o, ellipse(0, h * k, w * 0.62, h * k * 0.45))
+        teeth = intersect(o, rrect(-w, -h, w, -h * 0.12)) if kind != 'a' else None
         return o, teeth, tongue, None
     if kind == 'e':
-        o = smooth([(-11, -2), (0, -3), (11, -2), (6, 5 * k), (0, 6.5 * k), (-6, 5 * k)])
-        return o, intersect(o, rrect(-12, -4, 12, 0.8)), intersect(o, ellipse(0, 7 * k, 5, 3)), None
+        o = bean(11.5, 7.5 * k)
+        return o, intersect(o, rrect(-12, -5, 12, -0.6)), intersect(o, ellipse(0, 7.5 * k, 6, 3)), None
     if kind == 'i':
-        o = smooth([(-10, -1.5), (0, -2.5), (10, -1.5), (6, 3), (0, 3.8), (-6, 3)])
-        return o, intersect(o, rrect(-11, -3, 11, 0.6)), None, None
+        o = bean(11, 4.5)
+        return o, intersect(o, rrect(-12, -3, 12, 0.4)), None, None
     if kind == 'o':
-        return ellipse(0, 2, 6 * k, 7.5 * k), None, None, None
+        o = bean(7.5, 9.5 * k)
+        return o, None, intersect(o, ellipse(0, 9.5 * k, 4.8, 3.6)), None
     if kind in ('u', 'w'):
-        s = 4.2 if kind == 'u' else 4.8
-        return ellipse(0, 1.5, s * k, s * 1.15 * k), None, None, None
+        w = 5.0 if kind == 'u' else 5.8
+        return bean(w, 6.5 * k), None, None, None
     if kind == 'l':
-        o = smooth([(-9, -1.5), (0, -2.5), (9, -1.5), (5, 5), (0, 6.5), (-5, 5)])
-        return o, None, intersect(o, ellipse(0, 0.5, 4.2, 4)), None
+        o = bean(9.5, 7.5)
+        return o, None, intersect(o, ellipse(0, -1.5, 4.2, 3.2)), None
     if kind in ('f', 'th'):
-        o = smooth([(-9, -2), (0, -3), (9, -2), (6, 3), (0, 4), (-6, 3)])
-        teeth = intersect(o, rrect(-10, -4, 10, 2.2))
-        tongue = intersect(o, ellipse(0, 4, 4, 2.2)) if kind == 'th' else None
+        o = bean(9.5, 4.5)
+        teeth = intersect(o, rrect(-10, -3, 10, 0.8))
+        tongue = intersect(o, ellipse(0, 3.5, 4, 2)) if kind == 'th' else None
         return o, teeth, tongue, None
-    return None, None, None, smooth([(-8, 1), (0, -1), (8, 1)], close=False)
+    return None, None, None, smooth([(-8, 1), (0, -0.5), (8, 1)], close=False)
 
 
 def draw_mouth(pen, x, y, kind, amt=1.0, scale=1.0):
@@ -173,6 +181,11 @@ def draw_mouth(pen, x, y, kind, amt=1.0, scale=1.0):
                 xx = b.left() + b.width() * i / n
                 pen.line([(xx, b.top()), (xx, b.bottom())], MOUTH, 0.55)
         pen.stroke(o, MOUTH, 0.9)
+        # the little lower-lip line under an open mouth, as on the sheet
+        b = o.getBounds()
+        yl = b.bottom() + 3.2
+        hw = min(6.5, b.width() * 0.32)
+        pen.stroke(smooth([(-hw, yl), (0, yl + 0.8), (hw, yl)], close=False), CHIN, 1.0)
     if line is not None:
         pen.stroke(line, LINE, 1.7)
     pen.restore()
@@ -200,7 +213,7 @@ def draw_eyes(pen, cx, cy, p, profile=False):
             yl = ey + ry * 0.15
             pen.stroke(smooth([(ex - rx * 0.8, yl - 2), (ex, yl + 3.5), (ex + rx * 0.8, yl - 2)], close=False), LINE, 2.3)
             continue
-        eye = ellipse(ex, ey, rx, ry, 0 if profile else s * 6)
+        eye = ellipse(ex, ey, rx, ry, 0 if profile else s * 9)
         pen.fill(eye, WHITE)
         lx, ly = p['look']
         if profile:
@@ -220,7 +233,6 @@ def draw_eyes(pen, cx, cy, p, profile=False):
             pen.fill(smooth([(ex - rx - 2, ycut + 3), (ex, ycut - 3), (ex + rx + 2, ycut + 3), (ex + rx + 2, ey + ry + 2), (ex - rx - 2, ey + ry + 2)]), SKIN)
             pen.stroke(smooth([(ex - rx, ycut + 3), (ex, ycut - 3), (ex + rx, ycut + 3)], close=False), LINE, 1.4)
         pen.restore()
-        pen.stroke(eye, (150, 148, 152), 0.7)
 
 
 def draw_brows(pen, cx, cy, p, profile=False):
@@ -243,13 +255,15 @@ def front_body(pen, p):
     sq = 1 + p['squash']
     pen.save()
     pen.scale(1 + 0.4 * p['squash'], 1 / sq)
-    # jacket: shoulders under the head, belly widest near the hem
-    body = smooth([(-60, -78), (-70, -58), (-73, -42), (-85, -28), (-74, -17), (0, -15), (74, -17), (85, -28),
-                   (73, -42), (70, -58), (60, -78), (0, -84)])
+    # jacket, as on the sheet: broad round shoulders right under the head, a
+    # full belly, and a wide, nearly straight hem
+    body = smooth([(-64, -86), (-80, -77), (-88, -62), (-90, -44), (-88, -28), (-80, -16), (0, -12),
+                   (80, -16), (88, -28), (90, -44), (88, -62), (80, -77), (64, -86), (0, -90)])
     pen.fill(body, RED)
-    pen.line([(0.5, -44), (0.5, -16)], darker(RED, 0.75), 1.3)
-    for by in (-37, -25):
-        pen.ellipse(2.5, by, 2.0, 2.0, BLACK)
+    # the jacket's front seam curves slightly, the buttons sit just off it
+    pen.stroke(smooth([(1.5, -46), (2.5, -30), (1.0, -13)], close=False), darker(RED, 0.72), 1.3)
+    for by in (-36, -23):
+        pen.ellipse(-2.5, by, 2.1, 2.1, BLACK)
     pen.restore()
 
 
@@ -272,10 +286,16 @@ def front_legs(pen, p):
     if p['body'] == 'walk':
         ph = p['walk'] * 2 * math.pi
         lift = [max(0.0, math.sin(ph)) * 7, max(0.0, -math.sin(ph)) * 7]
-    pen.fill(smooth([(-79, -26), (0, -28), (79, -26), (77, -12), (73, -5), (0, -4.5), (-73, -5), (-77, -12)]), BROWN)
-    pen.line([(0, -16), (0, -5)], darker(BROWN, 0.7), 1.4)
-    for s, l in zip((-1, 1), lift):
-        pen.ellipse(s * 37, -3.2 - l, 39, 4.6, BLACK)
+    # trousers: a brown band under the jacket hem, tapering a little to the shoes
+    pen.fill(smooth([(-80, -22), (0, -23), (80, -22), (78, -8), (72, -3), (0, -2.5), (-72, -3), (-78, -8)], tension=0.6), BROWN)
+    pen.line([(0, -13), (0, -3)], darker(BROWN, 0.7), 1.2)
+    # shoes, as on the sheet: a thin flat black shape with pointed ends
+    # standing; walking, the two feet come apart and lift in turn
+    if lift[0] or lift[1]:
+        for s_, l in zip((-1, 1), lift):
+            pen.fill(smooth([(s_ * 2, -2 - l), (s_ * 42, -6 - l), (s_ * 86, -2 - l), (s_ * 42, 2 - l)], tension=0.8), BLACK)
+    else:
+        pen.fill(smooth([(-87, -1.5), (-55, -5.5), (0, -6), (55, -5.5), (87, -1.5), (55, 2.2), (0, 2.6), (-55, 2.2)], tension=0.8), BLACK)
 
 
 def front_head(pen, p):
@@ -286,7 +306,7 @@ def front_head(pen, p):
     head = ellipse(0, -100, 72.5, 57.5)
     pen.fill(head, SKIN)
     # double chin
-    pen.stroke(smooth([(-54, -60), (-28, -49.5), (0, -46.5), (28, -49.5), (54, -60)], close=False), CHIN, 1.3)
+    pen.stroke(smooth([(-56, -62), (-30, -50.5), (0, -47.5), (30, -50.5), (56, -62)], close=False), CHIN, 1.1)
     # hat: dome over the head above the brim arc, brim band, pom-pom
     hat_clip = ellipse(0, -100.5, 73.5, 58.5)
     brim_top = [(-80, -99), (-40, -120), (0, -127), (40, -120), (80, -99)]

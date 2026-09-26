@@ -261,6 +261,25 @@ class Renderer:
                 if 0 <= fc < len(clip_frames):
                     self.mouths[f] = clip_frames[fc]
         self.spans = spans
+        # the show's talking head: it tips to one side for a phrase and to the
+        # other side on the next (phrases are split by the pauses)
+        n = len(self.mouths)
+        tilt = np.zeros(n, np.float32)
+        phrase, quiet = 0, 99
+        for f in range(n):
+            t = f / fps
+            if not any(a <= t < b for a, b in spans):
+                quiet = 99
+                continue
+            if self.env[min(f, len(self.env) - 1)] < 0.12:
+                quiet += 1
+            else:
+                if quiet >= 6:
+                    phrase += 1
+                quiet = 0
+            tilt[f] = 3.0 if phrase % 2 else -3.0
+        k = np.ones(4, np.float32) / 4               # ease each change over a few frames
+        self.talk_tilt = np.convolve(tilt, k, 'same')
 
     def plan_blinks(self):
         rng = np.random.RandomState(11)
@@ -337,6 +356,7 @@ class Renderer:
                 p['mouth'] = m
                 p['mouth_amt'] = 0.8 + 0.45 * env
             p['head_dy'] = p['head_dy'] - env * 1.6          # the head bobs on each syllable
+            p['head_tilt'] = p['head_tilt'] + float(self.talk_tilt[min(f, len(self.talk_tilt) - 1)]) * p.get('tilt_talk', 1.0)
         p['blink'] = max(p['blink'], self.blink(t)) if p['lid_top'] < 0.9 else p['blink']
         if p.get('nod'):
             p['head_dy'] += math.sin(t * 9) * 2.5 * p['nod']
