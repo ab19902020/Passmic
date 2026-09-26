@@ -76,7 +76,7 @@ def hand_path(shape):
 
 
 REST = 45.0              # arm angle of the model sheet's "arms down": mittens at his jacket's bottom corners
-SHOULDER = (66.0, -40.0)  # (resting) where the sleeve leaves the side of his jacket
+SHOULDER = (61.0, -49.0)  # (resting) where the sleeve leaves the side of his jacket
 
 # Arm rig matched to the sheet's gesture drawings. For each arm angle (0 = down,
 # 90 = straight out, 180 = straight up): where the sleeve joins the jacket, and
@@ -84,10 +84,10 @@ SHOULDER = (66.0, -40.0)  # (resting) where the sleeve leaves the side of his ja
 # jacket's bottom corner with no sleeve showing; straight out, it leaves from
 # mid-jacket; raised, the sleeve rises from the top of the shoulder so the
 # mitten ends up well outside his head (ONE HAND UP / BOTH HANDS UP).
-ARM_RIG = [(45.0, (66.0, -40.0), 26.0),
-           (95.0, (68.0, -56.0), 40.0),
-           (130.0, (70.0, -68.0), 55.0),
-           (160.0, (70.0, -74.0), 70.0)]
+ARM_RIG = [(45.0, (61.0, -49.0), 26.0),
+           (95.0, (63.0, -56.0), 40.0),
+           (130.0, (65.0, -68.0), 55.0),
+           (160.0, (65.0, -74.0), 70.0)]
 PALM = 12.0               # mitten centre beyond the wrist
 
 
@@ -279,8 +279,8 @@ def front_body(pen, p):
     pen.scale(1 + 0.4 * p['squash'], 1 / sq)
     # jacket, as on the sheet: broad round shoulders right under the head, a
     # full belly, and a wide, nearly straight hem
-    body = smooth([(-64, -86), (-80, -77), (-88, -62), (-90, -44), (-88, -28), (-80, -16), (0, -12),
-                   (80, -16), (88, -28), (90, -44), (88, -62), (80, -77), (64, -86), (0, -90)])
+    body = smooth([(-57, -86), (-72, -78), (-81, -64), (-84, -46), (-82, -28), (-75, -16), (0, -12),
+                   (75, -16), (82, -28), (84, -46), (81, -64), (72, -78), (57, -86), (0, -90)])
     pen.fill(body, RED)
     # the jacket's front seam curves slightly, the buttons sit just off it
     pen.stroke(smooth([(1.5, -46), (2.5, -30), (1.0, -13)], close=False), darker(RED, 0.72), 1.3)
@@ -294,11 +294,12 @@ SIDE_SHOULDER = (6.0, -44.0)   # where the near arm leaves the jacket in profile
 
 
 def front_sit_legs(pen):
-    """Sitting, as on the sheet's SITTING (FRONT): trousers between two big
-    soles that face the camera at the bottom corners of his jacket."""
-    pen.fill(smooth([(-50, -6), (0, -9), (50, -6), (46, 8), (0, 10), (-46, 8)]), BROWN)
-    for s in (-1, 1):
-        pen.ellipse(s * 45, 3, 23, 26, BLACK)
+    """Sitting, as on the sheet's SITTING (FRONT): his legs point at the
+    camera, so the two big soles sit over the bottom of his jacket with the
+    trousers showing between them - one compact shape, nothing in between."""
+    pen.fill(smooth([(-36, -14), (0, -17), (36, -14), (34, 6), (0, 9), (-34, 6)], tension=0.7), BROWN)
+    for s_ in (-1, 1):
+        pen.ellipse(s_ * 42, -8, 25, 27, BLACK)
 
 
 def front_legs(pen, p):
@@ -309,15 +310,15 @@ def front_legs(pen, p):
         ph = p['walk'] * 2 * math.pi
         lift = [max(0.0, math.sin(ph)) * 7, max(0.0, -math.sin(ph)) * 7]
     # trousers: a brown band under the jacket hem, tapering a little to the shoes
-    pen.fill(smooth([(-80, -22), (0, -23), (80, -22), (78, -8), (72, -3), (0, -2.5), (-72, -3), (-78, -8)], tension=0.6), BROWN)
+    pen.fill(smooth([(-75, -22), (0, -23), (75, -22), (73, -8), (67, -3), (0, -2.5), (-67, -3), (-73, -8)], tension=0.6), BROWN)
     pen.line([(0, -13), (0, -3)], darker(BROWN, 0.7), 1.2)
     # shoes, as on the sheet: a thin flat black shape with pointed ends
     # standing; walking, the two feet come apart and lift in turn
     if lift[0] or lift[1]:
         for s_, l in zip((-1, 1), lift):
-            pen.fill(smooth([(s_ * 2, -2 - l), (s_ * 42, -6 - l), (s_ * 86, -2 - l), (s_ * 42, 2 - l)], tension=0.8), BLACK)
+            pen.fill(smooth([(s_ * 2, -2 - l), (s_ * 40, -6 - l), (s_ * 81, -2 - l), (s_ * 40, 2 - l)], tension=0.8), BLACK)
     else:
-        pen.fill(smooth([(-87, -1.5), (-55, -5.5), (0, -6), (55, -5.5), (87, -1.5), (55, 2.2), (0, 2.6), (-55, 2.2)], tension=0.8), BLACK)
+        pen.fill(smooth([(-82, -1.5), (-52, -5.5), (0, -6), (52, -5.5), (82, -1.5), (52, 2.2), (0, 2.6), (-52, 2.2)], tension=0.8), BLACK)
 
 
 def front_head(pen, p):
@@ -356,7 +357,7 @@ def front_arm(pen, p, side):
     k = 'l' if side < 0 else 'r'
     angle, bend = p['arm_' + k], p['bend_' + k]
     if bend:
-        sx, sy, length = 60.0, -44.0, 22.0
+        sx, sy, length = 56.0, -44.0, 22.0
     else:
         sx, sy, length = arm_rig(angle)
     draw_arm(pen, side * sx, sy, angle, side, p['hand_' + k], p['hand_rot_' + k], length=length, bend=bend,
@@ -421,7 +422,7 @@ def draw_side(pen, p):
             pen.ellipse(dx + 4, -4 - lift, 24, 5, darker(BLACK, shade) if shade < 1 else BLACK)
     pen.save()
     pen.translate(0, bob + (SIT_DROP if p['body'] == 'sit' else 0))
-    body = smooth([(-44, -76), (-62, -54), (-66, -34), (-57, -17), (0, -15), (52, -17), (68, -33), (64, -56), (46, -76), (0, -84)])
+    body = smooth([(-42, -76), (-59, -54), (-63, -34), (-54, -17), (0, -15), (50, -17), (65, -33), (61, -56), (44, -76), (0, -84)])
     pen.fill(body, RED)
     for by in (-52, -38, -25):                               # buttons down the jacket front
         pen.ellipse(58 + (by + 52) * 0.25, by, 2.1, 2.1, BLACK)

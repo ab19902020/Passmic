@@ -195,7 +195,7 @@ def chair_back(pen, x, seat_y, view='side'):
         pen.rect(x - 200, seat_y - 60, x - 120, seat_y + 20, dark, r=10)
     else:
         pen.rect(x - 200, seat_y - 420, x + 200, seat_y - 20, col, r=60)
-    pen.rect(x - 210, seat_y - 10, x + 210, seat_y + 50, col, r=26)               # seat
+    pen.rect(x - 150, seat_y - 10, x + 150, seat_y + 50, col, r=26)               # seat: hidden behind him when he sits
 
 
 def desk_back(pen, t, st):
