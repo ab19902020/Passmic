@@ -681,17 +681,17 @@
    "sheet_rect_x4": [
     441,
     2662,
-    353,
+    456,
     546
    ],
    "size": [
-    353,
+    456,
     546
    ],
    "cut": {
     "bottom": true,
     "left": false,
-    "right": true
+    "right": false
    }
   },
   "both_hands_out": {
@@ -699,17 +699,17 @@
    "sheet_rect_x4": [
     792,
     2649,
-    591,
+    598,
     559
    ],
    "size": [
-    591,
+    598,
     559
    ],
    "cut": {
     "bottom": true,
     "left": true,
-    "right": true
+    "right": false
    }
   },
   "crossed_arms": {
@@ -735,17 +735,17 @@
    "sheet_rect_x4": [
     1707,
     2670,
-    469,
+    531,
     538
    ],
    "size": [
-    469,
+    531,
     538
    ],
    "cut": {
     "bottom": true,
     "left": false,
-    "right": true
+    "right": false
    }
   },
   "fist_pump": {
@@ -771,29 +771,29 @@
    "sheet_rect_x4": [
     2624,
     2685,
-    309,
+    315,
     523
    ],
    "size": [
-    309,
+    315,
     523
    ],
    "cut": {
     "bottom": true,
     "left": false,
-    "right": true
+    "right": false
    }
   },
   "holding_mic": {
    "file": "characters/mark/upper/holding_mic.png",
    "sheet_rect_x4": [
-    2931,
+    2926,
     2666,
-    352,
+    357,
     542
    ],
    "size": [
-    352,
+    357,
     542
    ],
    "cut": {
@@ -805,13 +805,13 @@
   "desk_rant": {
    "file": "characters/mark/upper/desk_rant.png",
    "sheet_rect_x4": [
-    3283,
+    3266,
     2676,
-    561,
+    578,
     532
    ],
    "size": [
-    561,
+    578,
     532
    ],
    "cut": {
@@ -951,13 +951,13 @@
   "run": {
    "file": "characters/mark/body/run.png",
    "sheet_rect_x4": [
-    6231,
+    6148,
     2661,
-    360,
+    443,
     545
    ],
    "size": [
-    360,
+    443,
     545
    ],
    "cut": {

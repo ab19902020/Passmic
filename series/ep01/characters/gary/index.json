@@ -97,17 +97,17 @@
    "sheet_rect_x4": [
     2756,
     480,
-    589,
+    600,
     928
    ],
    "size": [
-    589,
+    600,
     928
    ],
    "cut": {
     "bottom": true,
     "left": false,
-    "right": true
+    "right": false
    }
   },
   "three_quarter": {
@@ -681,17 +681,17 @@
    "sheet_rect_x4": [
     472,
     2597,
-    313,
+    445,
     490
    ],
    "size": [
-    313,
+    445,
     490
    ],
    "cut": {
     "bottom": false,
     "left": false,
-    "right": true
+    "right": false
    }
   },
   "both_hands_out": {
@@ -733,19 +733,19 @@
   "shrug": {
    "file": "characters/gary/upper/shrug.png",
    "sheet_rect_x4": [
-    1770,
+    1762,
     2579,
-    444,
+    473,
     516
    ],
    "size": [
-    444,
+    473,
     516
    ],
    "cut": {
     "bottom": false,
     "left": true,
-    "right": true
+    "right": false
    }
   },
   "fist_pump": {
@@ -805,13 +805,13 @@
   "desk_rant": {
    "file": "characters/gary/upper/desk_rant.png",
    "sheet_rect_x4": [
-    3315,
+    3281,
     2599,
-    573,
+    607,
     495
    ],
    "size": [
-    573,
+    607,
     495
    ],
    "cut": {
@@ -845,29 +845,29 @@
    "sheet_rect_x4": [
     4186,
     2607,
-    459,
+    487,
     495
    ],
    "size": [
-    459,
+    487,
     495
    ],
    "cut": {
     "bottom": false,
     "left": false,
-    "right": true
+    "right": false
    }
   },
   "walk_1": {
    "file": "characters/gary/body/walk_1.png",
    "sheet_rect_x4": [
-    4643,
+    4623,
     2575,
-    266,
+    286,
     528
    ],
    "size": [
-    266,
+    286,
     528
    ],
    "cut": {
@@ -951,13 +951,13 @@
   "run": {
    "file": "characters/gary/body/run.png",
    "sheet_rect_x4": [
-    6180,
+    6146,
     2577,
-    418,
+    452,
     527
    ],
    "size": [
-    418,
+    452,
     527
    ],
    "cut": {

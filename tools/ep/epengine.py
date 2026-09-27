@@ -146,6 +146,20 @@ class Rig:
             cx, cy = (fx0 + fx1) / 2, fy0 + (fy1 - fy0) * 0.45
         info['center'] = (float(cx), float(cy))
         info['width'] = float(ov.get('face_w', 1.0) * (fx1 - fx0))
+        if self.over.get('_mouth_style') == 'patch' and info['mouth'] is not None:
+            # Roy: his eyes are often narrowed or looking down; anchor every drawing on his mouth,
+            # and size it by the head's width ear to ear at eye level (skin boxes vary with the beard)
+            mx, my = info['mouth'][:2]
+            ey = int(my - 0.425 * info['width'])
+            row = img[max(0, ey), :, 3] > 100
+            x0 = x1 = int(min(max(mx, 0), W - 1))
+            while x0 > 0 and row[x0 - 1]:
+                x0 -= 1
+            while x1 < W - 1 and row[x1 + 1]:
+                x1 += 1
+            if x1 - x0 > 0.5 * info['width']:
+                info['width'] = float(x1 - x0) * ov.get('face_w', 1.0)
+            info['center'] = (float(mx), float(my - 0.425 * info['width']))
         ys, xs = np.nonzero(img[..., 3] > 128)
         yb = ys.max()
         low = xs[ys >= yb - max(4, int(H * 0.01))]
@@ -164,6 +178,18 @@ class Rig:
                     path = hi if os.path.exists(hi) else os.path.join(EP, self.idx['mouths'][k]['file'])
                     self.parts[k] = F.mouth_part(cv2.imread(path, cv2.IMREAD_UNCHANGED))
         return self.parts
+
+    def patch_part(self, key):
+        """A mouth cell of the sheet (RGB), for patch-style lip sync."""
+        if self.parts is None:
+            self.parts = {}
+        if key not in self.parts:
+            if key not in self.idx.get('mouths', {}):
+                return None
+            hi = os.path.join(EP, 'characters_x16', self.name, 'mouths', key + '.png')
+            path = hi if os.path.exists(hi) else os.path.join(EP, self.idx['mouths'][key]['file'])
+            self.parts[key] = cv2.imread(path, cv2.IMREAD_UNCHANGED)[..., :3]
+        return self.parts[key]
 
     def mouth_ratio(self):
         """Closed-mouth width / face width, from the front head close-up."""
@@ -186,11 +212,12 @@ class Rig:
         out = img
         if mouth is not None and info['mouth'] is not None:
             base = self.cache.get(('nomouth', key))
-            if base is None and self.name != 'roy':
+            if base is None and self.over.get('_mouth_style') != 'patch':
                 base = F.without_mouth(img, info)
                 self.cache[('nomouth', key)] = base
-            if self.name == 'roy':
-                out = synth_mouth(img, info, mouth)
+            if self.over.get('_mouth_style') == 'patch':
+                part = self.patch_part(mouth)
+                out = img if part is None else patch_mouth(img, info, part, self.over.get(key, {}).get('squash', 1.0))
             else:
                 parts = self.mouth_parts()
                 part = parts.get(mouth) or parts.get('rest')
@@ -237,60 +264,40 @@ def recolor_part(part, skin_lab):
 
 
 _RECOLOR = {}
-SYNTH = {'rest': (0.8, 0.0), 'a': (0.95, 0.42), 'e': (1.0, 0.26), 'i': (0.95, 0.15), 'o': (0.62, 0.4),
-         'u': (0.48, 0.28), 'smile': (0.8, 0.0), 'frown': (0.8, 0.0), 'wide_shout': (1.05, 0.62)}
+
+PATCH_LIPS = 0.72          # closed-lip width as a fraction of a mouth cell's width (all cells share one zoom)
 
 
-def synth_mouth(img, info, key):
-    """A drawn mouth opening for a character without a phoneme set (Roy).
-    His beard and moustache stay: the opening is drawn over his own lips,
-    hanging from the upper lip, with teeth, tongue and a lower lip."""
-    ws, hs = SYNTH.get(key, (0.8, 0.0))
-    if hs <= 0:
-        return img                                  # closed: his own drawn mouth
+def patch_mouth(img, info, cell, squash=1.0):
+    """Roy's lip sync: a mouth cell from his sheet - lips, moustache and beard -
+    scaled to his mouth, colour-matched to the drawing under it and blended in
+    with a soft oval edge. The cell's lip line lands on his drawn lip line."""
+    cx, cy, mw, _ = info['mouth']
+    ch, cw = cell.shape[:2]
+    s = mw / PATCH_LIPS / cw
+    sx = s * squash
+    patch = cv2.resize(cell, (max(2, int(cw * sx)), max(2, int(ch * s))),
+                       interpolation=cv2.INTER_AREA if s < 1 else cv2.INTER_CUBIC).astype(np.float32)
+    h, w = patch.shape[:2]
+    x0, y0 = int(round(cx - 0.5 * w)), int(round(cy - 0.49 * h))
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    d = np.sqrt(((xx / w - 0.5) / 0.47) ** 2 + ((yy / h - 0.6) / 0.36) ** 2)
+    alpha = np.clip((1.0 - d) / 0.3, 0, 1)
+    # match the beard and skin tones of the drawing underneath (mean shift over the soft rim)
+    H, W = img.shape[:2]
+    xa, ya, xb, yb = max(0, x0), max(0, y0), min(W, x0 + w), min(H, y0 + h)
+    if xa >= xb or ya >= yb:
+        return img
+    under = img[ya:yb, xa:xb, :3].astype(np.float32)
+    pc = patch[ya - y0:yb - y0, xa - x0:xb - x0]
+    ring = (alpha[ya - y0:yb - y0, xa - x0:xb - x0] > 0.05) & (alpha[ya - y0:yb - y0, xa - x0:xb - x0] < 0.6) & \
+        (img[ya:yb, xa:xb, 3] > 200)
+    if ring.sum() > 50:
+        shift = under[ring].mean(axis=0) - pc[ring].mean(axis=0)
+        patch = np.clip(patch + 0.7 * shift, 0, 255)
+    rgba = np.dstack([patch, alpha * 255]).astype(np.uint8)
     out = img.copy()
-    cx, cy, mw, mh = info['mouth']
-    fw = info['width']
-    mw = min(max(mw, fw * 0.26), fw * 0.32)      # the found box can take in the moustache
-    w = mw * ws / 2
-    h = mw * hs / 2
-    top = cy - mh * 0.35
-    ccy = top + h
-    ss = 4                                         # draw supersampled for clean edges
-    x0, y0 = int(cx - w * 1.4), int(top - h * 0.6)
-    x1, y1 = int(cx + w * 1.4) + 1, int(ccy + h * 1.6) + 1
-    x0, y0 = max(0, x0), max(0, y0)
-    x1, y1 = min(out.shape[1], x1), min(out.shape[0], y1)
-    if x1 <= x0 or y1 <= y0:
-        return out
-    Wp, Hp = (x1 - x0) * ss, (y1 - y0) * ss
-    P = lambda x, y: (int((x - x0) * ss), int((y - y0) * ss))
-    A = lambda a, b: (max(1, int(a * ss)), max(1, int(b * ss)))
-    lip = np.zeros((Hp, Wp), np.uint8)
-    hole = np.zeros((Hp, Wp), np.uint8)
-    teeth = np.zeros((Hp, Wp), np.uint8)
-    tongue = np.zeros((Hp, Wp), np.uint8)
-    lt = fw * 0.022
-    cv2.ellipse(lip, P(cx, ccy), A(w + lt * 0.6, h + lt * 1.3), 0, 0, 360, 255, -1, cv2.LINE_AA)
-    cv2.ellipse(hole, P(cx, ccy), A(w, h), 0, 0, 360, 255, -1, cv2.LINE_AA)
-    cv2.ellipse(teeth, P(cx, ccy - h * 0.95), A(w * 0.8, h * 0.42), 0, 0, 360, 255, -1, cv2.LINE_AA)
-    cv2.ellipse(tongue, P(cx + w * 0.08, ccy + h * 0.95), A(w * 0.62, h * 0.55), 0, 0, 360, 255, -1, cv2.LINE_AA)
-    teeth = np.minimum(teeth, hole)
-    tongue = np.minimum(tongue, hole)
-    col = np.zeros((Hp, Wp, 3), np.float32)
-    col[:] = (70, 92, 176)                          # lip
-    for m, c in ((hole, (38, 26, 58)), (tongue, (92, 96, 196)), (teeth, (228, 236, 240))):
-        a = m[..., None] / 255.0
-        col = col * (1 - a) + np.array(c, np.float32) * a
-    # ink outline round the opening
-    edge = cv2.morphologyEx(hole, cv2.MORPH_GRADIENT, np.ones((max(3, int(fw * 0.012 * ss)),) * 2, np.uint8))
-    a = cv2.GaussianBlur(edge, (0, 0), ss * 0.5)[..., None] / 255.0
-    col = col * (1 - a) + np.array((28, 30, 44), np.float32) * a
-    alpha = cv2.resize(lip, (x1 - x0, y1 - y0), interpolation=cv2.INTER_AREA)[..., None] / 255.0
-    col = cv2.resize(col, (x1 - x0, y1 - y0), interpolation=cv2.INTER_AREA)
-    alpha = alpha * (out[y0:y1, x0:x1, 3:4] / 255.0)
-    region = out[y0:y1, x0:x1, :3].astype(np.float32)
-    out[y0:y1, x0:x1, :3] = (region * (1 - alpha) + col * alpha).astype(np.uint8)
+    F.paste(out, rgba, x0, y0)
     return out
 
 
@@ -302,25 +309,33 @@ CONS = {'M': 'rest', 'B': 'rest', 'P': 'rest', 'F': 'i', 'V': 'i', 'W': 'u', 'R'
         'TH': 'e', 'DH': 'e', 'L': 'e', 'K': 'e', 'G': 'e', 'NG': 'e', 'HH': 'e'}
 
 
-def phones_to_frames(words, dur, fps=FPS, loud=False):
+# Roy's sheet: A (day), E (get), I (sit), O (go), U (put), C/D/G, F/V, L, M/B/P, R, TH
+VOWEL_ROY = {'AA': 'a', 'AE': 'a', 'AH': 'e', 'AY': 'a', 'AW': 'o', 'EH': 'e', 'EY': 'a', 'ER': 'r',
+             'IH': 'i', 'IY': 'i', 'OW': 'o', 'AO': 'o', 'OY': 'o', 'UW': 'u', 'UH': 'u'}
+CONS_ROY = {'M': 'mbp', 'B': 'mbp', 'P': 'mbp', 'F': 'fv', 'V': 'fv', 'L': 'l', 'R': 'r', 'W': 'u',
+            'TH': 'th', 'DH': 'th'}                    # everything else: C/D/G
+
+
+def phones_to_frames(words, dur, fps=FPS, loud=False, style='sheet'):
     """Per-frame mouth keys from aligned words/phones; held on twos."""
+    vowels, cons, rest, other = (VOWEL_ROY, CONS_ROY, 'mbp', 'cdg') if style == 'roy' else (VOWEL, CONS, 'rest', 'i')
     n = int(dur * fps) + 2
     best = [None] * n
     wgt = np.zeros(n)
     for w in words:
         for ph, a, b in w['phones']:
             ph = re.sub(r'\d', '', ph)
-            key = VOWEL.get(ph) or CONS.get(ph, 'i')
-            if key == 'a' and loud:
+            key = vowels.get(ph) or cons.get(ph, other)
+            if key == 'a' and loud and style != 'roy':
                 key = 'wide_shout'
-            isv = ph in VOWEL
+            isv = ph in vowels
             for f in range(max(0, int(a * fps)), min(n, max(int(a * fps) + 1, int(round(b * fps))))):
-                sc = (b - a) + (0.15 if isv else 0) + (0.3 if key == 'rest' else 0)
+                sc = (b - a) + (0.15 if isv else 0) + (0.3 if key == rest else 0)
                 if sc > wgt[f]:
                     wgt[f], best[f] = sc, key
-    out, last, held = [], 'rest', 9
+    out, last, held = [], rest, 9
     for f in range(n):
-        m = best[f] or 'rest'
+        m = best[f] or rest
         if m != last and held < 2:
             m = last
         held = held + 1 if m == last else 1
@@ -506,8 +521,9 @@ def over_full(frame, rgba):
     over(frame, rgba[y0:y1, x0:x1], x0, y0)
 
 
-# body poses whose hands come up round the face: a close-up puts a calmer body under the head
-CU_BODY = {'upper/fist_pump': 'upper/arms_down', 'upper/holding_phone': 'upper/arms_down'}
+# under a close-up head the body is the calm arms-down drawing: a gesturing pose's hands would
+# poke out from behind the bust with no arms (crossed arms stay crossed)
+CU_BODY = {'upper/crossed_arms': 'upper/crossed_arms'}
 
 
 class Renderer:
@@ -522,7 +538,8 @@ class Renderer:
         self.mouth_frames = {}
         for ln in tl.lines:
             loud = ln['id'] in getattr(tl.script, 'LOUD', ())
-            self.mouth_frames[ln['id']] = phones_to_frames(ln['words'], ln['dur'], loud=loud)
+            self.mouth_frames[ln['id']] = phones_to_frames(ln['words'], ln['dur'], loud=loud,
+                                                           style='roy' if ln['who'] == 'roy' else 'sheet')
 
     def bg(self, name):
         if name not in self.bgs:
@@ -669,8 +686,8 @@ class Renderer:
             over(frame, res, px, py)
             return
         # close-up: the body from just under its chin, then the close-up head blended on at the same face
-        calm = CU_BODY.get(key)
-        if calm and calm in rig.idx.get(calm.split('/')[0], {}):
+        calm = CU_BODY.get(key, 'upper/arms_down' if key.startswith('upper/') else None)
+        if calm and calm != key and calm.split('/')[1] in rig.idx.get(calm.split('/')[0], {}):
             key = calm
             info = rig.face(key)
             W, H = info['size']
@@ -680,9 +697,6 @@ class Renderer:
                 cx = W - cx
             px = (pl['pos'][0] - x0) * k1 - cx * s
             py = (pl['pos'][1] - y0) * k1 - cy * s + bob
-        chin = int((info['box'][3] - 0.1 * info['width']) * s)
-        chin = max(0, min(res.shape[0], chin))
-        over(frame, res[chin:], px, py + chin)
         fcx, fcy = px + cx * s, py + cy * s
         cinfo = rig.face(cu)
         cs = fw_out / max(cinfo['width'], 1)
@@ -690,6 +704,16 @@ class Renderer:
         ccx, ccy = cinfo['center']
         if pl['flip']:
             ccx = cinfo['size'][0] - ccx
+        # the body only from just above where the close-up bust ends: its own head and neck never show
+        # (Roy's close-ups are heads without shoulders: his whole body goes under, the head covers its own)
+        cu_bottom = fcy - ccy * cs + cres.shape[0]
+        if rig.over.get('_cu_full_body') and info.get('mouth') is not None:
+            # Roy: the body from mid-beard down (its own head would show beside a turned one)
+            chin = int((info['mouth'][1] + 0.22 * info['width']) * s)
+        else:
+            chin = int(cu_bottom - 0.14 * fw_out - py)
+        chin = max(0, min(res.shape[0], chin))
+        over(frame, res[chin:], px, py + chin)
         mk = ('cumask', who, cu, pl['flip'], cres.shape)
         m = self.scaled.get(mk)
         if m is None:
@@ -700,17 +724,24 @@ class Renderer:
         over(frame, cres, fcx - ccx * cs, fcy - ccy * cs)
 
     def cu_mask(self, rig, key, flip, w, h):
-        """Keeps a close-up drawing's head and neck; its cut-off chest and
-        shoulders fade out over the body drawn underneath."""
+        """A close-up drawing is kept whole; only the edges where the sheet cut
+        it off (bottom, and the sides of the shoulders) fade into the body
+        drawn underneath."""
         info = rig.face(key)
         W, H = info['size']
-        fx0, fy0, fx1, fy1 = info['box']
-        fw = fx1 - fx0
-        m = np.zeros((H, W), np.float32)
-        below = 0.12 + rig.over.get('_cu_chin', 0.0)       # Roy: down to the bottom of his beard
-        m[:int(fy1 - 0.3 * fw)] = 1.0                        # the whole head, ears and hair
-        m[:int(fy1 + below * fw), max(0, int(fx0 - 0.06 * fw)):int(fx1 + 0.06 * fw)] = 1.0
-        m = cv2.GaussianBlur(m, (0, 0), fw * 0.07)
+        fw = info['box'][2] - info['box'][0]
+        a = rig.image(key)[..., 3] > 20
+        m = np.ones((H, W), np.float32)
+        ramp = max(2.0, fw * 0.1)
+        yy = np.arange(H, dtype=np.float32)[:, None]
+        xx = np.arange(W, dtype=np.float32)[None, :]
+        m *= np.clip((H - 1 - yy) / ramp, 0, 1)
+        # sides only where the drawing actually touches them (cut shoulders), and only low down
+        low = np.clip((yy - info['box'][3] + 0.1 * fw) / ramp, 0, 1)
+        if a[:, 0].any():
+            m *= 1 - (1 - np.clip(xx / ramp, 0, 1)) * low
+        if a[:, -1].any():
+            m *= 1 - (1 - np.clip((W - 1 - xx) / ramp, 0, 1)) * low
         if flip:
             m = m[:, ::-1]
         return cv2.resize(m, (w, h), interpolation=cv2.INTER_LINEAR)

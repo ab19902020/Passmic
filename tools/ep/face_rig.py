@@ -25,6 +25,28 @@ def fill_holes(m):
     return ff[1:-1, 1:-1] != 2
 
 
+def drop_intrusions(rgba):
+    """Remove pieces of the neighbouring drawings on the sheet: parts not joined
+    to the figure that come in from the left or right edge (a hand, a sleeve).
+    Ground shadows spanning the drawing's width stay."""
+    m = (rgba[..., 3] > 60).astype(np.uint8)
+    n, cc, st, _ = cv2.connectedComponentsWithStats(m, connectivity=8)
+    if n <= 2:
+        return rgba, 0
+    H, W = m.shape
+    big = 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))
+    out, k = rgba.copy(), 0
+    for i in range(1, n):
+        x, y, w, h, ar = st[i]
+        if i == big or w > 0.6 * W or ar > 0.25 * st[big, cv2.CC_STAT_AREA]:
+            continue
+        if x <= 4 or x + w >= W - 4:
+            piece = cv2.dilate((cc == i).astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+            out[piece & (cc != big), 3] = 0
+            k += 1
+    return out, k
+
+
 def skin_colour(rgba, region=None):
     L = lab(rgba[..., :3])
     a = rgba[..., 3] > 200
@@ -161,6 +183,34 @@ def mouth_part(rgba, margin=0.28):
     return patch, (cx, cy), float(mw)
 
 
+def face_interior(info, shape):
+    """Inside the face's outline: skin plus what it encloses (eyes, nose, mouth),
+    with gaps where an open mouth breaks the skin closed. Mouth erases and pastes
+    stay inside it, so the jaw line is never painted over."""
+    if info.get('_interior') is not None:
+        return info['_interior']
+    fs = info.get('face_skin')
+    if fs is None or not fs.any():
+        return None
+    fw = info['box'][2] - info['box'][0]
+    k = max(5, int(fw * 0.07)) | 1
+    # the drawn mouth is inside the face even where a wide-open one breaks through the skin
+    mm = info.get('mouth_mask')
+    base = fs.astype(np.uint8)
+    if mm is not None and mm.any():
+        base = base | cv2.dilate(mm.astype(np.uint8), np.ones((k, k), np.uint8))
+    m = cv2.morphologyEx(base, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k)))
+    m = fill_holes(m > 0)
+    hull = np.zeros(m.shape, np.uint8)
+    cv2.fillConvexPoly(hull, cv2.convexHull(cv2.findNonZero(base)), 1)
+    m &= hull > 0
+    # the skin's own anti-aliased rim, but not the ink line beyond it
+    m = cv2.dilate(m.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+    soft = cv2.GaussianBlur(m.astype(np.float32), (0, 0), max(0.8, fw * 0.004))
+    info['_interior'] = soft
+    return soft
+
+
 def without_mouth(rgba, info, grow=0.18):
     """Paint the drawn mouth out with the skin around it (a flat fill with a
     soft edge, like the flat-shaded art; inpainting smears the ink)."""
@@ -191,13 +241,17 @@ def without_mouth(rgba, info, grow=0.18):
     col = np.median(rgba[..., :3][ringskin], axis=0) if ringskin.sum() > 20 else \
         (cv2.cvtColor(np.float32([[skin]]), cv2.COLOR_LAB2BGR)[0, 0] * 255)
     soft = cv2.GaussianBlur(m.astype(np.float32), (0, 0), max(1.0, r * 0.25))
-    soft = np.maximum(soft, m.astype(np.float32))[..., None]
+    soft = np.maximum(soft, m.astype(np.float32))
+    inside = face_interior(info, m.shape)
+    if inside is not None:
+        soft = soft * inside
+    soft = soft[..., None]
     out[..., :3] = (out[..., :3] * (1 - soft) + np.array(col, np.float32) * soft).astype(np.uint8)
     return out
 
 
-def paste(dst, src, x0, y0):
-    """Alpha-over RGBA src onto RGBA dst at (x0, y0), in place."""
+def paste(dst, src, x0, y0, clip=None):
+    """Alpha-over RGBA src onto RGBA dst at (x0, y0), in place (only inside `clip`, a 0..1 mask of dst)."""
     h, w = src.shape[:2]
     H, W = dst.shape[:2]
     xa, ya, xb, yb = max(x0, 0), max(y0, 0), min(x0 + w, W), min(y0 + h, H)
@@ -206,6 +260,8 @@ def paste(dst, src, x0, y0):
     s = src[ya - y0:yb - y0, xa - x0:xb - x0].astype(np.float32)
     d = dst[ya:yb, xa:xb].astype(np.float32)
     al = s[..., 3:4] / 255 * (d[..., 3:4] / 255)          # never paint outside the drawing
+    if clip is not None:
+        al = al * clip[ya:yb, xa:xb, None]
     d[..., :3] = s[..., :3] * al + d[..., :3] * (1 - al)
     dst[ya:yb, xa:xb] = d.clip(0, 255).astype(np.uint8)
 
@@ -225,7 +281,7 @@ def with_mouth(base, info, part, width, dx=0.0, dy=0.0, squash_x=1.0, angle=0.0)
                             borderMode=cv2.BORDER_CONSTANT, borderValue=0)
     cx, cy = info['mouth'][0] + dx, info['mouth'][1] + dy
     out = base.copy()
-    paste(out, warped, int(round(cx - pcx * s * squash_x)), int(round(cy - pcy * s)))
+    paste(out, warped, int(round(cx - pcx * s * squash_x)), int(round(cy - pcy * s)), clip=face_interior(info, base.shape[:2]))
     return out
 
 

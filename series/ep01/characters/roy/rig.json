@@ -1,19 +1,134 @@
 {
- "_cu_chin": 0.3,
- "closeup/crossed_arms": {
+ "_doc": "Roy's lip sync pastes the sheet's mouth cells (mouth, moustache and beard) over his mouth: 'mouth' is [cx, cy, w] as fractions of the drawing - the centre of his closed lips and their corner-to-corner width.",
+ "_mouth_style": "patch",
+ "expressions/neutral": {
   "mouth": [
-   0.3,
    0.525,
-   0.2,
-   0.04
+   0.675,
+   0.31
   ]
  },
- "body/stand_crossed": {
+ "expressions/angry": {
   "mouth": [
-   0.295,
-   0.297,
-   0.217,
-   0.023
+   0.527,
+   0.655,
+   0.29
   ]
+ },
+ "expressions/speaking": {
+  "mouth": [
+   0.562,
+   0.665,
+   0.29
+  ]
+ },
+ "expressions/disgust": {
+  "mouth": [
+   0.493,
+   0.64,
+   0.3
+  ]
+ },
+ "expressions/sarcastic": {
+  "mouth": [
+   0.479,
+   0.655,
+   0.27
+  ],
+  "squash": 0.9
+ },
+ "expressions/confused": {
+  "mouth": [
+   0.62,
+   0.66,
+   0.3
+  ],
+  "squash": 0.9
+ },
+ "expressions/annoyed": {
+  "mouth": [
+   0.752,
+   0.685,
+   0.28
+  ],
+  "squash": 0.8
+ },
+ "expressions/shouting": {
+  "mouth": [
+   0.571,
+   0.665,
+   0.275
+  ]
+ },
+ "expressions/dry_humour": {
+  "mouth": [
+   0.47,
+   0.7,
+   0.29
+  ]
+ },
+ "expressions/thinking": {
+  "mouth": [
+   0.534,
+   0.785,
+   0.3
+  ]
+ },
+ "head/detail": {
+  "mouth": [
+   0.507,
+   0.645,
+   0.3
+  ]
+ },
+ "body/arms_crossed": {
+  "mouth": [
+   0.578,
+   0.245,
+   0.167
+  ],
+  "face_w": 0.93
+ },
+ "body/pointing": {
+  "mouth": [
+   0.532,
+   0.229,
+   0.147
+  ],
+  "face_w": 1.008
+ },
+ "body/open_hand": {
+  "mouth": [
+   0.591,
+   0.225,
+   0.122
+  ],
+  "squash": 0.9,
+  "face_w": 1.039
+ },
+ "body/palm_down": {
+  "mouth": [
+   0.4125,
+   0.232,
+   0.122
+  ],
+  "squash": 0.9,
+  "face_w": 1.021
+ },
+ "_cu_full_body": true,
+ "body/walk_1": {
+  "face_w": 0.87
+ },
+ "body/walk_2": {
+  "face_w": 0.87
+ },
+ "body/walk_3": {
+  "face_w": 0.87
+ },
+ "body/walk_3b": {
+  "face_w": 0.87
+ },
+ "body/walk_4": {
+  "face_w": 0.87
  }
 }

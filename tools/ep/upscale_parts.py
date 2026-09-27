@@ -1,6 +1,6 @@
 """Second 4x AI pass (16x the original sheets) for the drawings seen large:
 expressions, heads, busts and standing/walking bodies of Mark and Gary, and
-Roy's head.
+Roy's expressions, head, poses and mouth shapes.
 
     python3 tools/ep/upscale_parts.py      -> series/ep01/characters_x16/<char>/<panel>/<name>.png
 
@@ -11,6 +11,9 @@ smooth filter and re-sharpened. Resumable: existing outputs are skipped.
 import json, os, sys
 import cv2, numpy as np
 from realesrgan_ncnn_py import Realesrgan
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import face_rig as F     # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 EP = os.path.join(ROOT, 'series', 'ep01')
@@ -26,15 +29,18 @@ def up_alpha(a, k=4):
 def main():
     r = Realesrgan(gpuid=-1, model=3, tilesize=256)
     jobs = []
-    for panels in (('head', 'expressions'), ('upper', 'body')):
-        for ch in ('gary', 'mark'):
-            idx = json.load(open(os.path.join(EP, 'characters', ch, 'index.json')))
-            sheet = cv2.imread(os.path.join(EP, 'x4', ch + '.png'))
-            for panel in panels:
-                for name, s in idx[panel].items():
-                    if ch == 'mark' and panel == 'body' and not name.startswith('stand'):
-                        continue            # Mark never walks
-                    jobs.append((ch, panel, name, s, sheet))
+    # Roy first (his sheet came last), then Mark's and Gary's
+    for ch, panels in (('roy', ('expressions', 'head', 'body', 'mouths')), ('gary', ('head', 'expressions', 'upper', 'body')),
+                       ('mark', ('head', 'expressions', 'upper', 'body'))):
+        idx = json.load(open(os.path.join(EP, 'characters', ch, 'index.json')))
+        sheet = cv2.imread(os.path.join(EP, 'x4', ch + '.png'))
+        for panel in panels:
+            for name, s in idx.get(panel, {}).items():
+                if 'sheet_rect_x4' not in s:
+                    continue            # built from other drawings (Roy's walk), not cut from a sheet
+                if ch == 'mark' and panel == 'body' and not name.startswith('stand'):
+                    continue            # Mark never walks
+                jobs.append((ch, panel, name, s, sheet))
     for ch, panel, name, s, sheet in jobs:
         out = os.path.join(EP, 'characters_x16', ch, panel, name + '.png')
         if os.path.exists(out):
@@ -48,20 +54,10 @@ def main():
         res = np.dstack([big, a])
         res[a == 0, :3] = 0
         os.makedirs(os.path.dirname(out), exist_ok=True)
+        if panel != 'mouths':
+            res = F.drop_intrusions(res)[0]
         cv2.imwrite(out, res, [cv2.IMWRITE_PNG_COMPRESSION, 4])
         print(out, res.shape, flush=True)
-    # Roy's head from the production sheet
-    out = os.path.join(EP, 'characters_x16', 'roy', 'head', 'three_quarter.png')
-    if not os.path.exists(out):
-        im = cv2.imread(os.path.join(EP, 'characters', 'roy', 'src', 'sheet_c_x4.png'))
-        m = (cv2.imread(os.path.join(EP, 'characters', 'roy', 'src', 'head_mask.png'), 0) > 127).astype(np.uint8) * 255
-        ys, xs = np.nonzero(m)
-        y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
-        big = r.process_cv2(np.ascontiguousarray(im[y0:y1, x0:x1]))
-        a = cv2.resize(up_alpha(cv2.GaussianBlur(m[y0:y1, x0:x1], (0, 0), 1.2), 4), (big.shape[1], big.shape[0]))
-        os.makedirs(os.path.dirname(out), exist_ok=True)
-        cv2.imwrite(out, np.dstack([big, a]))
-        print(out, flush=True)
 
 
 if __name__ == '__main__':

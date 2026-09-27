@@ -15,6 +15,9 @@ series/ep01/sheets/layout.json:
 import json, os, sys
 import cv2, numpy as np
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import face_rig as F     # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 EP = os.path.join(ROOT, 'series', 'ep01')
 K = 4          # upscale factor of the x4 sheets
@@ -66,6 +69,7 @@ def cut_band(img, box, labels):
     fg = ~bg
     fg = cv2.morphologyEx(fg.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)) > 0
     cols = split_columns(fg, len(labels))
+    nf, fcc = cv2.connectedComponents(fg.astype(np.uint8), connectivity=8)
     out = []
     for i, name in enumerate(labels):
         a, b = cols[i], cols[i + 1]
@@ -76,6 +80,13 @@ def cut_band(img, box, labels):
             continue
         big = 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))
         keep = cc == big
+        # an arm reaching over the split (a pointing finger) stays whole, unless the figure is
+        # joined to its neighbour there (then the split column has to cut it)
+        whole = fcc == np.bincount(fcc[keep]).argmax()
+        outside = whole.copy()
+        outside[:, a:b] = False
+        if outside.sum() < 0.25 * keep.sum():
+            keep = whole
         # nearby detached pieces (a hand, a mic) belong to this drawing too
         near = cv2.dilate(keep.astype(np.uint8), np.ones((K * 10, K * 10), np.uint8)) > 0
         for j in range(1, n):
@@ -90,7 +101,7 @@ def cut_band(img, box, labels):
         rgba[rgba[..., 3] == 0, :3] = 0
         # which edges were cut by the band / split (a bust cropped at the bottom etc.)
         cut = dict(bottom=bool(yb >= crop.shape[0] - 2), left=bool(xa <= a + 1 and a > 0),
-                   right=bool(xb >= b - 1 and b < crop.shape[1]))
+                   right=bool(b - 1 <= xb <= b + 1 and b < crop.shape[1]))
         out.append((name, rgba, [int(x0 + xa), int(y0 + ya), int(xb - xa), int(yb - ya)], cut))
     return out
 
@@ -103,6 +114,8 @@ def run(char):
         for name, rgba, rect, cut in cut_band(img, band['box'], band['labels']):
             rel = os.path.join('characters', char, band['panel'], name + '.png')
             os.makedirs(os.path.dirname(os.path.join(EP, rel)), exist_ok=True)
+            if band['panel'] != 'mouths':
+                rgba = F.drop_intrusions(rgba)[0]      # a neighbour's hand reaching into the box
             cv2.imwrite(os.path.join(EP, rel), rgba, [cv2.IMWRITE_PNG_COMPRESSION, 6])
             index.setdefault(band['panel'], {})[name] = dict(file=rel, sheet_rect_x4=rect, size=[rgba.shape[1], rgba.shape[0]],
                                                              cut=cut)

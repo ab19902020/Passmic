@@ -1,164 +1,503 @@
 {
- "upper": {
-  "crossed_arms": {
-   "file": "characters/roy/upper/crossed_arms.png",
-   "size": [
-    1381,
-    2126
+ "expressions": {
+  "neutral": {
+   "file": "characters/roy/expressions/neutral.png",
+   "sheet_rect_x4": [
+    80,
+    1969,
+    482,
+    683
    ],
-   "body": "gary/upper/crossed_arms",
-   "cut": {
-    "bottom": false,
-    "left": false,
-    "right": true
-   }
+   "size": [
+    482,
+    683
+   ],
+   "cut": {}
   },
-  "arms_down": {
-   "file": "characters/roy/upper/arms_down.png",
-   "size": [
-    1238,
-    1945
+  "angry": {
+   "file": "characters/roy/expressions/angry.png",
+   "sheet_rect_x4": [
+    679,
+    1971,
+    470,
+    684
    ],
-   "body": "gary/upper/arms_down",
-   "cut": {
-    "bottom": false,
-    "left": false,
-    "right": false
-   }
+   "size": [
+    470,
+    684
+   ],
+   "cut": {}
+  },
+  "speaking": {
+   "file": "characters/roy/expressions/speaking.png",
+   "sheet_rect_x4": [
+    1274,
+    1990,
+    467,
+    663
+   ],
+   "size": [
+    467,
+    663
+   ],
+   "cut": {}
+  },
+  "disgust": {
+   "file": "characters/roy/expressions/disgust.png",
+   "sheet_rect_x4": [
+    1884,
+    1978,
+    469,
+    673
+   ],
+   "size": [
+    469,
+    673
+   ],
+   "cut": {}
+  },
+  "sarcastic": {
+   "file": "characters/roy/expressions/sarcastic.png",
+   "sheet_rect_x4": [
+    2474,
+    1981,
+    458,
+    669
+   ],
+   "size": [
+    458,
+    669
+   ],
+   "cut": {}
+  },
+  "confused": {
+   "file": "characters/roy/expressions/confused.png",
+   "sheet_rect_x4": [
+    3063,
+    1985,
+    478,
+    667
+   ],
+   "size": [
+    478,
+    667
+   ],
+   "cut": {}
+  },
+  "annoyed": {
+   "file": "characters/roy/expressions/annoyed.png",
+   "sheet_rect_x4": [
+    3689,
+    1995,
+    446,
+    658
+   ],
+   "size": [
+    446,
+    658
+   ],
+   "cut": {}
+  },
+  "shouting": {
+   "file": "characters/roy/expressions/shouting.png",
+   "sheet_rect_x4": [
+    4321,
+    1981,
+    470,
+    671
+   ],
+   "size": [
+    470,
+    671
+   ],
+   "cut": {}
+  },
+  "dry_humour": {
+   "file": "characters/roy/expressions/dry_humour.png",
+   "sheet_rect_x4": [
+    4980,
+    1970,
+    481,
+    683
+   ],
+   "size": [
+    481,
+    683
+   ],
+   "cut": {}
+  },
+  "thinking": {
+   "file": "characters/roy/expressions/thinking.png",
+   "sheet_rect_x4": [
+    5574,
+    2012,
+    465,
+    640
+   ],
+   "size": [
+    465,
+    640
+   ],
+   "cut": {}
+  }
+ },
+ "head": {
+  "detail": {
+   "file": "characters/roy/head/detail.png",
+   "sheet_rect_x4": [
+    4650,
+    715,
+    636,
+    989
+   ],
+   "size": [
+    636,
+    989
+   ],
+   "cut": {}
   }
  },
  "body": {
-  "stand_neutral": {
-   "file": "characters/roy/body/stand_neutral.png",
-   "size": [
-    854,
-    2085
+  "arms_crossed": {
+   "file": "characters/roy/body/arms_crossed.png",
+   "sheet_rect_x4": [
+    2503,
+    2978,
+    404,
+    894
    ],
-   "body": "gary/body/stand_neutral",
-   "cut": {
-    "bottom": false,
-    "left": false,
-    "right": false
-   }
+   "size": [
+    404,
+    894
+   ],
+   "cut": {}
+  },
+  "pointing": {
+   "file": "characters/roy/body/pointing.png",
+   "sheet_rect_x4": [
+    3059,
+    2977,
+    423,
+    895
+   ],
+   "size": [
+    423,
+    895
+   ],
+   "cut": {}
+  },
+  "open_hand": {
+   "file": "characters/roy/body/open_hand.png",
+   "sheet_rect_x4": [
+    3552,
+    2979,
+    500,
+    893
+   ],
+   "size": [
+    500,
+    893
+   ],
+   "cut": {}
+  },
+  "palm_down": {
+   "file": "characters/roy/body/palm_down.png",
+   "sheet_rect_x4": [
+    4178,
+    2981,
+    522,
+    891
+   ],
+   "size": [
+    522,
+    891
+   ],
+   "cut": {}
   },
   "walk_1": {
    "file": "characters/roy/body/walk_1.png",
    "size": [
-    1057,
-    2186
+    1098,
+    2117
    ],
    "body": "gary/body/walk_1",
-   "cut": {
-    "bottom": false,
-    "left": true,
-    "right": false
-   }
+   "cut": {}
   },
   "walk_2": {
    "file": "characters/roy/body/walk_2.png",
    "size": [
     1154,
-    2097
+    2093
    ],
    "body": "gary/body/walk_2",
-   "cut": {
-    "bottom": false,
-    "left": false,
-    "right": false
-   }
+   "cut": {}
   },
   "walk_3": {
    "file": "characters/roy/body/walk_3.png",
    "size": [
     1162,
-    2156
+    2137
    ],
    "body": "gary/body/walk_3",
-   "cut": {
-    "bottom": false,
-    "left": false,
-    "right": false
-   }
+   "cut": {}
   },
   "walk_3b": {
    "file": "characters/roy/body/walk_3b.png",
    "size": [
-    1050,
-    2142
+    1034,
+    2105
    ],
    "body": "gary/body/walk_3b",
-   "cut": {
-    "bottom": false,
-    "left": false,
-    "right": false
-   }
+   "cut": {}
   },
   "walk_4": {
    "file": "characters/roy/body/walk_4.png",
    "size": [
     1210,
-    2126
+    2073
    ],
    "body": "gary/body/walk_4",
-   "cut": {
-    "bottom": false,
-    "left": true,
-    "right": false
-   }
-  },
-  "stand_crossed": {
-   "file": "characters/roy/body/stand_crossed.png",
-   "size": [
-    818,
-    2085
-   ],
    "cut": {}
   }
  },
  "turnaround": {
   "front": {
    "file": "characters/roy/turnaround/front.png",
-   "size": [
-    463,
-    1164
+   "sheet_rect_x4": [
+    26,
+    700,
+    960,
+    1003
    ],
-   "body": "gary/turnaround/front",
-   "cut": {
-    "bottom": false,
-    "left": false,
-    "right": false
-   }
+   "size": [
+    960,
+    1003
+   ],
+   "cut": {}
+  },
+  "three_quarter_left": {
+   "file": "characters/roy/turnaround/three_quarter_left.png",
+   "sheet_rect_x4": [
+    992,
+    701,
+    798,
+    1007
+   ],
+   "size": [
+    798,
+    1007
+   ],
+   "cut": {}
+  },
+  "side_left": {
+   "file": "characters/roy/turnaround/side_left.png",
+   "sheet_rect_x4": [
+    1822,
+    705,
+    271,
+    1003
+   ],
+   "size": [
+    271,
+    1003
+   ],
+   "cut": {}
+  },
+  "back": {
+   "file": "characters/roy/turnaround/back.png",
+   "sheet_rect_x4": [
+    2121,
+    698,
+    965,
+    1011
+   ],
+   "size": [
+    965,
+    1011
+   ],
+   "cut": {}
+  },
+  "side_right": {
+   "file": "characters/roy/turnaround/side_right.png",
+   "sheet_rect_x4": [
+    3131,
+    697,
+    357,
+    1013
+   ],
+   "size": [
+    357,
+    1013
+   ],
+   "cut": {}
   },
   "three_quarter_right": {
    "file": "characters/roy/turnaround/three_quarter_right.png",
-   "size": [
-    460,
-    1149
+   "sheet_rect_x4": [
+    3545,
+    701,
+    1036,
+    1007
    ],
-   "body": "gary/turnaround/three_quarter_right",
-   "cut": {
-    "bottom": false,
-    "left": false,
-    "right": false
-   }
-  }
- },
- "head": {
-  "three_quarter": {
-   "file": "characters/roy/head/three_quarter.png",
    "size": [
-    332,
-    451
+    1036,
+    1007
    ],
    "cut": {}
   }
  },
- "closeup": {
-  "crossed_arms": {
-   "file": "characters/roy/closeup/crossed_arms.png",
+ "mouths": {
+  "a": {
+   "file": "characters/roy/mouths/a.png",
+   "sheet_rect_x4": [
+    40,
+    2964,
+    412,
+    316
+   ],
    "size": [
-    1764,
-    2716
+    412,
+    316
+   ],
+   "cut": {}
+  },
+  "e": {
+   "file": "characters/roy/mouths/e.png",
+   "sheet_rect_x4": [
+    508,
+    2964,
+    420,
+    316
+   ],
+   "size": [
+    420,
+    316
+   ],
+   "cut": {}
+  },
+  "i": {
+   "file": "characters/roy/mouths/i.png",
+   "sheet_rect_x4": [
+    984,
+    2964,
+    416,
+    316
+   ],
+   "size": [
+    416,
+    316
+   ],
+   "cut": {}
+  },
+  "o": {
+   "file": "characters/roy/mouths/o.png",
+   "sheet_rect_x4": [
+    1456,
+    2964,
+    424,
+    316
+   ],
+   "size": [
+    424,
+    316
+   ],
+   "cut": {}
+  },
+  "u": {
+   "file": "characters/roy/mouths/u.png",
+   "sheet_rect_x4": [
+    1944,
+    2964,
+    420,
+    316
+   ],
+   "size": [
+    420,
+    316
+   ],
+   "cut": {}
+  },
+  "cdg": {
+   "file": "characters/roy/mouths/cdg.png",
+   "sheet_rect_x4": [
+    40,
+    3488,
+    340,
+    312
+   ],
+   "size": [
+    340,
+    312
+   ],
+   "cut": {}
+  },
+  "fv": {
+   "file": "characters/roy/mouths/fv.png",
+   "sheet_rect_x4": [
+    432,
+    3488,
+    348,
+    312
+   ],
+   "size": [
+    348,
+    312
+   ],
+   "cut": {}
+  },
+  "l": {
+   "file": "characters/roy/mouths/l.png",
+   "sheet_rect_x4": [
+    832,
+    3488,
+    348,
+    312
+   ],
+   "size": [
+    348,
+    312
+   ],
+   "cut": {}
+  },
+  "mbp": {
+   "file": "characters/roy/mouths/mbp.png",
+   "sheet_rect_x4": [
+    1240,
+    3488,
+    348,
+    312
+   ],
+   "size": [
+    348,
+    312
+   ],
+   "cut": {}
+  },
+  "r": {
+   "file": "characters/roy/mouths/r.png",
+   "sheet_rect_x4": [
+    1656,
+    3488,
+    344,
+    312
+   ],
+   "size": [
+    344,
+    312
+   ],
+   "cut": {}
+  },
+  "th": {
+   "file": "characters/roy/mouths/th.png",
+   "sheet_rect_x4": [
+    2052,
+    3488,
+    340,
+    312
+   ],
+   "size": [
+    340,
+    312
    ],
    "cut": {}
   }

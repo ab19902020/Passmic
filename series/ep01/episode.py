@@ -47,7 +47,7 @@ def roy_frame(frac, xpos=0.5, spot='roy_stand'):
     sp = cfg['spots'][spot]
     fw = sp['face_w']
     fx = sp['feet'][0]
-    fy = sp['feet'][1] - 4.0 * fw            # the standing drawings' face sits ~4 face widths above the feet
+    fy = sp['feet'][1] - 3.85 * fw           # Roy's standing drawings: eyes 3.85 head widths above the feet
     w = fw / frac
     h = w * 9 / 16
     return (fx - xpos * w, fy - 0.38 * h, w)
@@ -59,14 +59,17 @@ G_MED = single('front_a', 'gary', 0.15, 0.58)
 G_CU = single('front_a', 'gary', 0.32, 0.55)
 R_MED = roy_frame(0.13)
 R_CU = roy_frame(0.22)
+R_TIGHT = roy_frame(0.34)                # the snap-in for 'Definitely no.'
 R_DOOR = roy_frame(0.16, spot='roy_door')
 
 SHOTS = {
     'W': ('front_a', FA_WIDE, {}), '2': ('front_a', FA_TWO, {}),
-    'M': ('front_a', M_MED, dict(dof=2.0)), 'Mc': ('front_a', M_CU, dict(dof=5.0)),
-    'G': ('front_a', G_MED, dict(dof=2.0)), 'Gc': ('front_a', G_CU, dict(dof=5.0)),
+    # singles show only their subject: the other presenter would be just a stray hand at the frame edge
+    'M': ('front_a', M_MED, dict(dof=2.0, order=('mark',))), 'Mc': ('front_a', M_CU, dict(dof=5.0, order=('mark',))),
+    'G': ('front_a', G_MED, dict(dof=2.0, order=('gary',))), 'Gc': ('front_a', G_CU, dict(dof=5.0, order=('gary',))),
     'SW': ('wide', SW_THREE, {}), 'SWf': ('wide', SW_WIDE, {}),
-    'R': ('reverse', R_MED, dict(dof=2.5)), 'Rc': ('reverse', R_CU, dict(dof=6.0)),
+    'R': ('reverse', R_MED, dict(dof=2.5, order=('roy',))), 'Rc': ('reverse', R_CU, dict(dof=6.0, order=('roy',))),
+    'Rx': ('reverse', R_TIGHT, dict(dof=8.0, order=('roy',))),
     'RW': ('reverse', RV_WIDE, {}), 'RD': ('reverse', R_DOOR, dict(dof=3.0)),
     'B': ('board', None, {}), 'END': ('endcard', None, {}),
 }
@@ -100,22 +103,22 @@ STAGE = {
     'GN_08': ('G', 'pointing', 'neutral', []),                                                              # serious
     'GN_09': ('2', 'both_hands_out', 'neutral', []),                                                        # measured
     'GN_10': ('G', 'both_hands_out', 'neutral', [('people', 'Gc')]),                                        # earnest
-    'RK_01': ('R', 'stand_crossed', None, []),
+    'RK_01': ('R', 'arms_crossed', 'neutral', []),          # deadpan
     'MG_10': ('SW', 'both_hands_out', 'shocked', []),                                                       # energised
-    'RK_02': ('Rc', 'stand_crossed', None, []),
-    'RK_03': ('R', 'stand_crossed', None, []),
-    'RK_04': ('Rc', 'stand_crossed', None, []),
+    'RK_02': ('Rc', 'arms_crossed', 'dry_humour', []),      # dry
+    'RK_03': ('R', 'arms_crossed', 'neutral', []),          # flat
+    'RK_04': ('Rc', 'arms_crossed', 'dry_humour', []),      # deadpan
     'GN_11': ('G', 'both_hands_out', 'confused', []),                                                       # mildly annoyed
     'MG_11': ('M', 'both_hands_out', 'confused', [('first', 'Mc')]),                                        # curious
-    'RK_05': ('Rc', 'stand_crossed', None, []),
+    'RK_05': ('Rc', 'palm_down', 'neutral', []),            # matter-of-fact
     'MG_12': ('M', 'pointing', 'neutral', []),                                                              # insistent
-    'RK_06': ('Rc', 'stand_crossed', None, []),
-    'RK_07': ('R', 'stand_crossed', None, []),
-    'RK_08': ('Rc', 'stand_crossed', None, []),
+    'RK_06': ('Rc', 'palm_down', 'angry', []),              # firm
+    'RK_07': ('R', 'arms_crossed', 'sarcastic', []),        # dry
+    'RK_08': ('Rc', 'arms_crossed', 'disgust', []),         # dismissive
     'GN_12': ('G', 'pointing', 'neutral', []),                                                              # insistent
-    'RK_09': ('Rc', 'stand_crossed', None, []),
+    'RK_09': ('Rc', 'pointing', 'neutral', []),             # deadpan
     'GN_13': ('Gc', 'arms_down', 'angry_rant', []),                                                         # defensive
-    'RK_10': ('Rc', 'stand_crossed', None, []),
+    'RK_10': ('Rc', 'arms_crossed', 'sarcastic', []),       # dry
     'GN_14': ('Gc', 'arms_down', 'sad', []),                                                                # awkward
     'GN_15': ('G', 'both_hands_out', 'sad', []),                                                            # more defensive
     'MG_13': ('M', 'both_hands_out', 'smug', []),                                                           # confident
@@ -124,57 +127,69 @@ STAGE = {
     'MG_16': ('Mc', 'arms_down', 'smug', []),                                                               # confident
     'MG_17': ('Mc', 'arms_down', 'confused', []),                                                           # confused
     'GN_16': ('Gc', 'arms_down', 'neutral', []),                                                            # matter-of-fact
-    'RK_11': ('Rc', 'stand_crossed', None, []),
+    'RK_11': ('Rc', 'pointing', 'neutral', []),             # matter-of-fact
     'MG_18': ('M', 'both_hands_out', 'angry_rant', [('explaining', 'Mc')]),                                 # defensive
     'GN_17': ('G', 'arms_down', 'neutral', []),                                                             # dry
     'MG_19': ('Mc', 'arms_down', 'smug', []),                                                               # smug
-    'RK_12': ('Rc', 'stand_crossed', None, []),
+    'RK_12': ('Rc', 'arms_crossed', 'dry_humour', []),      # flat
     'MG_20': ('Mc', 'arms_down', 'confused', [('work', 'face=smug')]),                                      # realising
-    'RK_13': ('Rc', 'stand_crossed', None, []),
+    'RK_13': ('R', 'palm_down', 'neutral', []),             # firm
     'MG_21': ('M', 'both_hands_out', 'smug', [('gary', 'body=pointing'), ('me', 'Mc')]),                    # building excitement
-    'RK_14': ('R', 'stand_crossed', None, []),
+    'RK_14': ('Rc', 'palm_down', 'angry', []),              # firmer
     'GN_18': ('Gc', 'arms_down', 'angry_rant', []),                                                         # firm
     'MG_22': ('Mc', 'arms_down', 'neutral', []),                                                            # matter-of-fact
-    'RK_15': ('R', 'stand_crossed', None, []),
+    'RK_15': ('Rx', 'palm_down', 'angry', []),              # very firm
     'GN_19': ('Gc', 'arms_down', 'confused', []),                                                           # confused
     'MG_23': ('M', 'arms_down', 'neutral', []),                                                             # deadpan
     'GN_20': ('G', 'both_hands_out', 'angry_rant', []),                                                     # exasperated
     'MG_24': ('M', 'pointing', 'smug', []),                                                                 # confident
-    'RK_16': ('SW', 'stand_crossed', None, []),
+    'RK_16': ('SW', 'arms_crossed', 'annoyed', []),         # annoyed
     'GN_21': ('2', 'both_hands_out', 'neutral', []),                                                        # serious
     'MG_25': ('M', 'pointing', 'neutral', [('striker', 'Mc')]),                                             # businesslike
-    'RK_17': ('R', 'stand_crossed', None, []),
+    'RK_17': ('R', 'pointing', 'neutral', []),              # matter-of-fact
     'MG_26': ('Mc', 'arms_down', 'angry_rant', []),                                                         # frustrated
-    'RK_18': ('Rc', 'stand_crossed', None, []),
-    'RK_19': ('Rc', 'stand_crossed', None, []),
+    'RK_18': ('Rc', 'arms_crossed', 'neutral', []),         # flat
+    'RK_19': ('Rc', 'arms_crossed', 'dry_humour', []),      # dry
     'GN_22': ('G', 'arms_down', 'neutral', []),                                                             # measured
     'GN_23': ('G', 'both_hands_out', 'neutral', []),                                                        # earnest
-    'RK_20': ('Rc', 'stand_crossed', None, []),
-    'RK_21': ('R', 'stand_crossed', None, []),
+    'RK_20': ('Rc', 'arms_crossed', 'confused', []),        # confused
+    'RK_21': ('R', 'open_hand', 'neutral', []),             # deadpan
     'GN_24': ('Gc', 'arms_down', 'angry_rant', []),                                                         # defensive
     'MG_27': ('M', 'pointing', 'neutral', [('player', 'Mc')]),                                              # earnest
     'MG_28': ('M', 'shrug', 'neutral', [('sounds', 'Mc')]),                                                 # dry
     'GN_25': ('G', 'both_hands_out', 'neutral', [('understanding', 'Gc'), ('understanding', 'face=head/three_quarter')]),  # nostalgic
-    'RK_22': ('Rc', 'stand_crossed', None, []),
+    'RK_22': ('Rc', 'open_hand', 'sarcastic', []),          # dry
     'GN_26': ('Gc', 'arms_down', 'angry_rant', []),                                                         # warning
-    'RK_23': ('R', 'stand_crossed', None, []),
+    'RK_23': ('R', 'pointing', 'angry', []),                # firm
     'GN_27': ('G', 'both_hands_out', 'neutral', []),                                                        # annoyed
     'GN_28': ('G', 'shrug', 'neutral', [('everybody', 'B')]),                                               # exasperated
     'GN_29': ('G', 'pointing', 'angry_rant', [('board', 'B')]),                                             # frustrated
-    'RK_24': ('R', 'stand_crossed', None, []),
+    'RK_24': ('R', 'arms_crossed', 'annoyed', []),          # finished
     'MG_29': ('2', 'arms_down', 'smug', [('someone', 'Mc'), ('someone', 'face=head/front')]),               # satisfied
-    'RK_25': ('RD', 'stand_crossed', None, []),
-    'RK_26': ('RD', 'stand_crossed', None, []),
+    'RK_25': ('RD', 'arms_crossed', 'neutral', []),         # deadpan
+    'RK_26': ('RD', 'arms_crossed', 'dry_humour', []),      # dry
 }
-# a reaction shot held after a line: line id -> (shot, who, face)
+# a silent reaction shot held after a line: line id -> (shot, who, face)
 REACT = {
     'MG_08': ('Gc', 'gary', 'neutral'),
-    'RK_09': ('Gc', 'gary', 'sad'),
-    'MG_16': ('Gc', 'gary', 'confused'),
-    'RK_11': ('Mc', 'mark', 'shocked'),
-    'MG_22': ('Gc', 'gary', 'confused'),
-    'RK_16': ('2', None, None),
+    'RK_04': ('Gc', 'gary', 'sad'),             # "Doesn't make you interesting."
+    'RK_08': ('Mc', 'mark', 'sad'),             # "Stupid hypothetical."
+    'RK_09': ('Gc', 'gary', 'sad'),             # "...you couldn't build a shed."
+    'MG_16': ('Gc', 'gary', 'confused'),        # "...and final say on transfers."
+    'RK_11': ('Mc', 'mark', 'shocked'),         # "You've never run one either."
+    'RK_12': ('Mc', 'mark', 'confused'),        # "Even worse."
+    'MG_22': ('Gc', 'gary', 'confused'),        # "I'm chairman."
+    'RK_16': ('2', None, None),                 # "You're all talking rubbish."
+    'RK_22': ('Gc', 'gary', 'confused'),        # "...a philosophy to have breakfast."
 }
+# a deadpan beat before a line: the cut to the speaker comes first, the line after the pause
+BEAT = {
+    'RK_02': 0.35, 'RK_04': 0.55, 'RK_06': 0.3, 'RK_07': 0.35, 'RK_08': 0.45, 'RK_10': 0.5, 'RK_12': 0.5,
+    'RK_14': 0.3, 'RK_15': 0.4, 'RK_16': 0.5, 'RK_18': 0.55, 'RK_22': 0.4, 'RK_25': 0.6, 'RK_26': 0.45,
+    'MG_09': 0.3, 'MG_19': 0.35, 'MG_22': 0.4, 'MG_23': 0.35, 'MG_28': 0.3, 'GN_04': 0.3, 'GN_07': 0.35,
+    'GN_14': 0.3,
+}
+REACT_HOLD = 0.9
 BOARD_AFTER = {'MG_25': 1.3, 'RK_18': 1.1, 'MG_27': 1.2}
 
 
@@ -226,7 +241,7 @@ def build():
     # everyone's starting state
     key(0, 'mark', loc='seat', body='upper/arms_down', face='expressions/neutral', flip=False)
     key(0, 'gary', loc='off', flip=True, body='upper/arms_down', face='expressions/neutral')
-    key(0, 'roy', loc='off', body='body/stand_crossed', face='closeup/crossed_arms', flip=False)
+    key(0, 'roy', loc='off', body='body/arms_crossed', face='expressions/neutral', flip=False)
     key(0, 'world', fade=1.0)
     key(0.5, 'world', fade=0.0, e='ease')
     cut(0, 'W')
@@ -262,7 +277,7 @@ def build():
             key(t, 'roy', loc='walk', path=('roy_door', 'roy_stand'), u=0.0, flip=True,
                 cycle=['body/walk_1', 'body/walk_2', 'body/walk_3', 'body/walk_3b', 'body/walk_4'])
             key(t + 2.6, 'roy', u=1.0, e='linear')
-            key(t + 2.6, 'roy', loc='stand', path=('roy_stand', 'roy_stand'), body='body/stand_crossed', flip=False)
+            key(t + 2.6, 'roy', loc='stand', path=('roy_stand', 'roy_stand'), body='body/arms_crossed', flip=False)
             tl.wait(3.3)
             last_code = 'RW'
             continue
@@ -279,7 +294,7 @@ def build():
             key(t, 'roy', loc='walk', path=('roy_stand', 'roy_door'), u=0.0, flip=False,
                 cycle=['body/walk_1', 'body/walk_2', 'body/walk_3', 'body/walk_3b', 'body/walk_4'])
             key(t + 2.2, 'roy', u=1.0, e='linear')
-            key(t + 2.2, 'roy', loc='stand', path=('roy_door', 'roy_door'), body='body/stand_crossed', flip=False)
+            key(t + 2.2, 'roy', loc='stand', path=('roy_door', 'roy_door'), body='body/arms_crossed', flip=False)
             tl.wait(2.4)
             last_code = 'RW'
             continue
@@ -321,20 +336,22 @@ def build():
         lid = item
         code, body, face, changes = STAGE[lid]
         who = S.SPEAKER[lid[:2]]
-        gap = 0.4
+        gap = 0.22                        # tight: the next line comes straight in
         if lid in ('MG_03', 'GN_10', 'MG_24', 'GN_29'):
-            gap = 0.6
-        ln = tl.say(lid, gap=gap)
+            gap = 0.5
+        lead = BEAT.get(lid, 0.0)
+        ln = tl.say(lid, gap=gap, lead=lead)
         perform(tl, ln)
         t0 = ln['start']
+        tc = t0 - lead                    # the cut (and the pose) land before the beat
         if who == 'roy':
-            key(t0, 'roy', body='body/' + body)
+            key(tc, 'roy', body='body/' + body, face='expressions/' + face)
         else:
-            key(t0, who, body='upper/' + body)
+            key(tc, who, body='upper/' + body)
             if face:
-                key(t0, who, face=face if '/' in face else 'expressions/' + face)
+                key(tc, who, face=face if '/' in face else 'expressions/' + face)
         if code != last_code or code in ('B',):
-            cut(t0, code)
+            cut(tc, code)
             last_code = code
         for word, ch in changes:
             tw = word_time(ln, word)
@@ -369,7 +386,7 @@ def build():
             last_code = rc
             if rwho:
                 key(t, rwho, face='expressions/' + rface)
-            tl.wait(1.1)
+            tl.wait(REACT_HOLD)
     return tl
 
 
