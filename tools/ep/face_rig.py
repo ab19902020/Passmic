@@ -78,6 +78,7 @@ def find_face(rgba, head_frac=1.0, skin=None):
     darkred = nonskin & ((L[..., 0] < 45) | ((L[..., 1] > 28) & (L[..., 0] < 70)) | (L[..., 0] > 88))
     eye_y = np.mean([e[1] for e in eyes]) if eyes else fy0 + fh * 0.45
     lo_y, hi_y, want_y = eye_y + 0.32 * fw, eye_y + 0.78 * fw, eye_y + 0.46 * fw
+    darkred_all = darkred.copy()
     darkred[:int(lo_y)] = False
     darkred[int(hi_y):] = False
     n, mc, mst, mcen = cv2.connectedComponentsWithStats(darkred.astype(np.uint8), connectivity=8)
@@ -106,6 +107,14 @@ def find_face(rgba, head_frac=1.0, skin=None):
         for i in range(1, n):
             if i != best and (near & (mc == i)).any():
                 mouth_mask |= mc == i
+        # a wide-open mouth reaches above the search window: take it whole (but not up into the nose)
+        full = darkred_all.copy()
+        full[:int(eye_y + 0.2 * fw)] = False
+        n2, c2 = cv2.connectedComponents(full.astype(np.uint8), connectivity=8)
+        ids = np.unique(c2[mouth_mask & full])
+        grown = np.isin(c2, ids[ids > 0])
+        if grown.sum() < 3 * max(mouth_mask.sum(), 1):
+            mouth_mask |= grown
         ys, xs = np.nonzero(mouth_mask)
         mouth = ((xs.min() + xs.max()) / 2.0, (ys.min() + ys.max()) / 2.0, float(xs.max() - xs.min()), float(ys.max() - ys.min()))
     return dict(skin=skin, face=face, face_skin=face_skin, box=(fx0, fy0, fx1, fy1), eyes=eyes, eye_mask=eye_mask,
@@ -165,10 +174,18 @@ def without_mouth(rgba, info, grow=0.18):
     ell = np.zeros(m.shape, np.uint8)
     cv2.ellipse(ell, (int(cx), int(cy)), (int(w * 0.62 + r * 0.5), int(h * 0.68 + r * 0.5)), 0, 0, 360, 1, -1)
     m |= ell > 0
+    # and every non-skin mark round the mouth - line ends, teeth, lips - so no second mouth shows
+    L = lab(rgba[..., :3])
+    fw = info['box'][2] - info['box'][0]
+    big = np.zeros(m.shape, np.uint8)
+    cv2.ellipse(big, (int(cx), int(cy)), (int(max(w * 0.62, fw * 0.21) + r * 0.5), int(max(h * 0.72, fw * 0.075) + r * 0.5)),
+                0, 0, 360, 1, -1)
+    ink = (big > 0) & (np.linalg.norm(L - info['skin'], axis=2) > 14)
+    k = max(3, int(fw * 0.012)) | 1
+    m |= cv2.dilate(ink.astype(np.uint8), np.ones((k, k), np.uint8)) > 0
     m &= rgba[..., 3] > 0
     # the skin just outside the mouth: its median colour fills the hole
     ring = (cv2.dilate(m.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (r * 2 + 1, r * 2 + 1))) > 0) & ~m
-    L = lab(rgba[..., :3])
     skin = info['skin']
     ringskin = ring & (np.linalg.norm(L - skin, axis=2) < 18)
     col = np.median(rgba[..., :3][ringskin], axis=0) if ringskin.sum() > 20 else \

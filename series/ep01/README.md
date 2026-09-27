@@ -25,9 +25,8 @@ recording's real length, everything after it moves along, and his mouth follows
 the words.
 
 Until then, every line without a recording keeps a silent slot sized from its
-syllable count, and the character mouths the words in time with it. That covers
-all 26 of Roy's lines and **GN_09** ("Mark, you don't fix a football club with a
-shopping list.") — there was no recording of GN_09 in `gaz.zip`.
+syllable count, and the character mouths the words in time with it — at the
+moment that is Roy's 26 lines (every Mark and Gary line is recorded).
 
 To re-align a line after replacing its file: `python3 tools/ep/align.py GN_05`.
 
@@ -35,7 +34,8 @@ To re-align a line after replacing its file: `python3 tools/ep/align.py GN_05`.
 
 | | |
 |---|---|
-| `script.py` | Every line (`MG_nn` Mark, `GN_nn` Gary, `RK_nn` Roy — each numbered on its own) and `ORDER`, the conversation with its stage beats (`@gary_enters`, `@roy_enters`, `@board`, …). |
+| `script.py` | Every line (`MG_nn` Mark, `GN_nn` Gary, `RK_nn` Roy — each numbered on its own), `DELIVERY` (the same lines formatted for the voice generator: emotion tag, pauses, CAPS emphasis) and `ORDER`, the conversation with its stage beats (`@gary_enters`, `@roy_enters`, `@board`, …). |
+| `voice_script.txt` | `DELIVERY` as a paste-ready list, one line per file ID. |
 | `episode.py` | The staging: camera set-ups, per-line shot / pose / close-up face and word-timed cuts (`STAGE`), reaction shots, Gary's and Roy's walks, the recruitment-board insert and the end card. |
 | `audio/` | The voice lines cut and labelled from the zips (`manifest.json` says which source file and times each came from), and `alignment.json` (word and phone timings). |
 | `raw/` | The original voice clips as supplied. Gary's last three clips each held several lines; they were cut at word boundaries into GN_14–18, GN_19–24 and GN_25–29. |
@@ -55,6 +55,10 @@ To re-align a line after replacing its file: `python3 tools/ep/align.py GN_05`.
   screen: the drawn mouth is filled with the surrounding skin and the new mouth
   pasted and recoloured to that drawing's skin. Roy has no mouth sheet, so his
   openings are drawn over his own lips, leaving his beard and moustache.
+* **Delivery** — the performance follows the tags in `DELIVERY`: each line's
+  close-up face and pose come from its tag (frustrated, dry, deadpan, smug, …)
+  and stay mostly serious; CAPS words get a small nod, a `[sigh]` closes the
+  eyes, and the written pauses get a blink. No line is played as a shout.
 * **Close-ups** use the expression drawings (x16) blended onto the medium body
   drawing, so the bust's cut-off chest never shows.
 * **Blinks**, a small talking bob, walk cycles at 8 drawings a second with

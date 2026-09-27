@@ -23,6 +23,7 @@ OUT = (3840, 2160)
 K = 4                      # background upscale factor
 SR = 44100
 MOUTH_KEYS = ['rest', 'a', 'e', 'i', 'o', 'u', 'smile', 'frown', 'wide_shout']
+OPEN_SCALE = 0.88          # open mouths a touch smaller than the sheet's: the show's delivery is played straight
 
 
 def _nbytes(v):
@@ -195,6 +196,8 @@ class Rig:
                 part = parts.get(mouth) or parts.get('rest')
                 rest_w = parts['rest'][2]
                 width = self.mouth_ratio() * info['width'] * part[2] / rest_w
+                if mouth != 'rest':
+                    width *= OPEN_SCALE
                 part = recolor_part(part, info['skin'])
                 sq = self.over.get(key, {}).get('squash', 1.0)
                 out = F.with_mouth(base, info, part, width, squash_x=sq)
@@ -292,7 +295,7 @@ def synth_mouth(img, info, key):
 
 
 # ------------------------------------------------------------------ lip sync
-VOWEL = {'AA': 'a', 'AE': 'a', 'AH': 'a', 'AY': 'a', 'AW': 'a', 'EH': 'e', 'EY': 'e', 'ER': 'e',
+VOWEL = {'AA': 'a', 'AE': 'a', 'AH': 'e', 'AY': 'a', 'AW': 'a', 'EH': 'e', 'EY': 'e', 'ER': 'e',
          'IH': 'i', 'IY': 'i', 'OW': 'o', 'AO': 'o', 'OY': 'o', 'UW': 'u', 'UH': 'u'}
 CONS = {'M': 'rest', 'B': 'rest', 'P': 'rest', 'F': 'i', 'V': 'i', 'W': 'u', 'R': 'u', 'Y': 'i',
         'SH': 'u', 'ZH': 'u', 'CH': 'i', 'JH': 'i', 'S': 'i', 'Z': 'i', 'T': 'i', 'D': 'i', 'N': 'i',
@@ -408,6 +411,7 @@ class Timeline:
         self.tracks = {}
         self.shots = []            # (t, dict)
         self.fx = []               # (t, name, gain, kw)
+        self.blinks = {}           # who -> [t]: blinks the staging asks for (the rest are random)
         self.cues = {}
 
     def key(self, t, who, e='step', **kv):
@@ -514,6 +518,7 @@ class Renderer:
         self.rigs = {c: Rig(c) for c in ('mark', 'gary', 'roy')}
         self.scaled = {}
         self.blinks = self.plan_blinks()
+        self.face_px = {}              # who -> (x, y, face width, drawing) of the last frame drawn
         self.mouth_frames = {}
         for ln in tl.lines:
             loud = ln['id'] in getattr(tl.script, 'LOUD', ())
@@ -532,7 +537,9 @@ class Renderer:
             while t < self.tl.t + 5:
                 lst.append(t)
                 t += rng.uniform(2.4, 5.0)
-            out[c] = lst
+            forced = sorted(self.tl.blinks.get(c, []))
+            lst = [b for b in lst if all(abs(b - f) > 1.2 for f in forced)]
+            out[c] = sorted(lst + forced)
         return out
 
     def blink(self, who, t):
@@ -640,7 +647,8 @@ class Renderer:
             # seen large: a close-up drawing (expression bust / high-res head) supplies the head
             cu = self.tl.get(who, 'face', t, 'expressions/neutral' if pl['kind'] == 'face' else None)
         blink = self.blink(who, t) if not self.tl.get(who, 'eyes_shut', t, False) else 1.0
-        bob = -env * fw_out * 0.012 if pl['kind'] == 'face' else 0.0
+        nod = self.tl.get(who, 'nod', t, 0.0) or 0.0
+        bob = (-env * fw_out * 0.012 + nod * fw_out * 0.035) if pl['kind'] == 'face' else 0.0
         # the body drawing, anchored by its face (seated) or its feet (standing)
         info = rig.face(key)
         W, H = info['size']
@@ -656,6 +664,7 @@ class Renderer:
             fy = info['feet'][1]
             px = (pl['pos'][0] - x0) * k1 - cx * s
             py = (pl['pos'][1] - y0) * k1 - fy * s
+        self.face_px[who] = (px + cx * s, py + cy * s, fw_out, cu or key)
         if cu is None:
             over(frame, res, px, py)
             return
@@ -714,6 +723,7 @@ class Renderer:
         bgimg, fg = bgo.view(rect, shot.get('dof', 0.0))
         frame = bgimg.copy()
         order = shot.get('order', ('gary', 'mark', 'roy'))
+        self.face_px = {}
         for who in order:
             self.draw_char(frame, who, t, shot['bg'], rect, shot)
         over_full(frame, fg)

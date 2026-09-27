@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.join(HERE, '..', '..', 'tools', 'ep'))
 import script as S                    # noqa: E402
 import epengine as E                    # noqa: E402
 
-S.LOUD = {'MG_01', 'MG_08', 'MG_18', 'MG_26', 'GN_16', 'GN_18', 'MG_10'}
+S.LOUD = set()        # the delivery is played straight: no line is shouted (CAPS words get a nod instead)
 
 # ------------------------------------------------------------------ cameras
 FA_WIDE = (0, 0, 1672)
@@ -76,97 +76,101 @@ SHOTS = {
 # change: 'Mc'/'M'/... cuts the camera at that word; 'body=...'/'face=...' swaps a drawing
 P = dict
 STAGE = {
-    'MG_01': ('M', 'arms_down', 'angry_rant', [('absolutely', 'body=both_hands_out'), ("it's", 'Mc'),
-                                               ('technically', 'M'), ('technically', 'body=shrug'), ('nobody', 'Mc'), ('nobody', 'face=shouting')]),
-    'MG_02': ('M', 'arms_down', 'smug', [('checked', 'Mc')]),
-    'MG_03': ('M', 'both_hands_out', 'sad', [('go', 'Mc'), ("that's", 'M'), ("that's", 'body=shrug')]),
-    'GN_01': ('2', 'both_hands_out', 'neutral', [('gives', 'G'), ('gives', 'body=arms_down')]),
-    'MG_04': ('M', 'shrug', 'shouting', [('stock', 'Mc')]),
-    'GN_02': ('G', 'both_hands_out', 'neutral', []),
-    'MG_05': ('M', 'pointing', 'smug', [('do', 'Mc')]),
-    'MG_06': ('M', 'both_hands_out', 'angry_rant', [('sporting', 'body=fist_pump'), ('players', 'Mc'), ('simple', '2')]),
-    'GN_03': ('Gc', 'arms_down', 'confused', []),
-    'MG_07': ('M', 'both_hands_out', 'angry_rant', [('cup', 'body=shrug'), ('water', 'Mc')]),
-    'GN_04': ('Gc', 'arms_down', 'neutral', []),
-    'MG_08': ('M', 'pointing', 'shouting', [("we've", 'Mc')]),
-    'GN_05': ('G', 'arms_down', 'neutral', []),
-    'GN_06': ('Gc', 'arms_down', 'head/three_quarter', []),
-    'MG_09': ('Mc', 'arms_down', 'smug', [('somebody', 'M'), ('somebody', 'body=holding_phone'), ("gary's", 'Mc'), ("gary's", 'face=laughing')]),
-    'GN_07': ('Gc', 'arms_down', 'angry_rant', []),
-    'GN_08': ('G', 'pointing', 'neutral', []),
-    'GN_09': ('2', 'both_hands_out', 'neutral', []),
-    'GN_10': ('G', 'fist_pump', 'neutral', [('people', 'Gc')]),
+    # Mark. Faces follow the delivery tags in script.DELIVERY and stay mostly serious: the
+    # close-up drawings mainly set the brows and eyes; the mouth is always the lip sync.
+    'MG_01': ('M', 'arms_down', 'angry_rant', [('absolutely', 'body=both_hands_out'), ("it's", 'Mc'),       # frustrated
+                                               ('technically', 'M'), ('technically', 'body=shrug'), ('nobody', 'Mc')]),
+    'MG_02': ('M', 'arms_down', 'sad', [('checked', 'Mc'), ('checked', 'face=neutral')]),                   # sigh
+    'MG_03': ('M', 'both_hands_out', 'angry_rant', [('go', 'Mc'), ('go', 'face=sad'), ("that's", 'M'),       # frustrated
+                                                    ("that's", 'body=shrug')]),
+    'GN_01': ('2', 'both_hands_out', 'neutral', [('gives', 'G'), ('gives', 'body=arms_down')]),            # calm
+    'MG_04': ('M', 'arms_down', 'neutral', [('stock', 'Mc')]),                                              # dry
+    'GN_02': ('G', 'both_hands_out', 'neutral', []),                                                        # serious
+    'MG_05': ('M', 'pointing', 'smug', [('do', 'Mc')]),                                                     # confident
+    'MG_06': ('M', 'both_hands_out', 'neutral', [('players', 'Mc'), ('simple', '2')]),                      # matter-of-fact
+    'GN_03': ('Gc', 'arms_down', 'confused', []),                                                           # dry
+    'MG_07': ('M', 'both_hands_out', 'neutral', [('cup', 'body=shrug'), ('water', 'Mc')]),                  # explaining
+    'GN_04': ('Gc', 'arms_down', 'neutral', []),                                                            # deadpan
+    'MG_08': ('M', 'arms_down', 'neutral', [("we've", 'Mc')]),                                              # deadpan
+    'GN_05': ('G', 'arms_down', 'neutral', []),                                                             # serious
+    'GN_06': ('Gc', 'arms_down', 'head/three_quarter', []),                                                 # firm
+    'MG_09': ('Mc', 'arms_down', 'smug', [('somebody', 'M'), ('somebody', 'body=holding_phone'),            # sarcastic
+                                          ("gary's", 'Mc')]),
+    'GN_07': ('Gc', 'arms_down', 'angry_rant', []),                                                         # firmer
+    'GN_08': ('G', 'pointing', 'neutral', []),                                                              # serious
+    'GN_09': ('2', 'both_hands_out', 'neutral', []),                                                        # measured
+    'GN_10': ('G', 'both_hands_out', 'neutral', [('people', 'Gc')]),                                        # earnest
     'RK_01': ('R', 'stand_crossed', None, []),
-    'MG_10': ('SW', 'both_hands_out', 'shocked', []),
+    'MG_10': ('SW', 'both_hands_out', 'shocked', []),                                                       # energised
     'RK_02': ('Rc', 'stand_crossed', None, []),
     'RK_03': ('R', 'stand_crossed', None, []),
     'RK_04': ('Rc', 'stand_crossed', None, []),
-    'GN_11': ('G', 'both_hands_out', 'neutral', []),
-    'MG_11': ('M', 'both_hands_out', 'smug', [('first', 'Mc')]),
+    'GN_11': ('G', 'both_hands_out', 'confused', []),                                                       # mildly annoyed
+    'MG_11': ('M', 'both_hands_out', 'confused', [('first', 'Mc')]),                                        # curious
     'RK_05': ('Rc', 'stand_crossed', None, []),
-    'MG_12': ('M', 'shrug', 'neutral', []),
+    'MG_12': ('M', 'pointing', 'neutral', []),                                                              # insistent
     'RK_06': ('Rc', 'stand_crossed', None, []),
     'RK_07': ('R', 'stand_crossed', None, []),
     'RK_08': ('Rc', 'stand_crossed', None, []),
-    'GN_12': ('G', 'both_hands_out', 'neutral', []),
+    'GN_12': ('G', 'pointing', 'neutral', []),                                                              # insistent
     'RK_09': ('Rc', 'stand_crossed', None, []),
-    'GN_13': ('Gc', 'arms_down', 'angry_rant', []),
+    'GN_13': ('Gc', 'arms_down', 'angry_rant', []),                                                         # defensive
     'RK_10': ('Rc', 'stand_crossed', None, []),
-    'GN_14': ('Gc', 'arms_down', 'sad', []),
-    'GN_15': ('G', 'shrug', 'sad', []),
-    'MG_13': ('M', 'both_hands_out', 'smug', []),
-    'MG_14': ('M', 'pointing', 'smug', []),
-    'MG_15': ('M', 'shrug', 'smug', []),
-    'MG_16': ('Mc', 'arms_down', 'smug', []),
-    'MG_17': ('Mc', 'arms_down', 'confused', []),
-    'GN_16': ('Gc', 'arms_down', 'angry_rant', []),
+    'GN_14': ('Gc', 'arms_down', 'sad', []),                                                                # awkward
+    'GN_15': ('G', 'both_hands_out', 'sad', []),                                                            # more defensive
+    'MG_13': ('M', 'both_hands_out', 'smug', []),                                                           # confident
+    'MG_14': ('M', 'pointing', 'neutral', []),                                                              # matter-of-fact
+    'MG_15': ('M', 'pointing', 'neutral', []),                                                              # matter-of-fact
+    'MG_16': ('Mc', 'arms_down', 'smug', []),                                                               # confident
+    'MG_17': ('Mc', 'arms_down', 'confused', []),                                                           # confused
+    'GN_16': ('Gc', 'arms_down', 'neutral', []),                                                            # matter-of-fact
     'RK_11': ('Rc', 'stand_crossed', None, []),
-    'MG_18': ('M', 'both_hands_out', 'angry_rant', [('explaining', 'Mc')]),
-    'GN_17': ('G', 'arms_down', 'neutral', []),
-    'MG_19': ('Mc', 'arms_down', 'smug', []),
+    'MG_18': ('M', 'both_hands_out', 'angry_rant', [('explaining', 'Mc')]),                                 # defensive
+    'GN_17': ('G', 'arms_down', 'neutral', []),                                                             # dry
+    'MG_19': ('Mc', 'arms_down', 'smug', []),                                                               # smug
     'RK_12': ('Rc', 'stand_crossed', None, []),
-    'MG_20': ('M', 'fist_pump', 'smug', []),
+    'MG_20': ('Mc', 'arms_down', 'confused', [('work', 'face=smug')]),                                      # realising
     'RK_13': ('Rc', 'stand_crossed', None, []),
-    'MG_21': ('M', 'both_hands_out', 'smug', [('gary', 'body=pointing'), ('me', 'Mc')]),
+    'MG_21': ('M', 'both_hands_out', 'smug', [('gary', 'body=pointing'), ('me', 'Mc')]),                    # building excitement
     'RK_14': ('R', 'stand_crossed', None, []),
-    'GN_18': ('Gc', 'arms_down', 'angry_rant', []),
-    'MG_22': ('Mc', 'arms_down', 'smug', []),
+    'GN_18': ('Gc', 'arms_down', 'angry_rant', []),                                                         # firm
+    'MG_22': ('Mc', 'arms_down', 'neutral', []),                                                            # matter-of-fact
     'RK_15': ('R', 'stand_crossed', None, []),
-    'GN_19': ('Gc', 'arms_down', 'confused', []),
-    'MG_23': ('M', 'shrug', 'smug', []),
-    'GN_20': ('G', 'both_hands_out', 'angry_rant', []),
-    'MG_24': ('M', 'pointing', 'smug', []),
+    'GN_19': ('Gc', 'arms_down', 'confused', []),                                                           # confused
+    'MG_23': ('M', 'arms_down', 'neutral', []),                                                             # deadpan
+    'GN_20': ('G', 'both_hands_out', 'angry_rant', []),                                                     # exasperated
+    'MG_24': ('M', 'pointing', 'smug', []),                                                                 # confident
     'RK_16': ('SW', 'stand_crossed', None, []),
-    'GN_21': ('2', 'both_hands_out', 'neutral', []),
-    'MG_25': ('M', 'pointing', 'neutral', [('striker', 'Mc')]),
+    'GN_21': ('2', 'both_hands_out', 'neutral', []),                                                        # serious
+    'MG_25': ('M', 'pointing', 'neutral', [('striker', 'Mc')]),                                             # businesslike
     'RK_17': ('R', 'stand_crossed', None, []),
-    'MG_26': ('Mc', 'arms_down', 'angry_rant', []),
+    'MG_26': ('Mc', 'arms_down', 'angry_rant', []),                                                         # frustrated
     'RK_18': ('Rc', 'stand_crossed', None, []),
     'RK_19': ('Rc', 'stand_crossed', None, []),
-    'GN_22': ('G', 'arms_down', 'neutral', []),
-    'GN_23': ('G', 'both_hands_out', 'neutral', []),
+    'GN_22': ('G', 'arms_down', 'neutral', []),                                                             # measured
+    'GN_23': ('G', 'both_hands_out', 'neutral', []),                                                        # earnest
     'RK_20': ('Rc', 'stand_crossed', None, []),
     'RK_21': ('R', 'stand_crossed', None, []),
-    'GN_24': ('Gc', 'arms_down', 'angry_rant', []),
-    'MG_27': ('M', 'pointing', 'neutral', [('player', 'Mc')]),
-    'MG_28': ('M', 'shrug', 'smug', [('sounds', 'Mc')]),
-    'GN_25': ('G', 'both_hands_out', 'neutral', [('understanding', 'Gc'), ('understanding', 'face=head/three_quarter')]),
+    'GN_24': ('Gc', 'arms_down', 'angry_rant', []),                                                         # defensive
+    'MG_27': ('M', 'pointing', 'neutral', [('player', 'Mc')]),                                              # earnest
+    'MG_28': ('M', 'shrug', 'neutral', [('sounds', 'Mc')]),                                                 # dry
+    'GN_25': ('G', 'both_hands_out', 'neutral', [('understanding', 'Gc'), ('understanding', 'face=head/three_quarter')]),  # nostalgic
     'RK_22': ('Rc', 'stand_crossed', None, []),
-    'GN_26': ('Gc', 'arms_down', 'angry_rant', []),
+    'GN_26': ('Gc', 'arms_down', 'angry_rant', []),                                                         # warning
     'RK_23': ('R', 'stand_crossed', None, []),
-    'GN_27': ('G', 'both_hands_out', 'neutral', []),
-    'GN_28': ('G', 'shrug', 'neutral', [('everybody', 'B')]),
-    'GN_29': ('G', 'pointing', 'angry_rant', [('board', 'B')]),
+    'GN_27': ('G', 'both_hands_out', 'neutral', []),                                                        # annoyed
+    'GN_28': ('G', 'shrug', 'neutral', [('everybody', 'B')]),                                               # exasperated
+    'GN_29': ('G', 'pointing', 'angry_rant', [('board', 'B')]),                                             # frustrated
     'RK_24': ('R', 'stand_crossed', None, []),
-    'MG_29': ('2', 'fist_pump', 'smug', [('someone', 'Mc'), ('someone', 'face=head/front')]),
+    'MG_29': ('2', 'arms_down', 'smug', [('someone', 'Mc'), ('someone', 'face=head/front')]),               # satisfied
     'RK_25': ('RD', 'stand_crossed', None, []),
     'RK_26': ('RD', 'stand_crossed', None, []),
 }
 # a reaction shot held after a line: line id -> (shot, who, face)
 REACT = {
     'MG_08': ('Gc', 'gary', 'neutral'),
-    'RK_09': ('Gc', 'gary', 'shocked'),
-    'MG_16': ('Gc', 'gary', 'shocked'),
+    'RK_09': ('Gc', 'gary', 'sad'),
+    'MG_16': ('Gc', 'gary', 'confused'),
     'RK_11': ('Mc', 'mark', 'shocked'),
     'MG_22': ('Gc', 'gary', 'confused'),
     'RK_16': ('2', None, None),
@@ -182,6 +186,32 @@ def word_time(ln, word, nth=1):
             if k == nth:
                 return ln['start'] + w['t0']
     return None
+
+
+def perform(tl, ln):
+    """The delivery on top of the lip sync: a small nod on each CAPS word, eyes
+    closed through a [sigh], and a blink in each written pause."""
+    who, lid, t_line = ln['who'], ln['id'], ln['start']
+    words = ln['words']
+    caps = S.emphasised(lid)
+    for w in words:
+        name = w['word'].split('(')[0]
+        if name in caps:
+            caps.remove(name)
+            t0, t1 = t_line + w['t0'], t_line + w['t1']
+            tl.key(t0 - 0.1, who, nod=0.0)
+            tl.key(t0 + 0.08, who, nod=1.0, e='ease')
+            tl.key(max(t1, t0 + 0.2) + 0.12, who, nod=0.0, e='ease')
+    if S.tag(lid) == 'sigh' and words and words[0]['t0'] > 0.3:
+        a, b = t_line + 0.04, t_line + words[0]['t0'] - 0.06
+        tl.key(a, who, eyes_shut=True)
+        tl.key(b, who, eyes_shut=False)
+        tl.key(a, who, nod=0.0)
+        tl.key((a + b) / 2, who, nod=0.8, e='ease')
+        tl.key(b + 0.15, who, nod=0.0, e='ease')
+    for w0, w1 in zip(words, words[1:]):
+        if w1['t0'] - w0['t1'] > 0.3:
+            tl.blinks.setdefault(who, []).append(t_line + (w0['t1'] + w1['t0']) / 2 - 0.05)
 
 
 def build():
@@ -295,6 +325,7 @@ def build():
         if lid in ('MG_03', 'GN_10', 'MG_24', 'GN_29'):
             gap = 0.6
         ln = tl.say(lid, gap=gap)
+        perform(tl, ln)
         t0 = ln['start']
         if who == 'roy':
             key(t0, 'roy', body='body/' + body)

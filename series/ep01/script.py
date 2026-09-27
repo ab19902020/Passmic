@@ -100,6 +100,111 @@ LINES = {
     'RK_26': "You've drawn a kettle.",
 }
 
+# The same lines formatted for the voice generator (Clone/Clony): an emotion tag,
+# pauses, ellipses, dashes, and CAPS only where the emphasis helps. The delivery
+# is mostly serious - the comedy is in playing it straight. The animation reads
+# the tag (face and pose) and the CAPS words (a small nod) from here.
+DELIVERY = {
+    'MG_01': '[frustrated] International break. Pointless. Absolutely pointless... <break time="0.5s" /> It’s like pausing your Sunday roast halfway through and somebody walking in with a Ryvita. Technically it’s food — but nobody BLOODY asked for it.',
+    'MG_02': '[sigh] I woke up this morning and there wasn’t even a Manchester United crisis to talk about. <break time="0.5s" /> I checked twice.',
+    'MG_03': '[frustrated] We’re at the stage now where I’ve started looking at international friendlies thinking... “Go on then, I suppose.” <break time="0.5s" /> That’s when you know things have gone seriously wrong.',
+    'MG_04': '[dry] United are still United, by the way. I’ve taken stock. <break time="0.5s" /> The stock’s on fire.',
+    'MG_05': '[confident] There IS a simple answer, Gary. <break time="0.5s" /> Do everything I’ve been saying for the last six years.',
+    'MG_06': '[matter-of-fact] New recruitment structure. Proper football people. Sporting director. Clear philosophy. Players who actually want to be there. <break time="0.5s" /> Simple.',
+    'MG_07': '[explaining] They’re all one answer. It’s like making a cup of tea. You need water, milk, tea bag, kettle—',
+    'MG_08': '[deadpan] That’s Manchester United, Gary. <break time="0.5s" /> We’ve spent two billion quid on tea... and forgotten the bloody cup.',
+    'MG_09': '[sarcastic] Standards. Brilliant. <break time="0.5s" /> Somebody ring Old Trafford. Gary’s found the STANDARDS.',
+    'MG_10': '[energised] Roy! Perfect timing. We’re fixing Manchester United.',
+    'MG_11': '[curious] Serious question. They give you control of United tomorrow... first thing you do?',
+    'MG_12': '[insistent] No, come on. Hypothetically. You’re chief executive.',
+    'MG_13': '[confident] Right, well... I’ve got recruitment.',
+    'MG_14': '[matter-of-fact] Gary can handle football operations.',
+    'MG_15': '[matter-of-fact] Roy handles discipline.',
+    'MG_16': '[confident] And I’ll do media, recruitment strategy... and final say on transfers.',
+    'MG_17': '[confused] Why are you looking at me like that?',
+    'MG_18': '[defensive] I’ve done about FOUR THOUSAND videos explaining exactly how the club should be run.',
+    'MG_19': '[smug] Exactly. <break time="0.5s" /> Experience.',
+    'MG_20': '[realising] Actually... this could work.',
+    'MG_21': '[building excitement] We build a proper structure. Gary upstairs, Roy downstairs... me overseeing football strategy.',
+    'MG_22': '[matter-of-fact] I’m chairman.',
+    'MG_23': '[deadpan] Because it’s my studio.',
+    'MG_24': '[confident] That is literally how ownership works, Gary.',
+    'MG_25': '[businesslike] Right. First meeting. <break time="0.5s" /> Striker. We need one.',
+    'MG_26': '[frustrated] No, Roy... “someone who runs” is NOT a recruitment profile.',
+    'MG_27': '[earnest] You know what United need? <break time="0.5s" /> A player who understands the shirt.',
+    'MG_28': '[dry] I don’t know what it means either... but everyone says it and it sounds important.',
+    'MG_29': '[satisfied] Right, international break over. We’ve fixed Manchester United. <break time="0.5s" /> Someone clip this.',
+    'GN_01': '[calm] You say that, Mark, but sometimes a break can be good. <break time="0.5s" /> Gives everybody a chance to take stock.',
+    'GN_02': '[serious] The problem at Manchester United is everybody thinks there’s one simple answer.',
+    'GN_03': '[dry] That’s five answers already.',
+    'GN_04': '[deadpan] You’ve forgotten the cup.',
+    'GN_05': '[serious] You know what the problem is?',
+    'GN_06': '[firm] Standards.',
+    'GN_07': '[firmer] STANDARDS.',
+    'GN_08': '[serious] You can laugh, but standards matter.',
+    'GN_09': '[measured] Mark, you don’t fix a football club with a shopping list.',
+    'GN_10': '[earnest] You need structure. Accountability. People who understand what Manchester United IS.',
+    'GN_11': '[mildly annoyed] Roy, we’re having a serious conversation.',
+    'GN_12': '[insistent] You’ve got to build a structure.',
+    'GN_13': '[defensive] I HAVE actually been involved in running a football club.',
+    'GN_14': '[awkward] That was different.',
+    'GN_15': '[more defensive] Very different circumstances.',
+    'GN_16': '[matter-of-fact] Mark, you have never run a football club.',
+    'GN_17': '[dry] Watching one angrily on YouTube isn’t experience.',
+    'GN_18': '[firm] I’m not working under you.',
+    'GN_19': '[confused] Why are YOU chairman?',
+    'GN_20': '[exasperated] That is absolutely NOT how ownership works.',
+    'GN_21': '[serious] If we’re seriously doing this, recruitment has to be joined up.',
+    'GN_22': '[measured] You can’t just buy names.',
+    'GN_23': '[earnest] The player has to fit the culture.',
+    'GN_24': '[defensive] I know exactly what culture means.',
+    'GN_25': '[nostalgic] I’m just saying... when we played, there was an understanding of what the shirt meant.',
+    'GN_26': '[warning] Don’t start.',
+    'GN_27': '[annoyed] Roy, that was twenty years ago.',
+    'GN_28': '[exasperated] No, I’m NOT saying we sign everybody from 1999.',
+    'GN_29': '[frustrated] Mark... stop writing “1999” on the recruitment board.',
+    'RK_01': '[deadpan] What are you two doing?',
+    'RK_02': '[dry] Course you are.',
+    'RK_03': '[flat] You’ve been talking about standards for twenty years.',
+    'RK_04': '[deadpan] Doesn’t make you interesting.',
+    'RK_05': '[matter-of-fact] Leave.',
+    'RK_06': '[firm] Yeah. Leave.',
+    'RK_07': '[dry] Seems to be what everybody else does.',
+    'RK_08': '[dismissive] Stupid hypothetical.',
+    'RK_09': '[deadpan] Gary... you couldn’t build a shed.',
+    'RK_10': '[dry] How did that go?',
+    'RK_11': '[matter-of-fact] You’ve never run one either.',
+    'RK_12': '[flat] Even worse.',
+    'RK_13': '[firm] No.',
+    'RK_14': '[firmer] No.',
+    'RK_15': '[very firm] Definitely no.',
+    'RK_16': '[annoyed] You’re all talking rubbish.',
+    'RK_17': '[matter-of-fact] You want a striker? Get someone who runs.',
+    'RK_18': '[flat] Runs.',
+    'RK_19': '[dry] Towards the goal preferably.',
+    'RK_20': '[confused] What culture?',
+    'RK_21': '[deadpan] Just play football.',
+    'RK_22': '[dry] Footballers now need a philosophy to have breakfast.',
+    'RK_23': '[firm] Back then, if you didn’t run... you didn’t play.',
+    'RK_24': '[finished] I’m going home.',
+    'RK_25': '[deadpan] You haven’t fixed anything.',
+    'RK_26': '[dry] You’ve drawn a kettle.',
+}
+
+
+def tag(lid):
+    """The delivery's emotion tag, e.g. 'frustrated'."""
+    t = DELIVERY.get(lid, '')
+    return t[1:t.index(']')] if t.startswith('[') else ''
+
+
+def emphasised(lid):
+    """Words written in CAPS for emphasis (lower-cased, as in the alignment)."""
+    import re
+    body = re.sub(r'^\[[^\]]*\]|<[^>]*>', ' ', DELIVERY.get(lid, ''))
+    return [w.lower() for w in re.findall(r"[A-Za-z’']+", body) if len(w) > 1 and w.isupper()]
+
+
 SPEAKER = {'MG': 'mark', 'GN': 'gary', 'RK': 'roy'}
 
 # The conversation, in order. Every character's own lines stay in their order.
@@ -130,6 +235,7 @@ ORDER = [
 def check():
     ids = [x for x in ORDER if not x.startswith('@')]
     assert sorted(ids) == sorted(LINES), set(LINES) ^ set(ids)
+    assert sorted(DELIVERY) == sorted(LINES), set(LINES) ^ set(DELIVERY)
     for p in SPEAKER:
         mine = [x for x in ids if x.startswith(p)]
         assert mine == sorted(mine), (p, mine)
