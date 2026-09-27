@@ -31,9 +31,21 @@ def gary_img(gidx, panel, name):
     return cv2.imread(hi if os.path.exists(hi) else os.path.join(EP, gidx[panel][name]['file']), cv2.IMREAD_UNCHANGED)
 
 
+def clean_bits(rgba, frac=0.01):
+    """Drop stray specks (bits of the sheet caught in a mask) not joined to the drawing."""
+    n, cc, st, _ = cv2.connectedComponentsWithStats((rgba[..., 3] > 20).astype(np.uint8), connectivity=8)
+    if n > 2:
+        big = st[1:, cv2.CC_STAT_AREA].max()
+        for i in range(1, n):
+            if st[i, cv2.CC_STAT_AREA] < frac * big:
+                rgba[cc == i, 3] = 0
+    ys, xs = np.nonzero(rgba[..., 3])
+    return rgba[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+
+
 def roy_head_hi():
     hi = os.path.join(EP, 'characters_x16', 'roy', 'head', 'three_quarter.png')
-    return cv2.imread(hi, cv2.IMREAD_UNCHANGED) if os.path.exists(hi) else roy_head()
+    return clean_bits(cv2.imread(hi, cv2.IMREAD_UNCHANGED)) if os.path.exists(hi) else roy_head()
 
 
 def roy_head():
@@ -44,7 +56,7 @@ def roy_head():
     ys, xs = np.nonzero(m)
     y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
     rgba = np.dstack([im[y0:y1, x0:x1], (a[y0:y1, x0:x1] * 255).astype(np.uint8)])
-    return rgba
+    return clean_bits(rgba)
 
 
 def gary_head_region(rgba, info):
@@ -124,8 +136,7 @@ def swap_head(g, head, info_h, facing, hf, factor):
     padL, padR = max(0, -left), max(0, left + hd.shape[1] - body.shape[1])
     canvas = cv2.copyMakeBorder(body, padT, 0, padL, padR, cv2.BORDER_CONSTANT, value=0)
     F.paste_over(canvas, hd, left + padL, top + padT)
-    ys, xs = np.nonzero(canvas[..., 3])
-    return canvas[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    return clean_bits(canvas)
 
 
 def row_span(rgba, y):
@@ -224,8 +235,7 @@ def build_extra():
     padR = max(0, left + head.shape[1] - g2.shape[1])
     cu = cv2.copyMakeBorder(g2, padT, 0, padL, padR, cv2.BORDER_CONSTANT, value=0)
     F.paste_over(cu, head, left + padL, top + padT)
-    ys, xs = np.nonzero(cu[..., 3])
-    cu = cu[ys.min():ys.max() + 1, xs.min():xs.max() + 1]
+    cu = clean_bits(cu)
     rel = os.path.join('characters', 'roy', 'closeup', 'crossed_arms.png')
     os.makedirs(os.path.dirname(os.path.join(EP, rel)), exist_ok=True)
     cv2.imwrite(os.path.join(EP, rel), cu, [cv2.IMWRITE_PNG_COMPRESSION, 6])

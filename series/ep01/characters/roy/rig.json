@@ -1,3 +1,19 @@
 {
- "_cu_chin": 0.3
+ "_cu_chin": 0.3,
+ "closeup/crossed_arms": {
+  "mouth": [
+   0.3,
+   0.525,
+   0.2,
+   0.04
+  ]
+ },
+ "body/stand_crossed": {
+  "mouth": [
+   0.295,
+   0.297,
+   0.217,
+   0.023
+  ]
+ }
 }

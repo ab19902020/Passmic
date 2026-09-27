@@ -248,7 +248,7 @@ def synth_mouth(img, info, key):
     out = img.copy()
     cx, cy, mw, mh = info['mouth']
     fw = info['width']
-    mw = max(mw, fw * 0.26)
+    mw = min(max(mw, fw * 0.26), fw * 0.32)      # the found box can take in the moustache
     w = mw * ws / 2
     h = mw * hs / 2
     top = cy - mh * 0.35
@@ -699,6 +699,7 @@ class Renderer:
         fw = fx1 - fx0
         m = np.zeros((H, W), np.float32)
         below = 0.12 + rig.over.get('_cu_chin', 0.0)       # Roy: down to the bottom of his beard
+        m[:int(fy1 - 0.3 * fw)] = 1.0                        # the whole head, ears and hair
         m[:int(fy1 + below * fw), max(0, int(fx0 - 0.06 * fw)):int(fx1 + 0.06 * fw)] = 1.0
         m = cv2.GaussianBlur(m, (0, 0), fw * 0.07)
         if flip:
