@@ -6,10 +6,14 @@
     python3 tools/ep/render.py sheet 0 300 5       -> out/ep01/sheet.jpg (contact sheet)
     python3 tools/ep/render.py timings             -> print the line timeline
 
-JOBS=n limits parallel workers.
+JOBS=n limits parallel workers (each 4K worker needs about 3.5 GB with its encoder).
+Segments are resumable: a finished one is kept as out/ep01/seg_<mode>/segNNN.mp4
+(written under a temporary name and renamed when complete), so re-running
+renders only what is missing. Delete the folder after changing the episode.
 """
 import os, subprocess, sys, time
-from multiprocessing import Pool
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures.process import BrokenProcessPool
 import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -88,13 +92,17 @@ def _segment(args):
     f0, f1, path = args
     R = _R
     w, h = R.size
+    tmp = path[:-4] + '.part.mp4'
     cmd = ['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'bgr24', '-s', '%dx%d' % (w, h), '-r', str(E.FPS),
-           '-i', '-', '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-threads', '1', '-pix_fmt', 'yuv420p', path]
+           '-i', '-', '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-threads', '1',
+           '-x264-params', 'rc-lookahead=20', '-pix_fmt', 'yuv420p', tmp]
     p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     for f in range(f0, f1):
         p.stdin.write(R.render(f / E.FPS).tobytes())
     p.stdin.close()
-    p.wait()
+    if p.wait() != 0:
+        raise RuntimeError('ffmpeg failed on ' + path)
+    os.replace(tmp, path)
     return path
 
 
@@ -139,11 +147,21 @@ def main():
     segd = os.path.join(OUTD, 'seg_' + mode)
     os.makedirs(segd, exist_ok=True)
     tasks = [(b[i], b[i + 1], os.path.join(segd, 'seg%03d.mp4' % i)) for i in range(nseg)]
+    todo = [t for t in tasks if not os.path.exists(t[2])]
     t0 = time.time()
-    print('%d frames at %dx%d, %d workers' % (n, size[0], size[1], jobs), flush=True)
-    with Pool(jobs, initializer=_init, initargs=(size,)) as pool:
-        for i, _ in enumerate(pool.imap(_segment, tasks)):
-            print('  segment %d/%d (%.0f s)' % (i + 1, nseg, time.time() - t0), flush=True)
+    print('%d frames at %dx%d, %d workers, %d of %d segments to render' % (n, size[0], size[1], jobs, len(todo), nseg),
+          flush=True)
+    if todo:
+        # a worker killed from outside (out of memory) breaks the pool at once instead of hanging it
+        try:
+            with ProcessPoolExecutor(min(jobs, len(todo)), initializer=_init, initargs=(size,)) as ex:
+                futs = [ex.submit(_segment, t) for t in todo]
+                for i, fu in enumerate(as_completed(futs)):
+                    print('  segment %s done, %d/%d (%.0f s)' % (os.path.basename(fu.result()), i + 1, len(todo),
+                                                                  time.time() - t0), flush=True)
+        except BrokenProcessPool:
+            left = [os.path.basename(t[2]) for t in tasks if not os.path.exists(t[2])]
+            sys.exit('a render worker died (out of memory?) - run again to finish: ' + ' '.join(left))
     lst = os.path.join(segd, 'list.txt')
     with open(lst, 'w') as f:
         f.writelines("file '%s'\n" % os.path.basename(p) for _, _, p in tasks)

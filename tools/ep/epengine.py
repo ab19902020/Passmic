@@ -77,7 +77,7 @@ class Background:
         fgv = cv2.warpAffine(fg, M, OUT, flags=interp, borderMode=cv2.BORDER_CONSTANT, borderValue=0)
         if dof > 0:
             bg = cv2.GaussianBlur(bg, (0, 0), dof)
-        if len(self.cache) > 3:
+        if len(self.cache) > 2:
             self.cache.pop(next(iter(self.cache)))
         self.cache[key] = (bg, fgv)
         return bg, fgv
@@ -206,7 +206,7 @@ class Rig:
         if flip:
             out = out[:, ::-1].copy()
         self.cache[ck] = out
-        trim(self.cache, 250e6, keep=lambda k: k[0] == 'nomouth')
+        trim(self.cache, 150e6, keep=lambda k: k[0] == 'nomouth')
         return out
 
 
@@ -615,7 +615,7 @@ class Renderer:
         s = math.exp(sq)
         res = cv2.resize(img, None, fx=s, fy=s, interpolation=cv2.INTER_AREA if s < 1 else cv2.INTER_CUBIC)
         self.scaled[ck] = (res, s)
-        trim(self.scaled, 600e6, keep=lambda k: k[0] == 'cam')
+        trim(self.scaled, 400e6, keep=lambda k: k[0] == 'cam')
         return res, s
 
     def draw_char(self, frame, who, t, bgname, rect, shot):
