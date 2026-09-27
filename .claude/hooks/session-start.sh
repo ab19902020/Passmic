@@ -7,5 +7,5 @@ apt_get() { apt-get install -y -q "$@" >/dev/null 2>&1 || { apt-get update -q >/
 command -v ffmpeg >/dev/null || apt_get ffmpeg
 # skia-python (vector renderer for the episode) needs libEGL at import time
 ldconfig -p | grep -q libEGL.so.1 || apt_get libegl1
-python3 -c "import cv2, numpy, scipy, PIL, soundfile, skia, cmudict" 2>/dev/null || pip install -q -r requirements.txt
+python3 -c "import cv2, numpy, scipy, PIL, soundfile, skia, cmudict, pocketsphinx" 2>/dev/null || pip install -q -r requirements.txt
 mkdir -p out
