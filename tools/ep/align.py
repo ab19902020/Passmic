@@ -2,6 +2,12 @@
 
 align(wav16k_path, text) -> list of words: {'word', 't0', 't1', 'phones': [(ph, t0, t1), ...]}
 
+    python3 tools/ep/align.py            # align every voice file in series/ep01/audio not yet in alignment.json
+    python3 tools/ep/align.py RK_01 ...  # (re)align just these lines
+
+The renderer runs the first form itself, so a new recording (say RK_05.wav)
+only needs dropping into series/ep01/audio/.
+
 The pocketsphinx English acoustic model ships inside the pip package, so this
 works without downloading anything. Words missing from its dictionary get a
 pronunciation from the CMU dictionary or the EXTRA table below.
@@ -18,15 +24,16 @@ EXTRA = {
     'accountability': 'AH K AW N T AH B IH L IH T IY',
     'overseeing': 'OW V ER S IY IH NG',
 }
-_DEC = None
+_DEC = {}
 
 
-def decoder():
-    global _DEC
-    if _DEC is None:
+def decoder(wide=False):
+    """wide: much wider search beams, for takes the default search loses track of."""
+    if wide not in _DEC:
         from pocketsphinx import Decoder
-        _DEC = Decoder(samprate=16000, bestpath=False, loglevel='FATAL')
-    return _DEC
+        kw = dict(beam=1e-100, wbeam=1e-80, pbeam=1e-100) if wide else {}
+        _DEC[wide] = Decoder(samprate=16000, bestpath=False, loglevel='FATAL', **kw)
+    return _DEC[wide]
 
 
 def words_of(text):
@@ -73,8 +80,17 @@ def read_raw(wav):
     return x.tobytes()
 
 
-def align(wav16k, text):
-    d = decoder()
+def align(wav16k, text, wide=False):
+    try:
+        return _align(wav16k, text, wide)
+    except Exception:
+        if wide:
+            raise
+        return _align(wav16k, text, True)
+
+
+def _align(wav16k, text, wide):
+    d = decoder(wide)
     ws = [ensure_word(d, w) for w in words_of(text)]
     raw = read_raw(wav16k)
     d.set_align_text(' '.join(ws))
@@ -99,3 +115,41 @@ def score(wav16k, text):
     d.start_utt(); d.process_raw(read_raw(wav16k), full_utt=True); d.end_utt()
     h = d.hyp()
     return (h.score / max(d.n_frames(), 1)) if h else -1e9
+
+
+AUDIO_EXT = ('.wav', '.mp3', '.m4a', '.aac', '.flac', '.ogg')
+
+
+def align_episode(ids=None, force=False, quiet=False):
+    """Align the episode's voice files into series/ep01/audio/alignment.json.
+    Returns the IDs aligned."""
+    import json, sys, tempfile
+    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    ep = os.path.join(root, 'series', 'ep01')
+    sys.path.insert(0, ep)
+    import script
+    adir = os.path.join(ep, 'audio')
+    path = os.path.join(adir, 'alignment.json')
+    al = json.load(open(path)) if os.path.exists(path) else {}
+    done = []
+    for lid in (ids or script.LINES):
+        src = next((os.path.join(adir, lid + e) for e in AUDIO_EXT if os.path.exists(os.path.join(adir, lid + e))), None)
+        if src is None or (lid in al and not force and not ids):
+            continue
+        with tempfile.TemporaryDirectory() as td:
+            w16 = os.path.join(td, lid + '.wav')
+            to16k(src, w16)
+            al[lid] = align(w16, script.LINES[lid])
+        done.append(lid)
+        if not quiet:
+            print('aligned', lid, ' '.join(w['word'] for w in al[lid]), flush=True)
+    if done:
+        with open(path, 'w') as f:
+            json.dump(al, f, indent=0)
+    return done
+
+
+if __name__ == '__main__':
+    import sys
+    args = [a for a in sys.argv[1:] if not a.startswith('-')]
+    align_episode(args or None, force='--force' in sys.argv)

@@ -248,5 +248,16 @@ def land(**kw):
     return out
 
 
-SFX = dict(step=step, land=land, door_open=door_open, door_close=door_close, cushion=cushion, chair_creak=chair_creak,
+def marker(seed=3, **kw):
+    """A dry-wipe marker squeaking across a whiteboard."""
+    rng = np.random.RandomState(seed)
+    t = _t(0.5)
+    f = 900 + 250 * np.sin(2 * np.pi * 7 * t) + 150 * rng.randn(len(t)).cumsum() / len(t) * 5
+    tone = np.sin(2 * np.pi * np.cumsum(f) / SR)
+    fric = _band(rng.randn(len(t)), 2000, 7000)
+    env = np.clip(t / 0.03, 0, 1) * np.clip((0.5 - t) / 0.08, 0, 1)
+    return _f32((tone * 0.25 + fric * 0.35) * env, 0.12)
+
+
+SFX = dict(step=step, land=land, marker=marker, door_open=door_open, door_close=door_close, cushion=cushion, chair_creak=chair_creak,
            click=click, key=key, typing=typing, type=typing, whoosh=whoosh, hop=hop, sting=guitar_sting)
