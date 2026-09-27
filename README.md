@@ -4,6 +4,10 @@ A 2.5D cut-out music video (South Park style) built from the original artwork in
 Everything is rendered offline with Python + OpenCV, then encoded with ffmpeg:
 1920x1080, 24 fps, 3:45, with the song muxed in.
 
+The repo also holds the South Park spoof work: the Cartman bedroom scene
+(`episode/`, `tools/vec/`) and the studio series — Episode 1, "International
+Break Emergency", is in `series/ep01/` (see its README; rendered by `tools/ep/`).
+
 ## Quick start
 ```bash
 pip install -r requirements.txt          # plus ffmpeg on PATH (auto-installed in Claude Code web sessions)

@@ -1,0 +1,1538 @@
+{
+ "name": "Butters Stotch",
+ "sheet": "sheets/butters.png",
+ "sprites": {
+  "turnaround": {
+   "front": {
+    "label": "FRONT",
+    "file": "characters/butters/turnaround/front.png",
+    "sheet_rect": [
+     30,
+     75,
+     144,
+     200
+    ],
+    "size": [
+     144,
+     200
+    ],
+    "feet": [
+     75,
+     195
+    ],
+    "center": [
+     72,
+     107
+    ]
+   },
+   "three_quarter_front": {
+    "label": "3/4 FRONT",
+    "file": "characters/butters/turnaround/three_quarter_front.png",
+    "sheet_rect": [
+     219,
+     74,
+     146,
+     201
+    ],
+    "size": [
+     146,
+     201
+    ],
+    "feet": [
+     74,
+     196
+    ],
+    "center": [
+     73,
+     108
+    ]
+   },
+   "side_left": {
+    "label": "SIDE (LEFT)",
+    "file": "characters/butters/turnaround/side_left.png",
+    "sheet_rect": [
+     406,
+     73,
+     139,
+     203
+    ],
+    "size": [
+     139,
+     203
+    ],
+    "feet": [
+     74,
+     199
+    ],
+    "center": [
+     71,
+     104
+    ]
+   },
+   "back": {
+    "label": "BACK",
+    "file": "characters/butters/turnaround/back.png",
+    "sheet_rect": [
+     591,
+     75,
+     145,
+     202
+    ],
+    "size": [
+     145,
+     202
+    ],
+    "feet": [
+     73,
+     197
+    ],
+    "center": [
+     72,
+     107
+    ]
+   },
+   "three_quarter_back": {
+    "label": "3/4 BACK",
+    "file": "characters/butters/turnaround/three_quarter_back.png",
+    "sheet_rect": [
+     784,
+     74,
+     142,
+     203
+    ],
+    "size": [
+     142,
+     203
+    ],
+    "feet": [
+     71,
+     198
+    ],
+    "center": [
+     72,
+     108
+    ]
+   },
+   "side_right": {
+    "label": "SIDE (RIGHT)",
+    "file": "characters/butters/turnaround/side_right.png",
+    "sheet_rect": [
+     976,
+     71,
+     135,
+     206
+    ],
+    "size": [
+     135,
+     206
+    ],
+    "feet": [
+     63,
+     202
+    ],
+    "center": [
+     65,
+     105
+    ]
+   }
+  },
+  "head": {
+   "front": {
+    "label": "front",
+    "file": "characters/butters/head/front.png",
+    "sheet_rect": [
+     1169,
+     80,
+     180,
+     200
+    ],
+    "size": [
+     180,
+     200
+    ],
+    "feet": [
+     88,
+     195
+    ],
+    "center": [
+     89,
+     109
+    ]
+   },
+   "side": {
+    "label": "side",
+    "file": "characters/butters/head/side.png",
+    "sheet_rect": [
+     1358,
+     79,
+     164,
+     201
+    ],
+    "size": [
+     164,
+     201
+    ],
+    "feet": [
+     77,
+     196
+    ],
+    "center": [
+     82,
+     105
+    ]
+   }
+  },
+  "mouths": {
+   "a_ah": {
+    "label": "A (AH)",
+    "file": "characters/butters/mouths/a_ah.png",
+    "sheet_rect": [
+     18,
+     326,
+     129,
+     133
+    ],
+    "size": [
+     129,
+     133
+    ],
+    "feet": [
+     64,
+     128
+    ],
+    "center": [
+     64,
+     73
+    ]
+   },
+   "e_eh": {
+    "label": "E (EH)",
+    "file": "characters/butters/mouths/e_eh.png",
+    "sheet_rect": [
+     168,
+     326,
+     128,
+     134
+    ],
+    "size": [
+     128,
+     134
+    ],
+    "feet": [
+     63,
+     129
+    ],
+    "center": [
+     63,
+     73
+    ]
+   },
+   "i_ee": {
+    "label": "I (EE)",
+    "file": "characters/butters/mouths/i_ee.png",
+    "sheet_rect": [
+     320,
+     328,
+     128,
+     133
+    ],
+    "size": [
+     128,
+     133
+    ],
+    "feet": [
+     63,
+     128
+    ],
+    "center": [
+     63,
+     73
+    ]
+   },
+   "o_oh": {
+    "label": "O (OH)",
+    "file": "characters/butters/mouths/o_oh.png",
+    "sheet_rect": [
+     472,
+     327,
+     130,
+     134
+    ],
+    "size": [
+     130,
+     134
+    ],
+    "feet": [
+     64,
+     129
+    ],
+    "center": [
+     65,
+     74
+    ]
+   },
+   "u_oo": {
+    "label": "U (OO)",
+    "file": "characters/butters/mouths/u_oo.png",
+    "sheet_rect": [
+     625,
+     327,
+     129,
+     134
+    ],
+    "size": [
+     129,
+     134
+    ],
+    "feet": [
+     64,
+     129
+    ],
+    "center": [
+     65,
+     73
+    ]
+   },
+   "m_closed": {
+    "label": "M (CLOSED)",
+    "file": "characters/butters/mouths/m_closed.png",
+    "sheet_rect": [
+     779,
+     328,
+     131,
+     133
+    ],
+    "size": [
+     131,
+     133
+    ],
+    "feet": [
+     65,
+     128
+    ],
+    "center": [
+     64,
+     73
+    ]
+   },
+   "l_tongue": {
+    "label": "L (TONGUE)",
+    "file": "characters/butters/mouths/l_tongue.png",
+    "sheet_rect": [
+     933,
+     329,
+     129,
+     132
+    ],
+    "size": [
+     129,
+     132
+    ],
+    "feet": [
+     64,
+     127
+    ],
+    "center": [
+     64,
+     72
+    ]
+   },
+   "f_v": {
+    "label": "F / V",
+    "file": "characters/butters/mouths/f_v.png",
+    "sheet_rect": [
+     1088,
+     329,
+     130,
+     133
+    ],
+    "size": [
+     130,
+     133
+    ],
+    "feet": [
+     64,
+     128
+    ],
+    "center": [
+     65,
+     72
+    ]
+   },
+   "th_teeth": {
+    "label": "TH (TEETH)",
+    "file": "characters/butters/mouths/th_teeth.png",
+    "sheet_rect": [
+     1238,
+     327,
+     129,
+     135
+    ],
+    "size": [
+     129,
+     135
+    ],
+    "feet": [
+     64,
+     130
+    ],
+    "center": [
+     64,
+     74
+    ]
+   },
+   "w_rounded": {
+    "label": "W (ROUNDED)",
+    "file": "characters/butters/mouths/w_rounded.png",
+    "sheet_rect": [
+     1390,
+     330,
+     126,
+     132
+    ],
+    "size": [
+     126,
+     132
+    ],
+    "feet": [
+     62,
+     127
+    ],
+    "center": [
+     63,
+     72
+    ]
+   }
+  },
+  "expressions": {
+   "neutral": {
+    "label": "NEUTRAL",
+    "file": "characters/butters/expressions/neutral.png",
+    "sheet_rect": [
+     19,
+     512,
+     105,
+     120
+    ],
+    "size": [
+     105,
+     120
+    ],
+    "feet": [
+     52,
+     115
+    ],
+    "center": [
+     51,
+     66
+    ]
+   },
+   "happy": {
+    "label": "HAPPY",
+    "file": "characters/butters/expressions/happy.png",
+    "sheet_rect": [
+     145,
+     512,
+     111,
+     120
+    ],
+    "size": [
+     111,
+     120
+    ],
+    "feet": [
+     54,
+     116
+    ],
+    "center": [
+     55,
+     65
+    ]
+   },
+   "angry": {
+    "label": "ANGRY",
+    "file": "characters/butters/expressions/angry.png",
+    "sheet_rect": [
+     272,
+     512,
+     111,
+     121
+    ],
+    "size": [
+     111,
+     121
+    ],
+    "feet": [
+     55,
+     116
+    ],
+    "center": [
+     55,
+     66
+    ]
+   },
+   "sad": {
+    "label": "SAD",
+    "file": "characters/butters/expressions/sad.png",
+    "sheet_rect": [
+     399,
+     518,
+     110,
+     115
+    ],
+    "size": [
+     110,
+     115
+    ],
+    "feet": [
+     54,
+     110
+    ],
+    "center": [
+     54,
+     63
+    ]
+   },
+   "surprised": {
+    "label": "SURPRISED",
+    "file": "characters/butters/expressions/surprised.png",
+    "sheet_rect": [
+     526,
+     511,
+     110,
+     122
+    ],
+    "size": [
+     110,
+     122
+    ],
+    "feet": [
+     54,
+     117
+    ],
+    "center": [
+     55,
+     67
+    ]
+   },
+   "confused": {
+    "label": "CONFUSED",
+    "file": "characters/butters/expressions/confused.png",
+    "sheet_rect": [
+     653,
+     513,
+     109,
+     120
+    ],
+    "size": [
+     109,
+     120
+    ],
+    "feet": [
+     53,
+     116
+    ],
+    "center": [
+     54,
+     65
+    ]
+   },
+   "smug": {
+    "label": "SMUG",
+    "file": "characters/butters/expressions/smug.png",
+    "sheet_rect": [
+     775,
+     515,
+     116,
+     118
+    ],
+    "size": [
+     116,
+     118
+    ],
+    "feet": [
+     58,
+     114
+    ],
+    "center": [
+     58,
+     66
+    ]
+   },
+   "serious": {
+    "label": "SERIOUS",
+    "file": "characters/butters/expressions/serious.png",
+    "sheet_rect": [
+     903,
+     513,
+     111,
+     120
+    ],
+    "size": [
+     111,
+     120
+    ],
+    "feet": [
+     55,
+     116
+    ],
+    "center": [
+     54,
+     66
+    ]
+   },
+   "laughing": {
+    "label": "LAUGHING",
+    "file": "characters/butters/expressions/laughing.png",
+    "sheet_rect": [
+     1025,
+     517,
+     116,
+     117
+    ],
+    "size": [
+     116,
+     117
+    ],
+    "feet": [
+     57,
+     112
+    ],
+    "center": [
+     58,
+     64
+    ]
+   },
+   "disgusted": {
+    "label": "DISGUSTED",
+    "file": "characters/butters/expressions/disgusted.png",
+    "sheet_rect": [
+     1153,
+     513,
+     113,
+     121
+    ],
+    "size": [
+     113,
+     121
+    ],
+    "feet": [
+     56,
+     116
+    ],
+    "center": [
+     56,
+     67
+    ]
+   },
+   "shouting": {
+    "label": "SHOUTING",
+    "file": "characters/butters/expressions/shouting.png",
+    "sheet_rect": [
+     1278,
+     510,
+     116,
+     124
+    ],
+    "size": [
+     116,
+     124
+    ],
+    "feet": [
+     57,
+     119
+    ],
+    "center": [
+     58,
+     67
+    ]
+   },
+   "determined": {
+    "label": "DETERMINED",
+    "file": "characters/butters/expressions/determined.png",
+    "sheet_rect": [
+     1408,
+     513,
+     110,
+     121
+    ],
+    "size": [
+     110,
+     121
+    ],
+    "feet": [
+     54,
+     116
+    ],
+    "center": [
+     54,
+     66
+    ]
+   }
+  },
+  "gestures": {
+   "arms_down": {
+    "label": "ARMS DOWN",
+    "file": "characters/butters/gestures/arms_down.png",
+    "sheet_rect": [
+     21,
+     681,
+     90,
+     123
+    ],
+    "size": [
+     90,
+     123
+    ],
+    "feet": [
+     46,
+     118
+    ],
+    "center": [
+     44,
+     64
+    ]
+   },
+   "pointing_left": {
+    "label": "POINTING (LEFT)",
+    "file": "characters/butters/gestures/pointing_left.png",
+    "sheet_rect": [
+     136,
+     681,
+     111,
+     123
+    ],
+    "size": [
+     111,
+     123
+    ],
+    "feet": [
+     44,
+     119
+    ],
+    "center": [
+     44,
+     62
+    ]
+   },
+   "pointing_right": {
+    "label": "POINTING (RIGHT)",
+    "file": "characters/butters/gestures/pointing_right.png",
+    "sheet_rect": [
+     251,
+     682,
+     121,
+     123
+    ],
+    "size": [
+     121,
+     123
+    ],
+    "feet": [
+     72,
+     118
+    ],
+    "center": [
+     70,
+     65
+    ]
+   },
+   "both_hands_out": {
+    "label": "BOTH HANDS OUT",
+    "file": "characters/butters/gestures/both_hands_out.png",
+    "sheet_rect": [
+     383,
+     681,
+     134,
+     124
+    ],
+    "size": [
+     134,
+     124
+    ],
+    "feet": [
+     66,
+     119
+    ],
+    "center": [
+     66,
+     65
+    ]
+   },
+   "one_hand_up": {
+    "label": "ONE HAND UP",
+    "file": "characters/butters/gestures/one_hand_up.png",
+    "sheet_rect": [
+     528,
+     681,
+     86,
+     123
+    ],
+    "size": [
+     86,
+     123
+    ],
+    "feet": [
+     42,
+     119
+    ],
+    "center": [
+     43,
+     65
+    ]
+   },
+   "both_hands_up": {
+    "label": "BOTH HANDS UP",
+    "file": "characters/butters/gestures/both_hands_up.png",
+    "sheet_rect": [
+     627,
+     682,
+     134,
+     123
+    ],
+    "size": [
+     134,
+     123
+    ],
+    "feet": [
+     68,
+     118
+    ],
+    "center": [
+     67,
+     61
+    ]
+   },
+   "shrug": {
+    "label": "SHRUG",
+    "file": "characters/butters/gestures/shrug.png",
+    "sheet_rect": [
+     766,
+     683,
+     120,
+     122
+    ],
+    "size": [
+     120,
+     122
+    ],
+    "feet": [
+     60,
+     118
+    ],
+    "center": [
+     60,
+     64
+    ]
+   },
+   "fist_angry": {
+    "label": "FIST (ANGRY)",
+    "file": "characters/butters/gestures/fist_angry.png",
+    "sheet_rect": [
+     906,
+     683,
+     94,
+     122
+    ],
+    "size": [
+     94,
+     122
+    ],
+    "feet": [
+     48,
+     117
+    ],
+    "center": [
+     48,
+     64
+    ]
+   },
+   "open_palm": {
+    "label": "OPEN PALM",
+    "file": "characters/butters/gestures/open_palm.png",
+    "sheet_rect": [
+     1027,
+     685,
+     109,
+     120
+    ],
+    "size": [
+     109,
+     120
+    ],
+    "feet": [
+     56,
+     115
+    ],
+    "center": [
+     55,
+     64
+    ]
+   },
+   "talking_1": {
+    "label": "TALKING 1",
+    "file": "characters/butters/gestures/talking_1.png",
+    "sheet_rect": [
+     1159,
+     684,
+     106,
+     121
+    ],
+    "size": [
+     106,
+     121
+    ],
+    "feet": [
+     52,
+     116
+    ],
+    "center": [
+     51,
+     64
+    ]
+   },
+   "talking_2": {
+    "label": "TALKING 2",
+    "file": "characters/butters/gestures/talking_2.png",
+    "sheet_rect": [
+     1285,
+     684,
+     105,
+     121
+    ],
+    "size": [
+     105,
+     121
+    ],
+    "feet": [
+     53,
+     116
+    ],
+    "center": [
+     52,
+     65
+    ]
+   },
+   "talking_3": {
+    "label": "TALKING 3",
+    "file": "characters/butters/gestures/talking_3.png",
+    "sheet_rect": [
+     1409,
+     684,
+     109,
+     121
+    ],
+    "size": [
+     109,
+     121
+    ],
+    "feet": [
+     56,
+     116
+    ],
+    "center": [
+     55,
+     64
+    ]
+   }
+  },
+  "poses": {
+   "standing": {
+    "label": "STANDING",
+    "file": "characters/butters/poses/standing.png",
+    "sheet_rect": [
+     15,
+     858,
+     81,
+     114
+    ],
+    "size": [
+     81,
+     114
+    ],
+    "feet": [
+     40,
+     110
+    ],
+    "center": [
+     40,
+     59
+    ]
+   },
+   "walk_cycle_1": {
+    "label": "WALK CYCLE 1",
+    "file": "characters/butters/poses/walk_cycle_1.png",
+    "sheet_rect": [
+     111,
+     856,
+     72,
+     126
+    ],
+    "size": [
+     72,
+     126
+    ],
+    "feet": [
+     22,
+     121
+    ],
+    "center": [
+     34,
+     60
+    ]
+   },
+   "walk_cycle_2": {
+    "label": "WALK CYCLE 2",
+    "file": "characters/butters/poses/walk_cycle_2.png",
+    "sheet_rect": [
+     204,
+     855,
+     72,
+     126
+    ],
+    "size": [
+     72,
+     126
+    ],
+    "feet": [
+     30,
+     122
+    ],
+    "center": [
+     34,
+     61
+    ]
+   },
+   "walk_cycle_3": {
+    "label": "WALK CYCLE 3",
+    "file": "characters/butters/poses/walk_cycle_3.png",
+    "sheet_rect": [
+     297,
+     857,
+     76,
+     125
+    ],
+    "size": [
+     76,
+     125
+    ],
+    "feet": [
+     18,
+     121
+    ],
+    "center": [
+     36,
+     60
+    ]
+   },
+   "running": {
+    "label": "RUNNING",
+    "file": "characters/butters/poses/running.png",
+    "sheet_rect": [
+     383,
+     856,
+     93,
+     123
+    ],
+    "size": [
+     93,
+     123
+    ],
+    "feet": [
+     54,
+     118
+    ],
+    "center": [
+     49,
+     61
+    ]
+   },
+   "sitting_front": {
+    "label": "SITTING (FRONT)",
+    "file": "characters/butters/poses/sitting_front.png",
+    "sheet_rect": [
+     490,
+     861,
+     83,
+     117
+    ],
+    "size": [
+     83,
+     117
+    ],
+    "feet": [
+     42,
+     113
+    ],
+    "center": [
+     41,
+     62
+    ]
+   },
+   "sitting_side": {
+    "label": "SITTING (SIDE)",
+    "file": "characters/butters/poses/sitting_side.png",
+    "sheet_rect": [
+     590,
+     857,
+     75,
+     120
+    ],
+    "size": [
+     75,
+     120
+    ],
+    "feet": [
+     40,
+     115
+    ],
+    "center": [
+     36,
+     62
+    ]
+   },
+   "lean_forward_talk": {
+    "label": "LEAN FORWARD (TALK)",
+    "file": "characters/butters/poses/lean_forward_talk.png",
+    "sheet_rect": [
+     680,
+     862,
+     98,
+     114
+    ],
+    "size": [
+     98,
+     114
+    ],
+    "feet": [
+     46,
+     109
+    ],
+    "center": [
+     52,
+     61
+    ]
+   },
+   "lean_back": {
+    "label": "LEAN BACK",
+    "file": "characters/butters/poses/lean_back.png",
+    "sheet_rect": [
+     791,
+     856,
+     83,
+     120
+    ],
+    "size": [
+     83,
+     120
+    ],
+    "feet": [
+     51,
+     116
+    ],
+    "center": [
+     40,
+     63
+    ]
+   },
+   "crossed_arms": {
+    "label": "CROSSED ARMS",
+    "file": "characters/butters/poses/crossed_arms.png",
+    "sheet_rect": [
+     899,
+     857,
+     81,
+     117
+    ],
+    "size": [
+     81,
+     117
+    ],
+    "feet": [
+     40,
+     113
+    ],
+    "center": [
+     40,
+     59
+    ]
+   },
+   "hands_on_hips": {
+    "label": "HANDS ON HIPS",
+    "file": "characters/butters/poses/hands_on_hips.png",
+    "sheet_rect": [
+     993,
+     858,
+     81,
+     116
+    ],
+    "size": [
+     81,
+     116
+    ],
+    "feet": [
+     40,
+     112
+    ],
+    "center": [
+     40,
+     60
+    ]
+   }
+  },
+  "parts": {
+   "hair": {
+    "label": "hair",
+    "file": "characters/butters/parts/hair.png",
+    "sheet_rect": [
+     1096,
+     859,
+     119,
+     66
+    ],
+    "size": [
+     119,
+     66
+    ],
+    "feet": [
+     60,
+     61
+    ],
+    "center": [
+     59,
+     29
+    ]
+   },
+   "eyes": {
+    "label": "eyes",
+    "file": "characters/butters/parts/eyes.png",
+    "sheet_rect": [
+     1232,
+     864,
+     84,
+     52
+    ],
+    "size": [
+     84,
+     52
+    ],
+    "feet": [
+     42,
+     47
+    ],
+    "center": [
+     42,
+     25
+    ]
+   },
+   "brows_normal": {
+    "label": "brows normal",
+    "file": "characters/butters/parts/brows_normal.png",
+    "sheet_rect": [
+     1346,
+     863,
+     51,
+     19
+    ],
+    "size": [
+     51,
+     19
+    ],
+    "feet": [
+     26,
+     14
+    ],
+    "center": [
+     26,
+     9
+    ]
+   },
+   "brows_angry": {
+    "label": "brows angry",
+    "file": "characters/butters/parts/brows_angry.png",
+    "sheet_rect": [
+     1412,
+     862,
+     49,
+     19
+    ],
+    "size": [
+     49,
+     19
+    ],
+    "feet": [
+     20,
+     14
+    ],
+    "center": [
+     23,
+     9
+    ]
+   },
+   "brows_sad": {
+    "label": "brows sad",
+    "file": "characters/butters/parts/brows_sad.png",
+    "sheet_rect": [
+     1476,
+     861,
+     44,
+     22
+    ],
+    "size": [
+     44,
+     22
+    ],
+    "feet": [
+     21,
+     17
+    ],
+    "center": [
+     21,
+     11
+    ]
+   },
+   "hand_1": {
+    "label": "hand 1",
+    "file": "characters/butters/parts/hand_1.png",
+    "sheet_rect": [
+     1091,
+     943,
+     39,
+     43
+    ],
+    "size": [
+     39,
+     43
+    ],
+    "feet": [
+     18,
+     39
+    ],
+    "center": [
+     18,
+     24
+    ]
+   },
+   "hand_2": {
+    "label": "hand 2",
+    "file": "characters/butters/parts/hand_2.png",
+    "sheet_rect": [
+     1132,
+     943,
+     42,
+     44
+    ],
+    "size": [
+     42,
+     44
+    ],
+    "feet": [
+     18,
+     39
+    ],
+    "center": [
+     19,
+     24
+    ]
+   },
+   "hand_3": {
+    "label": "hand 3",
+    "file": "characters/butters/parts/hand_3.png",
+    "sheet_rect": [
+     1172,
+     944,
+     64,
+     44
+    ],
+    "size": [
+     64,
+     44
+    ],
+    "feet": [
+     40,
+     39
+    ],
+    "center": [
+     33,
+     21
+    ]
+   },
+   "hand_4": {
+    "label": "hand 4",
+    "file": "characters/butters/parts/hand_4.png",
+    "sheet_rect": [
+     1246,
+     943,
+     46,
+     44
+    ],
+    "size": [
+     46,
+     44
+    ],
+    "feet": [
+     22,
+     40
+    ],
+    "center": [
+     22,
+     22
+    ]
+   },
+   "hand_5": {
+    "label": "hand 5",
+    "file": "characters/butters/parts/hand_5.png",
+    "sheet_rect": [
+     1293,
+     942,
+     44,
+     45
+    ],
+    "size": [
+     44,
+     45
+    ],
+    "feet": [
+     25,
+     41
+    ],
+    "center": [
+     24,
+     23
+    ]
+   },
+   "mouth_1": {
+    "label": "mouth 1",
+    "file": "characters/butters/parts/mouth_1.png",
+    "sheet_rect": [
+     1358,
+     928,
+     43,
+     25
+    ],
+    "size": [
+     43,
+     25
+    ],
+    "feet": [
+     20,
+     20
+    ],
+    "center": [
+     21,
+     11
+    ]
+   },
+   "mouth_2": {
+    "label": "mouth 2",
+    "file": "characters/butters/parts/mouth_2.png",
+    "sheet_rect": [
+     1418,
+     929,
+     38,
+     22
+    ],
+    "size": [
+     38,
+     22
+    ],
+    "feet": [
+     18,
+     17
+    ],
+    "center": [
+     18,
+     10
+    ]
+   },
+   "mouth_3": {
+    "label": "mouth 3",
+    "file": "characters/butters/parts/mouth_3.png",
+    "sheet_rect": [
+     1475,
+     927,
+     39,
+     24
+    ],
+    "size": [
+     39,
+     24
+    ],
+    "feet": [
+     18,
+     19
+    ],
+    "center": [
+     19,
+     11
+    ]
+   },
+   "mouth_4": {
+    "label": "mouth 4",
+    "file": "characters/butters/parts/mouth_4.png",
+    "sheet_rect": [
+     1358,
+     954,
+     43,
+     24
+    ],
+    "size": [
+     43,
+     24
+    ],
+    "feet": [
+     22,
+     20
+    ],
+    "center": [
+     21,
+     10
+    ]
+   },
+   "mouth_5": {
+    "label": "mouth 5",
+    "file": "characters/butters/parts/mouth_5.png",
+    "sheet_rect": [
+     1416,
+     954,
+     41,
+     23
+    ],
+    "size": [
+     41,
+     23
+    ],
+    "feet": [
+     20,
+     19
+    ],
+    "center": [
+     20,
+     10
+    ]
+   },
+   "mouth_6": {
+    "label": "mouth 6",
+    "file": "characters/butters/parts/mouth_6.png",
+    "sheet_rect": [
+     1476,
+     955,
+     38,
+     23
+    ],
+    "size": [
+     38,
+     23
+    ],
+    "feet": [
+     19,
+     18
+    ],
+    "center": [
+     19,
+     9
+    ]
+   }
+  }
+ }
+}

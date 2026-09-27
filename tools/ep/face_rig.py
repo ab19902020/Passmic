@@ -1,0 +1,268 @@
+"""Face analysis and part swaps for the episode's cartoon (bitmap) characters.
+
+find_face(rgba)            -> dict(skin, face, eyes=[(cx, cy, rx, ry)], mouth=(cx, cy, w, h), mouth_mask)
+mouth_part(rgba)           -> (patch RGBA, (cx, cy), width): a phoneme drawing's mouth with a soft skin margin
+without_mouth(rgba, info)  -> the drawing with its mouth painted out (inpainted with skin)
+with_mouth(base, info, part, scale_w, ...) -> base + a pasted mouth
+blink(rgba, info, amount)  -> eyelids closed over the eye whites, with a lash line
+
+Everything is found from colour: the skin is the most common warm mid-tone,
+eyes are white blobs in the upper face, the mouth is the biggest dark/red
+non-skin blob in the lower middle of the face.
+"""
+import cv2, numpy as np
+
+
+def lab(bgr):
+    return cv2.cvtColor(bgr.astype(np.float32) / 255, cv2.COLOR_BGR2LAB)
+
+
+def fill_holes(m):
+    h, w = m.shape
+    ff = np.pad(m.astype(np.uint8), 1)
+    mask = np.zeros((h + 4, w + 4), np.uint8)
+    cv2.floodFill(ff, mask, (0, 0), 2)
+    return ff[1:-1, 1:-1] != 2
+
+
+def skin_colour(rgba, region=None):
+    L = lab(rgba[..., :3])
+    a = rgba[..., 3] > 200
+    if region is not None:
+        a &= region
+    warm = a & (L[..., 0] > 55) & (L[..., 0] < 90) & (L[..., 1] > 8) & (L[..., 1] < 35) & (L[..., 2] > 15) & (L[..., 2] < 50)
+    px = L[warm]
+    if len(px) == 0:
+        return None
+    return np.median(px, axis=0)
+
+
+def find_face(rgba, head_frac=1.0, skin=None):
+    """head_frac: only look in the top fraction of the drawing (bodies below)."""
+    H, W = rgba.shape[:2]
+    L = lab(rgba[..., :3])
+    a = rgba[..., 3] > 128
+    top = np.zeros((H, W), bool)
+    top[:int(H * head_frac)] = True
+    skin = skin_colour(rgba, top) if skin is None else skin
+    sk = a & top & (np.linalg.norm(L - skin, axis=2) < 16)
+    sk = cv2.morphologyEx(sk.astype(np.uint8), cv2.MORPH_OPEN, np.ones((5, 5), np.uint8)) > 0
+    n, cc, st, _ = cv2.connectedComponentsWithStats(sk.astype(np.uint8), connectivity=8)
+    if n < 2:
+        return None
+    # the face: the biggest skin blob in the top part (hands are smaller / lower)
+    order = np.argsort(-st[1:, cv2.CC_STAT_AREA]) + 1
+    big = order[0]
+    face_skin = cc == big
+    hull = np.zeros((H, W), np.uint8)
+    cv2.fillConvexPoly(hull, cv2.convexHull(cv2.findNonZero(face_skin.astype(np.uint8))), 1)
+    face = (hull > 0) & a
+    ys, xs = np.nonzero(face)
+    fx0, fx1, fy0, fy1 = xs.min(), xs.max(), ys.min(), ys.max()
+    fw, fh = fx1 - fx0, fy1 - fy0
+    # eyes: white blobs in the face
+    white = face & (L[..., 0] > 86) & (np.hypot(L[..., 1], L[..., 2]) < 10)
+    n, ec, est, ecen = cv2.connectedComponentsWithStats(white.astype(np.uint8), connectivity=8)
+    eyes = []
+    for i in range(1, n):
+        x, y, w, h, ar = est[i]
+        if ar > 0.002 * fw * fh and y + h / 2 < fy0 + fh * 0.7 and w < fw * 0.45:
+            eyes.append((float(ecen[i][0]), float(ecen[i][1]), w / 2.0, h / 2.0, i))
+    eyes = sorted(eyes, key=lambda e: -est[e[4], cv2.CC_STAT_AREA])[:2]
+    eyes = sorted(eyes, key=lambda e: e[0])
+    eye_mask = np.isin(ec, [e[4] for e in eyes]) if eyes else np.zeros((H, W), bool)
+    eye_bottom = max((e[1] + e[3] for e in eyes), default=fy0 + fh * 0.45)
+    eye_cx = np.mean([e[0] for e in eyes]) if eyes else (fx0 + fx1) / 2
+    # mouth: dark or red non-skin blob below the eyes and nose
+    nonskin = face & ~face_skin & ~fill_holes(cv2.dilate(eye_mask.astype(np.uint8), np.ones((9, 9), np.uint8)) > 0)
+    darkred = nonskin & ((L[..., 0] < 45) | ((L[..., 1] > 28) & (L[..., 0] < 70)) | (L[..., 0] > 88))
+    eye_y = np.mean([e[1] for e in eyes]) if eyes else fy0 + fh * 0.45
+    lo_y, hi_y, want_y = eye_y + 0.32 * fw, eye_y + 0.78 * fw, eye_y + 0.46 * fw
+    darkred_all = darkred.copy()
+    darkred[:int(lo_y)] = False
+    darkred[int(hi_y):] = False
+    n, mc, mst, mcen = cv2.connectedComponentsWithStats(darkred.astype(np.uint8), connectivity=8)
+    best, score = None, 0
+    if len(eyes) == 2:
+        ex0, ex1 = eyes[0][0], eyes[1][0]
+        gap = max(ex1 - ex0, fw * 0.15)
+        lo_x, hi_x = ex0 - gap * 0.25, ex1 + gap * 0.45
+        want_x = ex0 + (ex1 - ex0) * 0.6            # 3/4 faces: the mouth sits nearer the far eye
+    else:
+        lo_x, hi_x, want_x = fx0 + fw * 0.2, fx1 - fw * 0.1, eye_cx
+    for i in range(1, n):
+        x, y, w, h, ar = mst[i]
+        cxm, cym = mcen[i]
+        if w > fw * 0.6 or ar < 0.0006 * fw * fh or not (lo_x <= cxm <= hi_x):
+            continue
+        dark = float((L[..., 0][mc == i] < 45).mean())
+        s = ar * (0.4 + dark) / (1 + abs(cxm - want_x) / (fw * 0.1)) / (1 + abs(cym - want_y) / (fw * 0.12))
+        if s > score:
+            best, score = i, s
+    mouth, mouth_mask = None, np.zeros((H, W), bool)
+    if best is not None:
+        mouth_mask = mc == best
+        kk = max(3, int(fw * 0.03))
+        near = cv2.dilate(mouth_mask.astype(np.uint8), np.ones((kk, kk), np.uint8)) > 0
+        for i in range(1, n):
+            if i != best and (near & (mc == i)).any():
+                mouth_mask |= mc == i
+        # a wide-open mouth reaches above the search window: take it whole (but not up into the nose)
+        full = darkred_all.copy()
+        full[:int(eye_y + 0.2 * fw)] = False
+        n2, c2 = cv2.connectedComponents(full.astype(np.uint8), connectivity=8)
+        ids = np.unique(c2[mouth_mask & full])
+        grown = np.isin(c2, ids[ids > 0])
+        if grown.sum() < 3 * max(mouth_mask.sum(), 1):
+            mouth_mask |= grown
+        ys, xs = np.nonzero(mouth_mask)
+        mouth = ((xs.min() + xs.max()) / 2.0, (ys.min() + ys.max()) / 2.0, float(xs.max() - xs.min()), float(ys.max() - ys.min()))
+    return dict(skin=skin, face=face, face_skin=face_skin, box=(fx0, fy0, fx1, fy1), eyes=eyes, eye_mask=eye_mask,
+                mouth=mouth, mouth_mask=mouth_mask)
+
+
+def mouth_part(rgba, margin=0.28):
+    """The mouth of a phoneme drawing (lips, teeth, tongue) with a feathered
+    skin margin. Returns (patch RGBA, centre in patch, mouth width)."""
+    H, W = rgba.shape[:2]
+    L = lab(rgba[..., :3])
+    a = rgba[..., 3] > 128
+    skin = skin_colour(rgba)
+    # the lips' colour differs a little from skin; take everything non-skin in the middle band
+    ns = a & (np.linalg.norm(L - skin, axis=2) > 13)
+    ns = cv2.morphologyEx(ns.astype(np.uint8), cv2.MORPH_OPEN, np.ones((3, 3), np.uint8)) > 0
+    band = np.zeros((H, W), bool)
+    band[int(H * 0.28):int(H * 0.86), int(W * 0.18):int(W * 0.82)] = True
+    n, cc, st, cen = cv2.connectedComponentsWithStats((ns & band).astype(np.uint8), connectivity=8)
+    big = 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))
+    m = cc == big
+    near = cv2.dilate(m.astype(np.uint8), np.ones((31, 31), np.uint8)) > 0
+    for i in range(1, n):
+        if i != big and (near & (cc == i)).any() and st[i, cv2.CC_STAT_AREA] > 30:
+            m |= cc == i
+    ys, xs = np.nonzero(m)
+    x0, x1, y0, y1 = xs.min(), xs.max(), ys.min(), ys.max()
+    mw, mh = x1 - x0, y1 - y0
+    pad = int(max(mw, mh) * margin)
+    X0, X1, Y0, Y1 = max(0, x0 - pad), min(W, x1 + pad), max(0, y0 - pad), min(H, y1 + pad)
+    patch = rgba[Y0:Y1, X0:X1].copy()
+    # soft elliptical mask
+    ph, pw = patch.shape[:2]
+    yy, xx = np.mgrid[:ph, :pw]
+    cx, cy = (x0 + x1) / 2 - X0, (y0 + y1) / 2 - Y0
+    rx, ry = mw / 2 + pad * 0.8, mh / 2 + pad * 0.8
+    d = np.sqrt(((xx - cx) / rx) ** 2 + ((yy - cy) / ry) ** 2)
+    alpha = np.clip((1.0 - d) / 0.35, 0, 1)
+    alpha = np.maximum(alpha, m[Y0:Y1, X0:X1].astype(np.float32))
+    # fade out before the drawing's own edge (the sheet's mouth drawings are cut flat)
+    dist = cv2.distanceTransform(np.pad(a, 1).astype(np.uint8), cv2.DIST_L2, 5)[1:-1, 1:-1]
+    alpha *= np.clip(dist[Y0:Y1, X0:X1] / max(2.0, pad * 0.6), 0, 1)
+    patch[..., 3] = (alpha * (patch[..., 3] / 255.0) * 255).astype(np.uint8)
+    return patch, (cx, cy), float(mw)
+
+
+def without_mouth(rgba, info, grow=0.18):
+    """Paint the drawn mouth out with the skin around it (a flat fill with a
+    soft edge, like the flat-shaded art; inpainting smears the ink)."""
+    if info is None or info['mouth'] is None:
+        return rgba
+    out = rgba.copy()
+    cx, cy, w, h = info['mouth']
+    m = info['mouth_mask'].astype(np.uint8)
+    r = int(max(w, h) * grow) | 1
+    m = cv2.dilate(m, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (r, r))) > 0
+    ell = np.zeros(m.shape, np.uint8)
+    cv2.ellipse(ell, (int(cx), int(cy)), (int(w * 0.62 + r * 0.5), int(h * 0.68 + r * 0.5)), 0, 0, 360, 1, -1)
+    m |= ell > 0
+    # and every non-skin mark round the mouth - line ends, teeth, lips - so no second mouth shows
+    L = lab(rgba[..., :3])
+    fw = info['box'][2] - info['box'][0]
+    big = np.zeros(m.shape, np.uint8)
+    cv2.ellipse(big, (int(cx), int(cy)), (int(max(w * 0.62, fw * 0.21) + r * 0.5), int(max(h * 0.72, fw * 0.075) + r * 0.5)),
+                0, 0, 360, 1, -1)
+    ink = (big > 0) & (np.linalg.norm(L - info['skin'], axis=2) > 14)
+    k = max(3, int(fw * 0.012)) | 1
+    m |= cv2.dilate(ink.astype(np.uint8), np.ones((k, k), np.uint8)) > 0
+    m &= rgba[..., 3] > 0
+    # the skin just outside the mouth: its median colour fills the hole
+    ring = (cv2.dilate(m.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (r * 2 + 1, r * 2 + 1))) > 0) & ~m
+    skin = info['skin']
+    ringskin = ring & (np.linalg.norm(L - skin, axis=2) < 18)
+    col = np.median(rgba[..., :3][ringskin], axis=0) if ringskin.sum() > 20 else \
+        (cv2.cvtColor(np.float32([[skin]]), cv2.COLOR_LAB2BGR)[0, 0] * 255)
+    soft = cv2.GaussianBlur(m.astype(np.float32), (0, 0), max(1.0, r * 0.25))
+    soft = np.maximum(soft, m.astype(np.float32))[..., None]
+    out[..., :3] = (out[..., :3] * (1 - soft) + np.array(col, np.float32) * soft).astype(np.uint8)
+    return out
+
+
+def paste(dst, src, x0, y0):
+    """Alpha-over RGBA src onto RGBA dst at (x0, y0), in place."""
+    h, w = src.shape[:2]
+    H, W = dst.shape[:2]
+    xa, ya, xb, yb = max(x0, 0), max(y0, 0), min(x0 + w, W), min(y0 + h, H)
+    if xa >= xb or ya >= yb:
+        return
+    s = src[ya - y0:yb - y0, xa - x0:xb - x0].astype(np.float32)
+    d = dst[ya:yb, xa:xb].astype(np.float32)
+    al = s[..., 3:4] / 255 * (d[..., 3:4] / 255)          # never paint outside the drawing
+    d[..., :3] = s[..., :3] * al + d[..., :3] * (1 - al)
+    dst[ya:yb, xa:xb] = d.clip(0, 255).astype(np.uint8)
+
+
+def with_mouth(base, info, part, width, dx=0.0, dy=0.0, squash_x=1.0, angle=0.0):
+    """Paste a mouth part so its width is `width` px, centred on the base
+    drawing's mouth (plus an offset)."""
+    patch, (pcx, pcy), pw = part
+    s = width / max(pw, 1e-6)
+    M = cv2.getRotationMatrix2D((pcx, pcy), angle, 1.0)
+    M[0] *= s * squash_x
+    M[1] *= s
+    ph, pwid = patch.shape[:2]
+    Wn, Hn = int(pwid * s * squash_x + 2), int(ph * s + 2)
+    M[0, 2] = M[0, 2] * 1 + 0
+    warped = cv2.warpAffine(patch, M, (Wn, Hn), flags=cv2.INTER_AREA if s < 1 else cv2.INTER_CUBIC,
+                            borderMode=cv2.BORDER_CONSTANT, borderValue=0)
+    cx, cy = info['mouth'][0] + dx, info['mouth'][1] + dy
+    out = base.copy()
+    paste(out, warped, int(round(cx - pcx * s * squash_x)), int(round(cy - pcy * s)))
+    return out
+
+
+def blink(rgba, info, amount=1.0, lash=(40, 30, 30)):
+    """Close the eyes: skin lids over the whites (and pupils), with a lash line."""
+    if info is None or not info['eyes'] or amount <= 0:
+        return rgba
+    out = rgba.copy()
+    skin_bgr = cv2.cvtColor(np.float32([[info['skin']]]), cv2.COLOR_LAB2BGR)[0, 0] * 255
+    for (cx, cy, rx, ry, _) in info['eyes']:
+        rx2, ry2 = rx * 1.15, ry * 1.2
+        lid = np.zeros(out.shape[:2], np.uint8)
+        cut = cy - ry2 + 2 * ry2 * min(amount, 1.0)
+        cv2.ellipse(lid, (int(cx), int(cy)), (int(rx2), int(ry2)), 0, 0, 360, 1, -1)
+        lid[int(cut):] = 0
+        lid = lid.astype(bool) & (out[..., 3] > 0)
+        out[lid, :3] = skin_bgr.astype(np.uint8)
+        if amount >= 0.95:
+            t = max(2, int(ry * 0.18))
+            cv2.ellipse(out, (int(cx), int(cy + ry * 0.1)), (int(rx * 1.05), int(ry * 0.35)), 0, 10, 170,
+                        (*lash, 255), t, cv2.LINE_AA)
+        else:
+            cv2.line(out, (int(cx - rx), int(cut)), (int(cx + rx), int(cut)), (*lash, 255), max(2, int(ry * 0.12)), cv2.LINE_AA)
+    return out
+
+
+def paste_over(dst, src, x0, y0):
+    """Alpha-composite RGBA src over RGBA dst (grows dst's alpha), in place."""
+    h, w = src.shape[:2]
+    H, W = dst.shape[:2]
+    xa, ya, xb, yb = max(x0, 0), max(y0, 0), min(x0 + w, W), min(y0 + h, H)
+    if xa >= xb or ya >= yb:
+        return
+    s = src[ya - y0:yb - y0, xa - x0:xb - x0].astype(np.float32)
+    d = dst[ya:yb, xa:xb].astype(np.float32)
+    sa, da = s[..., 3:4] / 255, d[..., 3:4] / 255
+    oa = sa + da * (1 - sa)
+    rgb = (s[..., :3] * sa + d[..., :3] * da * (1 - sa)) / np.maximum(oa, 1e-6)
+    dst[ya:yb, xa:xb, :3] = rgb.clip(0, 255).astype(np.uint8)
+    dst[ya:yb, xa:xb, 3:4] = (oa * 255).clip(0, 255).astype(np.uint8)

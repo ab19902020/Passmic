@@ -1,0 +1,970 @@
+{
+ "turnaround": {
+  "front": {
+   "file": "characters/mark/turnaround/front.png",
+   "sheet_rect_x4": [
+    106,
+    435,
+    466,
+    1146
+   ],
+   "size": [
+    466,
+    1146
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "three_quarter_left": {
+   "file": "characters/mark/turnaround/three_quarter_left.png",
+   "sheet_rect_x4": [
+    622,
+    400,
+    516,
+    1186
+   ],
+   "size": [
+    516,
+    1186
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": true
+   }
+  },
+  "side_left": {
+   "file": "characters/mark/turnaround/side_left.png",
+   "sheet_rect_x4": [
+    1136,
+    400,
+    470,
+    1185
+   ],
+   "size": [
+    470,
+    1185
+   ],
+   "cut": {
+    "bottom": false,
+    "left": true,
+    "right": true
+   }
+  },
+  "three_quarter_right": {
+   "file": "characters/mark/turnaround/three_quarter_right.png",
+   "sheet_rect_x4": [
+    1604,
+    400,
+    555,
+    1187
+   ],
+   "size": [
+    555,
+    1187
+   ],
+   "cut": {
+    "bottom": false,
+    "left": true,
+    "right": true
+   }
+  },
+  "back": {
+   "file": "characters/mark/turnaround/back.png",
+   "sheet_rect_x4": [
+    2169,
+    437,
+    524,
+    1150
+   ],
+   "size": [
+    524,
+    1150
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  }
+ },
+ "head": {
+  "front": {
+   "file": "characters/mark/head/front.png",
+   "sheet_rect_x4": [
+    2811,
+    517,
+    574,
+    891
+   ],
+   "size": [
+    574,
+    891
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  },
+  "three_quarter": {
+   "file": "characters/mark/head/three_quarter.png",
+   "sheet_rect_x4": [
+    3417,
+    517,
+    559,
+    891
+   ],
+   "size": [
+    559,
+    891
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  },
+  "side": {
+   "file": "characters/mark/head/side.png",
+   "sheet_rect_x4": [
+    3988,
+    545,
+    582,
+    863
+   ],
+   "size": [
+    582,
+    863
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  }
+ },
+ "mouths": {
+  "rest": {
+   "file": "characters/mark/mouths/rest.png",
+   "sheet_rect_x4": [
+    4735,
+    489,
+    386,
+    272
+   ],
+   "size": [
+    386,
+    272
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "a": {
+   "file": "characters/mark/mouths/a.png",
+   "sheet_rect_x4": [
+    5215,
+    490,
+    389,
+    274
+   ],
+   "size": [
+    389,
+    274
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "e": {
+   "file": "characters/mark/mouths/e.png",
+   "sheet_rect_x4": [
+    5688,
+    498,
+    391,
+    266
+   ],
+   "size": [
+    391,
+    266
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "i": {
+   "file": "characters/mark/mouths/i.png",
+   "sheet_rect_x4": [
+    6181,
+    498,
+    371,
+    264
+   ],
+   "size": [
+    371,
+    264
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "o": {
+   "file": "characters/mark/mouths/o.png",
+   "sheet_rect_x4": [
+    4677,
+    919,
+    343,
+    259
+   ],
+   "size": [
+    343,
+    259
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "u": {
+   "file": "characters/mark/mouths/u.png",
+   "sheet_rect_x4": [
+    5052,
+    922,
+    355,
+    257
+   ],
+   "size": [
+    355,
+    257
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "smile": {
+   "file": "characters/mark/mouths/smile.png",
+   "sheet_rect_x4": [
+    5431,
+    923,
+    363,
+    259
+   ],
+   "size": [
+    363,
+    259
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "frown": {
+   "file": "characters/mark/mouths/frown.png",
+   "sheet_rect_x4": [
+    5826,
+    922,
+    375,
+    259
+   ],
+   "size": [
+    375,
+    259
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "wide_shout": {
+   "file": "characters/mark/mouths/wide_shout.png",
+   "sheet_rect_x4": [
+    6237,
+    905,
+    371,
+    283
+   ],
+   "size": [
+    371,
+    283
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  }
+ },
+ "expressions": {
+  "neutral": {
+   "file": "characters/mark/expressions/neutral.png",
+   "sheet_rect_x4": [
+    134,
+    1804,
+    406,
+    586
+   ],
+   "size": [
+    406,
+    586
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  },
+  "angry_rant": {
+   "file": "characters/mark/expressions/angry_rant.png",
+   "sheet_rect_x4": [
+    557,
+    1798,
+    488,
+    592
+   ],
+   "size": [
+    488,
+    592
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  },
+  "shouting": {
+   "file": "characters/mark/expressions/shouting.png",
+   "sheet_rect_x4": [
+    1063,
+    1796,
+    541,
+    596
+   ],
+   "size": [
+    541,
+    596
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  },
+  "smug": {
+   "file": "characters/mark/expressions/smug.png",
+   "sheet_rect_x4": [
+    1660,
+    1804,
+    446,
+    586
+   ],
+   "size": [
+    446,
+    586
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  },
+  "sad": {
+   "file": "characters/mark/expressions/sad.png",
+   "sheet_rect_x4": [
+    2179,
+    1818,
+    471,
+    571
+   ],
+   "size": [
+    471,
+    571
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "shocked": {
+   "file": "characters/mark/expressions/shocked.png",
+   "sheet_rect_x4": [
+    2681,
+    1796,
+    419,
+    596
+   ],
+   "size": [
+    419,
+    596
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  },
+  "confused": {
+   "file": "characters/mark/expressions/confused.png",
+   "sheet_rect_x4": [
+    3138,
+    1800,
+    426,
+    592
+   ],
+   "size": [
+    426,
+    592
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  },
+  "laughing": {
+   "file": "characters/mark/expressions/laughing.png",
+   "sheet_rect_x4": [
+    3595,
+    1804,
+    472,
+    588
+   ],
+   "size": [
+    472,
+    588
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  },
+  "facepalm": {
+   "file": "characters/mark/expressions/facepalm.png",
+   "sheet_rect_x4": [
+    4097,
+    1822,
+    506,
+    570
+   ],
+   "size": [
+    506,
+    570
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  }
+ },
+ "hands": {
+  "relaxed_open": {
+   "file": "characters/mark/hands/relaxed_open.png",
+   "sheet_rect_x4": [
+    4731,
+    1811,
+    313,
+    234
+   ],
+   "size": [
+    313,
+    234
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "pointing": {
+   "file": "characters/mark/hands/pointing.png",
+   "sheet_rect_x4": [
+    5134,
+    1810,
+    321,
+    226
+   ],
+   "size": [
+    321,
+    226
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "open_palm": {
+   "file": "characters/mark/hands/open_palm.png",
+   "sheet_rect_x4": [
+    5535,
+    1800,
+    331,
+    233
+   ],
+   "size": [
+    331,
+    233
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "fist": {
+   "file": "characters/mark/hands/fist.png",
+   "sheet_rect_x4": [
+    5936,
+    1826,
+    260,
+    208
+   ],
+   "size": [
+    260,
+    208
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "thumbs_up": {
+   "file": "characters/mark/hands/thumbs_up.png",
+   "sheet_rect_x4": [
+    6299,
+    1800,
+    255,
+    237
+   ],
+   "size": [
+    255,
+    237
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "phone_hold": {
+   "file": "characters/mark/hands/phone_hold.png",
+   "sheet_rect_x4": [
+    4709,
+    2160,
+    301,
+    248
+   ],
+   "size": [
+    301,
+    248
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "microphone_hold": {
+   "file": "characters/mark/hands/microphone_hold.png",
+   "sheet_rect_x4": [
+    5097,
+    2139,
+    342,
+    269
+   ],
+   "size": [
+    342,
+    269
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "spread_explain": {
+   "file": "characters/mark/hands/spread_explain.png",
+   "sheet_rect_x4": [
+    5545,
+    2143,
+    360,
+    264
+   ],
+   "size": [
+    360,
+    264
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "pinch_emphasise": {
+   "file": "characters/mark/hands/pinch_emphasise.png",
+   "sheet_rect_x4": [
+    5994,
+    2138,
+    260,
+    269
+   ],
+   "size": [
+    260,
+    269
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "ok_sign": {
+   "file": "characters/mark/hands/ok_sign.png",
+   "sheet_rect_x4": [
+    6365,
+    2132,
+    198,
+    279
+   ],
+   "size": [
+    198,
+    279
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  }
+ },
+ "upper": {
+  "arms_down": {
+   "file": "characters/mark/upper/arms_down.png",
+   "sheet_rect_x4": [
+    80,
+    2657,
+    345,
+    545
+   ],
+   "size": [
+    345,
+    545
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "pointing": {
+   "file": "characters/mark/upper/pointing.png",
+   "sheet_rect_x4": [
+    441,
+    2662,
+    353,
+    546
+   ],
+   "size": [
+    353,
+    546
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": true
+   }
+  },
+  "both_hands_out": {
+   "file": "characters/mark/upper/both_hands_out.png",
+   "sheet_rect_x4": [
+    792,
+    2649,
+    591,
+    559
+   ],
+   "size": [
+    591,
+    559
+   ],
+   "cut": {
+    "bottom": true,
+    "left": true,
+    "right": true
+   }
+  },
+  "crossed_arms": {
+   "file": "characters/mark/upper/crossed_arms.png",
+   "sheet_rect_x4": [
+    1386,
+    2665,
+    298,
+    543
+   ],
+   "size": [
+    298,
+    543
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": false
+   }
+  },
+  "shrug": {
+   "file": "characters/mark/upper/shrug.png",
+   "sheet_rect_x4": [
+    1707,
+    2670,
+    469,
+    538
+   ],
+   "size": [
+    469,
+    538
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": true
+   }
+  },
+  "fist_pump": {
+   "file": "characters/mark/upper/fist_pump.png",
+   "sheet_rect_x4": [
+    2174,
+    2666,
+    418,
+    542
+   ],
+   "size": [
+    418,
+    542
+   ],
+   "cut": {
+    "bottom": true,
+    "left": true,
+    "right": false
+   }
+  },
+  "holding_phone": {
+   "file": "characters/mark/upper/holding_phone.png",
+   "sheet_rect_x4": [
+    2624,
+    2685,
+    309,
+    523
+   ],
+   "size": [
+    309,
+    523
+   ],
+   "cut": {
+    "bottom": true,
+    "left": false,
+    "right": true
+   }
+  },
+  "holding_mic": {
+   "file": "characters/mark/upper/holding_mic.png",
+   "sheet_rect_x4": [
+    2931,
+    2666,
+    352,
+    542
+   ],
+   "size": [
+    352,
+    542
+   ],
+   "cut": {
+    "bottom": true,
+    "left": true,
+    "right": true
+   }
+  },
+  "desk_rant": {
+   "file": "characters/mark/upper/desk_rant.png",
+   "sheet_rect_x4": [
+    3283,
+    2676,
+    561,
+    532
+   ],
+   "size": [
+    561,
+    532
+   ],
+   "cut": {
+    "bottom": true,
+    "left": true,
+    "right": false
+   }
+  }
+ },
+ "body": {
+  "stand_neutral": {
+   "file": "characters/mark/body/stand_neutral.png",
+   "sheet_rect_x4": [
+    3900,
+    2620,
+    278,
+    588
+   ],
+   "size": [
+    278,
+    588
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": true
+   }
+  },
+  "lean_forward_ranting": {
+   "file": "characters/mark/body/lean_forward_ranting.png",
+   "sheet_rect_x4": [
+    4197,
+    2689,
+    414,
+    519
+   ],
+   "size": [
+    414,
+    519
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "walk_1": {
+   "file": "characters/mark/body/walk_1.png",
+   "sheet_rect_x4": [
+    4613,
+    2620,
+    305,
+    587
+   ],
+   "size": [
+    305,
+    587
+   ],
+   "cut": {
+    "bottom": false,
+    "left": true,
+    "right": true
+   }
+  },
+  "walk_2": {
+   "file": "characters/mark/body/walk_2.png",
+   "sheet_rect_x4": [
+    4916,
+    2620,
+    329,
+    586
+   ],
+   "size": [
+    329,
+    586
+   ],
+   "cut": {
+    "bottom": false,
+    "left": true,
+    "right": true
+   }
+  },
+  "walk_3": {
+   "file": "characters/mark/body/walk_3.png",
+   "sheet_rect_x4": [
+    5255,
+    2653,
+    279,
+    554
+   ],
+   "size": [
+    279,
+    554
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "walk_3b": {
+   "file": "characters/mark/body/walk_3b.png",
+   "sheet_rect_x4": [
+    5543,
+    2656,
+    283,
+    551
+   ],
+   "size": [
+    283,
+    551
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "walk_4": {
+   "file": "characters/mark/body/walk_4.png",
+   "sheet_rect_x4": [
+    5846,
+    2660,
+    297,
+    547
+   ],
+   "size": [
+    297,
+    547
+   ],
+   "cut": {
+    "bottom": false,
+    "left": false,
+    "right": false
+   }
+  },
+  "run": {
+   "file": "characters/mark/body/run.png",
+   "sheet_rect_x4": [
+    6231,
+    2661,
+    360,
+    545
+   ],
+   "size": [
+    360,
+    545
+   ],
+   "cut": {
+    "bottom": false,
+    "left": true,
+    "right": false
+   }
+  }
+ }
+}

@@ -1,0 +1,317 @@
+{
+ "_doc": "Drawing bands on each 1672x941 character sheet (1x pixel coords, labels excluded): [x0, y0, x1, y1] and the labels of the drawings inside, left to right. The cutter splits each band into that many drawings at the emptiest columns and works on the 4x-upscaled sheet.",
+ "mark": {
+  "sheet": "mark.png",
+  "bands": [
+   {
+    "panel": "turnaround",
+    "box": [
+     18,
+     100,
+     690,
+     398
+    ],
+    "labels": [
+     "front",
+     "three_quarter_left",
+     "side_left",
+     "three_quarter_right",
+     "back"
+    ]
+   },
+   {
+    "panel": "head",
+    "box": [
+     700,
+     125,
+     1152,
+     352
+    ],
+    "labels": [
+     "front",
+     "three_quarter",
+     "side"
+    ]
+   },
+   {
+    "panel": "mouths",
+    "box": [
+     1160,
+     115,
+     1662,
+     192
+    ],
+    "labels": [
+     "rest",
+     "a",
+     "e",
+     "i"
+    ]
+   },
+   {
+    "panel": "mouths",
+    "box": [
+     1160,
+     220,
+     1662,
+     298
+    ],
+    "labels": [
+     "o",
+     "u",
+     "smile",
+     "frown",
+     "wide_shout"
+    ]
+   },
+   {
+    "panel": "expressions",
+    "box": [
+     18,
+     449,
+     1152,
+     598
+    ],
+    "labels": [
+     "neutral",
+     "angry_rant",
+     "shouting",
+     "smug",
+     "sad",
+     "shocked",
+     "confused",
+     "laughing",
+     "facepalm"
+    ]
+   },
+   {
+    "panel": "hands",
+    "box": [
+     1165,
+     450,
+     1660,
+     512
+    ],
+    "labels": [
+     "relaxed_open",
+     "pointing",
+     "open_palm",
+     "fist",
+     "thumbs_up"
+    ]
+   },
+   {
+    "panel": "hands",
+    "box": [
+     1160,
+     532,
+     1662,
+     603
+    ],
+    "labels": [
+     "phone_hold",
+     "microphone_hold",
+     "spread_explain",
+     "pinch_emphasise",
+     "ok_sign"
+    ]
+   },
+   {
+    "panel": "upper",
+    "box": [
+     20,
+     660,
+     961,
+     802
+    ],
+    "labels": [
+     "arms_down",
+     "pointing",
+     "both_hands_out",
+     "crossed_arms",
+     "shrug",
+     "fist_pump",
+     "holding_phone",
+     "holding_mic",
+     "desk_rant"
+    ]
+   },
+   {
+    "panel": "body",
+    "box": [
+     975,
+     655,
+     1660,
+     804
+    ],
+    "labels": [
+     "stand_neutral",
+     "lean_forward_ranting",
+     "walk_1",
+     "walk_2",
+     "walk_3",
+     "walk_3b",
+     "walk_4",
+     "run"
+    ]
+   }
+  ]
+ },
+ "gary": {
+  "sheet": "gary.png",
+  "bands": [
+   {
+    "panel": "turnaround",
+    "box": [
+     18,
+     116,
+     680,
+     378
+    ],
+    "labels": [
+     "front",
+     "three_quarter_left",
+     "side_left",
+     "three_quarter_right",
+     "back"
+    ]
+   },
+   {
+    "panel": "head",
+    "box": [
+     686,
+     118,
+     1136,
+     352
+    ],
+    "labels": [
+     "front",
+     "three_quarter",
+     "side"
+    ]
+   },
+   {
+    "panel": "mouths",
+    "box": [
+     1148,
+     116,
+     1662,
+     192
+    ],
+    "labels": [
+     "rest",
+     "a",
+     "e",
+     "i"
+    ]
+   },
+   {
+    "panel": "mouths",
+    "box": [
+     1148,
+     222,
+     1662,
+     297
+    ],
+    "labels": [
+     "o",
+     "u",
+     "smile",
+     "frown",
+     "wide_shout"
+    ]
+   },
+   {
+    "panel": "expressions",
+    "box": [
+     18,
+     428,
+     1136,
+     586
+    ],
+    "labels": [
+     "neutral",
+     "angry_rant",
+     "shouting",
+     "smug",
+     "sad",
+     "shocked",
+     "confused",
+     "laughing",
+     "facepalm"
+    ]
+   },
+   {
+    "panel": "hands",
+    "box": [
+     1150,
+     432,
+     1660,
+     493
+    ],
+    "labels": [
+     "relaxed_open",
+     "pointing",
+     "open_palm",
+     "fist",
+     "thumbs_up"
+    ]
+   },
+   {
+    "panel": "hands",
+    "box": [
+     1148,
+     518,
+     1662,
+     589
+    ],
+    "labels": [
+     "phone_hold",
+     "microphone_hold",
+     "spread_explain",
+     "pinch_emphasise",
+     "ok_sign"
+    ]
+   },
+   {
+    "panel": "upper",
+    "box": [
+     20,
+     640,
+     972,
+     776
+    ],
+    "labels": [
+     "arms_down",
+     "pointing",
+     "both_hands_out",
+     "crossed_arms",
+     "shrug",
+     "fist_pump",
+     "holding_phone",
+     "holding_mic",
+     "desk_rant"
+    ]
+   },
+   {
+    "panel": "body",
+    "box": [
+     981,
+     640,
+     1660,
+     778
+    ],
+    "labels": [
+     "stand_neutral",
+     "lean_forward_ranting",
+     "walk_1",
+     "walk_2",
+     "walk_3",
+     "walk_3b",
+     "walk_4",
+     "run"
+    ]
+   }
+  ]
+ }
+}

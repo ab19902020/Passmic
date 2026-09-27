@@ -1,0 +1,1826 @@
+{
+ "name": "Eric Cartman",
+ "sheet": "sheets/cartman.png",
+ "sprites": {
+  "turnaround": {
+   "front": {
+    "label": "FRONT",
+    "file": "characters_hd/cartman/turnaround/front.png",
+    "sheet_rect": [
+     12,
+     77,
+     200,
+     177
+    ],
+    "size": [
+     1200,
+     1062
+    ],
+    "feet": [
+     606,
+     1032
+    ],
+    "center": [
+     606,
+     594
+    ],
+    "scale": 6
+   },
+   "three_quarter_front": {
+    "label": "3/4 FRONT",
+    "file": "characters_hd/cartman/turnaround/three_quarter_front.png",
+    "sheet_rect": [
+     211,
+     76,
+     183,
+     178
+    ],
+    "size": [
+     1098,
+     1068
+    ],
+    "feet": [
+     546,
+     1044
+    ],
+    "center": [
+     546,
+     588
+    ],
+    "scale": 6
+   },
+   "side_left": {
+    "label": "SIDE (LEFT)",
+    "file": "characters_hd/cartman/turnaround/side_left.png",
+    "sheet_rect": [
+     399,
+     78,
+     147,
+     176
+    ],
+    "size": [
+     882,
+     1056
+    ],
+    "feet": [
+     456,
+     1032
+    ],
+    "center": [
+     438,
+     558
+    ],
+    "scale": 6
+   },
+   "three_quarter_back": {
+    "label": "3/4 BACK",
+    "file": "characters_hd/cartman/turnaround/three_quarter_back.png",
+    "sheet_rect": [
+     542,
+     77,
+     184,
+     177
+    ],
+    "size": [
+     1104,
+     1062
+    ],
+    "feet": [
+     552,
+     1038
+    ],
+    "center": [
+     558,
+     588
+    ],
+    "scale": 6
+   },
+   "back": {
+    "label": "BACK",
+    "file": "characters_hd/cartman/turnaround/back.png",
+    "sheet_rect": [
+     723,
+     76,
+     189,
+     178
+    ],
+    "size": [
+     1134,
+     1068
+    ],
+    "feet": [
+     564,
+     1038
+    ],
+    "center": [
+     564,
+     588
+    ],
+    "scale": 6
+   },
+   "three_quarter_right": {
+    "label": "3/4 RIGHT",
+    "file": "characters_hd/cartman/turnaround/three_quarter_right.png",
+    "sheet_rect": [
+     918,
+     76,
+     184,
+     178
+    ],
+    "size": [
+     1104,
+     1068
+    ],
+    "feet": [
+     558,
+     1044
+    ],
+    "center": [
+     552,
+     588
+    ],
+    "scale": 6
+   },
+   "side_right": {
+    "label": "SIDE (RIGHT)",
+    "file": "characters_hd/cartman/turnaround/side_right.png",
+    "sheet_rect": [
+     1118,
+     77,
+     159,
+     177
+    ],
+    "size": [
+     954,
+     1062
+    ],
+    "feet": [
+     480,
+     1038
+    ],
+    "center": [
+     486,
+     558
+    ],
+    "scale": 6
+   }
+  },
+  "head": {
+   "front": {
+    "label": "front",
+    "file": "characters_hd/cartman/head/front.png",
+    "sheet_rect": [
+     1315,
+     80,
+     256,
+     173
+    ],
+    "size": [
+     1024,
+     692
+    ],
+    "feet": [
+     508,
+     676
+    ],
+    "center": [
+     512,
+     396
+    ],
+    "scale": 4
+   },
+   "side": {
+    "label": "side",
+    "file": "characters_hd/cartman/head/side.png",
+    "sheet_rect": [
+     1573,
+     83,
+     189,
+     170
+    ],
+    "size": [
+     756,
+     680
+    ],
+    "feet": [
+     340,
+     664
+    ],
+    "center": [
+     376,
+     368
+    ],
+    "scale": 4
+   }
+  },
+  "mouths": {
+   "a_ah": {
+    "label": "A (AH)",
+    "file": "characters_hd/cartman/mouths/a_ah.png",
+    "sheet_rect": [
+     4,
+     305,
+     173,
+     111
+    ],
+    "size": [
+     1038,
+     666
+    ],
+    "feet": [
+     516,
+     642
+    ],
+    "center": [
+     510,
+     378
+    ],
+    "scale": 6
+   },
+   "e_eh": {
+    "label": "E (EH)",
+    "file": "characters_hd/cartman/mouths/e_eh.png",
+    "sheet_rect": [
+     175,
+     305,
+     173,
+     111
+    ],
+    "size": [
+     1038,
+     666
+    ],
+    "feet": [
+     516,
+     642
+    ],
+    "center": [
+     522,
+     384
+    ],
+    "scale": 6
+   },
+   "i_ee": {
+    "label": "I (EE)",
+    "file": "characters_hd/cartman/mouths/i_ee.png",
+    "sheet_rect": [
+     348,
+     306,
+     181,
+     110
+    ],
+    "size": [
+     1086,
+     660
+    ],
+    "feet": [
+     540,
+     636
+    ],
+    "center": [
+     534,
+     378
+    ],
+    "scale": 6
+   },
+   "o_oh": {
+    "label": "O (OH)",
+    "file": "characters_hd/cartman/mouths/o_oh.png",
+    "sheet_rect": [
+     532,
+     305,
+     178,
+     111
+    ],
+    "size": [
+     1068,
+     666
+    ],
+    "feet": [
+     528,
+     642
+    ],
+    "center": [
+     528,
+     384
+    ],
+    "scale": 6
+   },
+   "u_oo": {
+    "label": "U (OO)",
+    "file": "characters_hd/cartman/mouths/u_oo.png",
+    "sheet_rect": [
+     711,
+     305,
+     176,
+     111
+    ],
+    "size": [
+     1056,
+     666
+    ],
+    "feet": [
+     528,
+     642
+    ],
+    "center": [
+     516,
+     384
+    ],
+    "scale": 6
+   },
+   "m_closed": {
+    "label": "M (CLOSED)",
+    "file": "characters_hd/cartman/mouths/m_closed.png",
+    "sheet_rect": [
+     885,
+     305,
+     177,
+     111
+    ],
+    "size": [
+     1062,
+     666
+    ],
+    "feet": [
+     528,
+     642
+    ],
+    "center": [
+     528,
+     384
+    ],
+    "scale": 6
+   },
+   "l_tongue": {
+    "label": "L (TONGUE)",
+    "file": "characters_hd/cartman/mouths/l_tongue.png",
+    "sheet_rect": [
+     1063,
+     305,
+     179,
+     111
+    ],
+    "size": [
+     1074,
+     666
+    ],
+    "feet": [
+     540,
+     642
+    ],
+    "center": [
+     522,
+     384
+    ],
+    "scale": 6
+   },
+   "f_v": {
+    "label": "F / V",
+    "file": "characters_hd/cartman/mouths/f_v.png",
+    "sheet_rect": [
+     1243,
+     305,
+     171,
+     111
+    ],
+    "size": [
+     1026,
+     666
+    ],
+    "feet": [
+     510,
+     642
+    ],
+    "center": [
+     510,
+     384
+    ],
+    "scale": 6
+   },
+   "th_teeth": {
+    "label": "TH (TEETH)",
+    "file": "characters_hd/cartman/mouths/th_teeth.png",
+    "sheet_rect": [
+     1413,
+     305,
+     178,
+     111
+    ],
+    "size": [
+     1068,
+     666
+    ],
+    "feet": [
+     528,
+     642
+    ],
+    "center": [
+     522,
+     378
+    ],
+    "scale": 6
+   },
+   "w_rounded": {
+    "label": "W (ROUNDED)",
+    "file": "characters_hd/cartman/mouths/w_rounded.png",
+    "sheet_rect": [
+     1591,
+     305,
+     182,
+     111
+    ],
+    "size": [
+     1092,
+     666
+    ],
+    "feet": [
+     540,
+     642
+    ],
+    "center": [
+     528,
+     384
+    ],
+    "scale": 6
+   }
+  },
+  "expressions": {
+   "neutral": {
+    "label": "NEUTRAL",
+    "file": "characters_hd/cartman/expressions/neutral.png",
+    "sheet_rect": [
+     4,
+     464,
+     148,
+     105
+    ],
+    "size": [
+     1036,
+     735
+    ],
+    "feet": [
+     511,
+     707
+    ],
+    "center": [
+     518,
+     420
+    ],
+    "scale": 7
+   },
+   "happy": {
+    "label": "HAPPY",
+    "file": "characters_hd/cartman/expressions/happy.png",
+    "sheet_rect": [
+     148,
+     464,
+     149,
+     105
+    ],
+    "size": [
+     1043,
+     735
+    ],
+    "feet": [
+     518,
+     707
+    ],
+    "center": [
+     511,
+     413
+    ],
+    "scale": 7
+   },
+   "angry": {
+    "label": "ANGRY",
+    "file": "characters_hd/cartman/expressions/angry.png",
+    "sheet_rect": [
+     293,
+     464,
+     148,
+     105
+    ],
+    "size": [
+     1036,
+     735
+    ],
+    "feet": [
+     518,
+     707
+    ],
+    "center": [
+     504,
+     413
+    ],
+    "scale": 7
+   },
+   "sad": {
+    "label": "SAD",
+    "file": "characters_hd/cartman/expressions/sad.png",
+    "sheet_rect": [
+     437,
+     464,
+     146,
+     105
+    ],
+    "size": [
+     1022,
+     735
+    ],
+    "feet": [
+     504,
+     707
+    ],
+    "center": [
+     504,
+     420
+    ],
+    "scale": 7
+   },
+   "surprised": {
+    "label": "SURPRISED",
+    "file": "characters_hd/cartman/expressions/surprised.png",
+    "sheet_rect": [
+     580,
+     464,
+     152,
+     105
+    ],
+    "size": [
+     1064,
+     735
+    ],
+    "feet": [
+     525,
+     707
+    ],
+    "center": [
+     518,
+     413
+    ],
+    "scale": 7
+   },
+   "confused": {
+    "label": "CONFUSED",
+    "file": "characters_hd/cartman/expressions/confused.png",
+    "sheet_rect": [
+     729,
+     464,
+     158,
+     105
+    ],
+    "size": [
+     1106,
+     735
+    ],
+    "feet": [
+     546,
+     707
+    ],
+    "center": [
+     546,
+     413
+    ],
+    "scale": 7
+   },
+   "smug": {
+    "label": "SMUG",
+    "file": "characters_hd/cartman/expressions/smug.png",
+    "sheet_rect": [
+     884,
+     464,
+     144,
+     105
+    ],
+    "size": [
+     1008,
+     735
+    ],
+    "feet": [
+     504,
+     707
+    ],
+    "center": [
+     490,
+     420
+    ],
+    "scale": 7
+   },
+   "serious": {
+    "label": "SERIOUS",
+    "file": "characters_hd/cartman/expressions/serious.png",
+    "sheet_rect": [
+     1024,
+     464,
+     150,
+     105
+    ],
+    "size": [
+     1050,
+     735
+    ],
+    "feet": [
+     525,
+     707
+    ],
+    "center": [
+     518,
+     413
+    ],
+    "scale": 7
+   },
+   "laughing": {
+    "label": "LAUGHING",
+    "file": "characters_hd/cartman/expressions/laughing.png",
+    "sheet_rect": [
+     1170,
+     464,
+     150,
+     105
+    ],
+    "size": [
+     1050,
+     735
+    ],
+    "feet": [
+     518,
+     707
+    ],
+    "center": [
+     525,
+     413
+    ],
+    "scale": 7
+   },
+   "disgusted": {
+    "label": "DISGUSTED",
+    "file": "characters_hd/cartman/expressions/disgusted.png",
+    "sheet_rect": [
+     1316,
+     464,
+     151,
+     105
+    ],
+    "size": [
+     1057,
+     735
+    ],
+    "feet": [
+     525,
+     707
+    ],
+    "center": [
+     511,
+     413
+    ],
+    "scale": 7
+   },
+   "shouting": {
+    "label": "SHOUTING",
+    "file": "characters_hd/cartman/expressions/shouting.png",
+    "sheet_rect": [
+     1464,
+     464,
+     158,
+     105
+    ],
+    "size": [
+     1106,
+     735
+    ],
+    "feet": [
+     546,
+     707
+    ],
+    "center": [
+     553,
+     420
+    ],
+    "scale": 7
+   },
+   "determined": {
+    "label": "DETERMINED",
+    "file": "characters_hd/cartman/expressions/determined.png",
+    "sheet_rect": [
+     1618,
+     464,
+     154,
+     105
+    ],
+    "size": [
+     1078,
+     735
+    ],
+    "feet": [
+     539,
+     707
+    ],
+    "center": [
+     525,
+     413
+    ],
+    "scale": 7
+   }
+  },
+  "gestures": {
+   "arms_down": {
+    "label": "ARMS DOWN",
+    "file": "characters_hd/cartman/gestures/arms_down.png",
+    "sheet_rect": [
+     17,
+     619,
+     110,
+     82
+    ],
+    "size": [
+     1210,
+     902
+    ],
+    "feet": [
+     605,
+     858
+    ],
+    "center": [
+     605,
+     517
+    ],
+    "scale": 11
+   },
+   "pointing_left": {
+    "label": "POINTING (LEFT)",
+    "file": "characters_hd/cartman/gestures/pointing_left.png",
+    "sheet_rect": [
+     155,
+     619,
+     120,
+     82
+    ],
+    "size": [
+     1320,
+     902
+    ],
+    "feet": [
+     462,
+     858
+    ],
+    "center": [
+     605,
+     484
+    ],
+    "scale": 11
+   },
+   "pointing_right": {
+    "label": "POINTING (RIGHT)",
+    "file": "characters_hd/cartman/gestures/pointing_right.png",
+    "sheet_rect": [
+     306,
+     619,
+     129,
+     82
+    ],
+    "size": [
+     1419,
+     902
+    ],
+    "feet": [
+     814,
+     858
+    ],
+    "center": [
+     737,
+     506
+    ],
+    "scale": 11
+   },
+   "both_hands_out": {
+    "label": "BOTH HANDS OUT",
+    "file": "characters_hd/cartman/gestures/both_hands_out.png",
+    "sheet_rect": [
+     449,
+     619,
+     150,
+     82
+    ],
+    "size": [
+     1650,
+     902
+    ],
+    "feet": [
+     836,
+     858
+    ],
+    "center": [
+     836,
+     517
+    ],
+    "scale": 11
+   },
+   "one_hand_up": {
+    "label": "ONE HAND UP",
+    "file": "characters_hd/cartman/gestures/one_hand_up.png",
+    "sheet_rect": [
+     615,
+     619,
+     118,
+     82
+    ],
+    "size": [
+     1298,
+     902
+    ],
+    "feet": [
+     726,
+     858
+    ],
+    "center": [
+     671,
+     495
+    ],
+    "scale": 11
+   },
+   "both_hands_up": {
+    "label": "BOTH HANDS UP",
+    "file": "characters_hd/cartman/gestures/both_hands_up.png",
+    "sheet_rect": [
+     757,
+     619,
+     133,
+     82
+    ],
+    "size": [
+     1463,
+     902
+    ],
+    "feet": [
+     704,
+     858
+    ],
+    "center": [
+     715,
+     462
+    ],
+    "scale": 11
+   },
+   "shrug": {
+    "label": "SHRUG",
+    "file": "characters_hd/cartman/gestures/shrug.png",
+    "sheet_rect": [
+     906,
+     619,
+     127,
+     82
+    ],
+    "size": [
+     1397,
+     902
+    ],
+    "feet": [
+     682,
+     858
+    ],
+    "center": [
+     693,
+     506
+    ],
+    "scale": 11
+   },
+   "fist_angry": {
+    "label": "FIST (ANGRY)",
+    "file": "characters_hd/cartman/gestures/fist_angry.png",
+    "sheet_rect": [
+     1049,
+     619,
+     112,
+     82
+    ],
+    "size": [
+     1232,
+     902
+    ],
+    "feet": [
+     594,
+     858
+    ],
+    "center": [
+     616,
+     506
+    ],
+    "scale": 11
+   },
+   "open_palm": {
+    "label": "OPEN PALM",
+    "file": "characters_hd/cartman/gestures/open_palm.png",
+    "sheet_rect": [
+     1189,
+     619,
+     129,
+     82
+    ],
+    "size": [
+     1419,
+     902
+    ],
+    "feet": [
+     704,
+     858
+    ],
+    "center": [
+     726,
+     506
+    ],
+    "scale": 11
+   },
+   "talking_1": {
+    "label": "TALKING 1",
+    "file": "characters_hd/cartman/gestures/talking_1.png",
+    "sheet_rect": [
+     1337,
+     619,
+     118,
+     82
+    ],
+    "size": [
+     1298,
+     902
+    ],
+    "feet": [
+     737,
+     858
+    ],
+    "center": [
+     682,
+     506
+    ],
+    "scale": 11
+   },
+   "talking_2": {
+    "label": "TALKING 2",
+    "file": "characters_hd/cartman/gestures/talking_2.png",
+    "sheet_rect": [
+     1474,
+     619,
+     133,
+     82
+    ],
+    "size": [
+     1463,
+     902
+    ],
+    "feet": [
+     748,
+     858
+    ],
+    "center": [
+     737,
+     517
+    ],
+    "scale": 11
+   },
+   "talking_3": {
+    "label": "TALKING 3",
+    "file": "characters_hd/cartman/gestures/talking_3.png",
+    "sheet_rect": [
+     1621,
+     619,
+     136,
+     82
+    ],
+    "size": [
+     1496,
+     902
+    ],
+    "feet": [
+     748,
+     858
+    ],
+    "center": [
+     748,
+     506
+    ],
+    "scale": 11
+   }
+  },
+  "poses": {
+   "standing": {
+    "label": "STANDING",
+    "file": "characters_hd/cartman/poses/standing.png",
+    "sheet_rect": [
+     12,
+     751,
+     100,
+     99
+    ],
+    "size": [
+     1100,
+     1089
+    ],
+    "feet": [
+     550,
+     1045
+    ],
+    "center": [
+     539,
+     594
+    ],
+    "scale": 11
+   },
+   "walk_cycle_1": {
+    "label": "WALK CYCLE 1",
+    "file": "characters_hd/cartman/poses/walk_cycle_1.png",
+    "sheet_rect": [
+     127,
+     751,
+     88,
+     99
+    ],
+    "size": [
+     968,
+     1089
+    ],
+    "feet": [
+     462,
+     1045
+    ],
+    "center": [
+     473,
+     550
+    ],
+    "scale": 11
+   },
+   "walk_cycle_2": {
+    "label": "WALK CYCLE 2",
+    "file": "characters_hd/cartman/poses/walk_cycle_2.png",
+    "sheet_rect": [
+     243,
+     751,
+     79,
+     99
+    ],
+    "size": [
+     869,
+     1089
+    ],
+    "feet": [
+     418,
+     1045
+    ],
+    "center": [
+     418,
+     561
+    ],
+    "scale": 11
+   },
+   "walk_cycle_3": {
+    "label": "WALK CYCLE 3",
+    "file": "characters_hd/cartman/poses/walk_cycle_3.png",
+    "sheet_rect": [
+     350,
+     751,
+     81,
+     99
+    ],
+    "size": [
+     891,
+     1089
+    ],
+    "feet": [
+     440,
+     1045
+    ],
+    "center": [
+     440,
+     561
+    ],
+    "scale": 11
+   },
+   "running": {
+    "label": "RUNNING",
+    "file": "characters_hd/cartman/poses/running.png",
+    "sheet_rect": [
+     449,
+     751,
+     108,
+     99
+    ],
+    "size": [
+     1188,
+     1089
+    ],
+    "feet": [
+     495,
+     1045
+    ],
+    "center": [
+     594,
+     561
+    ],
+    "scale": 11
+   },
+   "sitting_front": {
+    "label": "SITTING (FRONT)",
+    "file": "characters_hd/cartman/poses/sitting_front.png",
+    "sheet_rect": [
+     571,
+     751,
+     106,
+     99
+    ],
+    "size": [
+     1166,
+     1089
+    ],
+    "feet": [
+     583,
+     1045
+    ],
+    "center": [
+     583,
+     605
+    ],
+    "scale": 11
+   },
+   "sitting_side": {
+    "label": "SITTING (SIDE)",
+    "file": "characters_hd/cartman/poses/sitting_side.png",
+    "sheet_rect": [
+     696,
+     754,
+     99,
+     96
+    ],
+    "size": [
+     1089,
+     1056
+    ],
+    "feet": [
+     528,
+     1012
+    ],
+    "center": [
+     506,
+     583
+    ],
+    "scale": 11
+   },
+   "lean_forward_talk": {
+    "label": "LEAN FORWARD (TALK)",
+    "file": "characters_hd/cartman/poses/lean_forward_talk.png",
+    "sheet_rect": [
+     811,
+     751,
+     129,
+     99
+    ],
+    "size": [
+     1419,
+     1089
+    ],
+    "feet": [
+     682,
+     1045
+    ],
+    "center": [
+     682,
+     616
+    ],
+    "scale": 11
+   },
+   "lean_back": {
+    "label": "LEAN BACK",
+    "file": "characters_hd/cartman/poses/lean_back.png",
+    "sheet_rect": [
+     953,
+     751,
+     99,
+     99
+    ],
+    "size": [
+     1089,
+     1089
+    ],
+    "feet": [
+     528,
+     1045
+    ],
+    "center": [
+     550,
+     561
+    ],
+    "scale": 11
+   },
+   "crossed_arms": {
+    "label": "CROSSED ARMS",
+    "file": "characters_hd/cartman/poses/crossed_arms.png",
+    "sheet_rect": [
+     1083,
+     751,
+     91,
+     99
+    ],
+    "size": [
+     1001,
+     1089
+    ],
+    "feet": [
+     495,
+     1034
+    ],
+    "center": [
+     506,
+     572
+    ],
+    "scale": 11
+   },
+   "hands_on_hips": {
+    "label": "HANDS ON HIPS",
+    "file": "characters_hd/cartman/poses/hands_on_hips.png",
+    "sheet_rect": [
+     1196,
+     751,
+     99,
+     99
+    ],
+    "size": [
+     1089,
+     1089
+    ],
+    "feet": [
+     528,
+     1034
+    ],
+    "center": [
+     528,
+     572
+    ],
+    "scale": 11
+   }
+  },
+  "parts": {
+   "hat": {
+    "label": "hat",
+    "file": "characters_hd/cartman/parts/hat.png",
+    "sheet_rect": [
+     1315,
+     753,
+     110,
+     60
+    ],
+    "size": [
+     440,
+     240
+    ],
+    "feet": [
+     224,
+     224
+    ],
+    "center": [
+     224,
+     128
+    ],
+    "scale": 4
+   },
+   "hat_top": {
+    "label": "hat top",
+    "file": "characters_hd/cartman/parts/hat_top.png",
+    "sheet_rect": [
+     1423,
+     755,
+     47,
+     34
+    ],
+    "size": [
+     188,
+     136
+    ],
+    "feet": [
+     88,
+     120
+    ],
+    "center": [
+     92,
+     72
+    ],
+    "scale": 4
+   },
+   "eyes": {
+    "label": "eyes",
+    "file": "characters_hd/cartman/parts/eyes.png",
+    "sheet_rect": [
+     1474,
+     752,
+     82,
+     46
+    ],
+    "size": [
+     328,
+     184
+    ],
+    "feet": [
+     160,
+     168
+    ],
+    "center": [
+     164,
+     92
+    ],
+    "scale": 4
+   },
+   "brows_normal": {
+    "label": "brows normal",
+    "file": "characters_hd/cartman/parts/brows_normal.png",
+    "sheet_rect": [
+     1577,
+     751,
+     53,
+     22
+    ],
+    "size": [
+     212,
+     88
+    ],
+    "feet": [
+     104,
+     72
+    ],
+    "center": [
+     104,
+     40
+    ],
+    "scale": 4
+   },
+   "brows_angry": {
+    "label": "brows angry",
+    "file": "characters_hd/cartman/parts/brows_angry.png",
+    "sheet_rect": [
+     1639,
+     751,
+     64,
+     22
+    ],
+    "size": [
+     256,
+     88
+    ],
+    "feet": [
+     128,
+     68
+    ],
+    "center": [
+     124,
+     40
+    ],
+    "scale": 4
+   },
+   "brows_sad": {
+    "label": "brows sad",
+    "file": "characters_hd/cartman/parts/brows_sad.png",
+    "sheet_rect": [
+     1714,
+     752,
+     42,
+     21
+    ],
+    "size": [
+     168,
+     84
+    ],
+    "feet": [
+     80,
+     64
+    ],
+    "center": [
+     80,
+     40
+    ],
+    "scale": 4
+   },
+   "hand_1": {
+    "label": "hand 1",
+    "file": "characters_hd/cartman/parts/hand_1.png",
+    "sheet_rect": [
+     1322,
+     820,
+     35,
+     40
+    ],
+    "size": [
+     140,
+     160
+    ],
+    "feet": [
+     68,
+     144
+    ],
+    "center": [
+     68,
+     80
+    ],
+    "scale": 4
+   },
+   "hand_2": {
+    "label": "hand 2",
+    "file": "characters_hd/cartman/parts/hand_2.png",
+    "sheet_rect": [
+     1362,
+     820,
+     37,
+     40
+    ],
+    "size": [
+     148,
+     160
+    ],
+    "feet": [
+     64,
+     144
+    ],
+    "center": [
+     72,
+     80
+    ],
+    "scale": 4
+   },
+   "hand_3": {
+    "label": "hand 3",
+    "file": "characters_hd/cartman/parts/hand_3.png",
+    "sheet_rect": [
+     1405,
+     820,
+     37,
+     41
+    ],
+    "size": [
+     148,
+     164
+    ],
+    "feet": [
+     64,
+     148
+    ],
+    "center": [
+     72,
+     80
+    ],
+    "scale": 4
+   },
+   "hand_4": {
+    "label": "hand 4",
+    "file": "characters_hd/cartman/parts/hand_4.png",
+    "sheet_rect": [
+     1443,
+     821,
+     36,
+     36
+    ],
+    "size": [
+     144,
+     144
+    ],
+    "feet": [
+     76,
+     128
+    ],
+    "center": [
+     68,
+     68
+    ],
+    "scale": 4
+   },
+   "hand_5": {
+    "label": "hand 5",
+    "file": "characters_hd/cartman/parts/hand_5.png",
+    "sheet_rect": [
+     1481,
+     816,
+     38,
+     44
+    ],
+    "size": [
+     152,
+     176
+    ],
+    "feet": [
+     72,
+     160
+    ],
+    "center": [
+     72,
+     88
+    ],
+    "scale": 4
+   },
+   "hand_6": {
+    "label": "hand 6",
+    "file": "characters_hd/cartman/parts/hand_6.png",
+    "sheet_rect": [
+     1525,
+     816,
+     37,
+     44
+    ],
+    "size": [
+     148,
+     176
+    ],
+    "feet": [
+     80,
+     156
+    ],
+    "center": [
+     76,
+     88
+    ],
+    "scale": 4
+   },
+   "mouth_1": {
+    "label": "mouth 1",
+    "file": "characters_hd/cartman/parts/mouth_1.png",
+    "sheet_rect": [
+     1589,
+     809,
+     39,
+     21
+    ],
+    "size": [
+     156,
+     84
+    ],
+    "feet": [
+     76,
+     64
+    ],
+    "center": [
+     76,
+     36
+    ],
+    "scale": 4
+   },
+   "mouth_2": {
+    "label": "mouth 2",
+    "file": "characters_hd/cartman/parts/mouth_2.png",
+    "sheet_rect": [
+     1637,
+     808,
+     38,
+     20
+    ],
+    "size": [
+     152,
+     80
+    ],
+    "feet": [
+     72,
+     64
+    ],
+    "center": [
+     72,
+     40
+    ],
+    "scale": 4
+   },
+   "mouth_3": {
+    "label": "mouth 3",
+    "file": "characters_hd/cartman/parts/mouth_3.png",
+    "sheet_rect": [
+     1676,
+     807,
+     35,
+     24
+    ],
+    "size": [
+     140,
+     96
+    ],
+    "feet": [
+     64,
+     76
+    ],
+    "center": [
+     68,
+     44
+    ],
+    "scale": 4
+   },
+   "mouth_4": {
+    "label": "mouth 4",
+    "file": "characters_hd/cartman/parts/mouth_4.png",
+    "sheet_rect": [
+     1718,
+     806,
+     37,
+     23
+    ],
+    "size": [
+     148,
+     92
+    ],
+    "feet": [
+     72,
+     76
+    ],
+    "center": [
+     72,
+     44
+    ],
+    "scale": 4
+   },
+   "mouth_5": {
+    "label": "mouth 5",
+    "file": "characters_hd/cartman/parts/mouth_5.png",
+    "sheet_rect": [
+     1590,
+     838,
+     37,
+     21
+    ],
+    "size": [
+     148,
+     84
+    ],
+    "feet": [
+     72,
+     68
+    ],
+    "center": [
+     72,
+     36
+    ],
+    "scale": 4
+   },
+   "mouth_6": {
+    "label": "mouth 6",
+    "file": "characters_hd/cartman/parts/mouth_6.png",
+    "sheet_rect": [
+     1636,
+     837,
+     42,
+     21
+    ],
+    "size": [
+     168,
+     84
+    ],
+    "feet": [
+     80,
+     68
+    ],
+    "center": [
+     84,
+     40
+    ],
+    "scale": 4
+   },
+   "mouth_7": {
+    "label": "mouth 7",
+    "file": "characters_hd/cartman/parts/mouth_7.png",
+    "sheet_rect": [
+     1721,
+     833,
+     32,
+     25
+    ],
+    "size": [
+     128,
+     100
+    ],
+    "feet": [
+     60,
+     84
+    ],
+    "center": [
+     60,
+     40
+    ],
+    "scale": 4
+   }
+  }
+ },
+ "face_px": 800,
+ "scales": {
+  "turnaround": 6,
+  "head": 4,
+  "mouths": 6,
+  "expressions": 7,
+  "gestures": 11,
+  "poses": 11,
+  "parts": 4
+ },
+ "palette": [
+  [
+   190,
+   16,
+   47
+  ],
+  [
+   247,
+   202,
+   154
+  ],
+  [
+   13,
+   157,
+   188
+  ],
+  [
+   250,
+   211,
+   20
+  ],
+  [
+   239,
+   241,
+   243
+  ],
+  [
+   17,
+   17,
+   18
+  ],
+  [
+   74,
+   47,
+   40
+  ],
+  [
+   250,
+   220,
+   17
+  ],
+  [
+   243,
+   192,
+   41
+  ],
+  [
+   180,
+   33,
+   47
+  ],
+  [
+   239,
+   192,
+   76
+  ],
+  [
+   241,
+   198,
+   111
+  ],
+  [
+   50,
+   40,
+   36
+  ],
+  [
+   223,
+   206,
+   38
+  ],
+  [
+   210,
+   93,
+   88
+  ],
+  [
+   138,
+   27,
+   41
+  ],
+  [
+   191,
+   196,
+   59
+  ],
+  [
+   157,
+   186,
+   81
+  ],
+  [
+   217,
+   114,
+   38
+  ],
+  [
+   94,
+   31,
+   37
+  ],
+  [
+   224,
+   81,
+   122
+  ],
+  [
+   118,
+   183,
+   105
+  ],
+  [
+   177,
+   152,
+   47
+  ]
+ ]
+}

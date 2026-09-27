@@ -1,0 +1,161 @@
+{
+  "_doc": "Cartman in his room. Lines play in order; each line's shots start at 'at' seconds into its clip. shot: wide | medium | close. Wide/medium use full-body drawings ('pose', or 'poses' cycled on each spoken phrase); close uses a bust ('face'). The mouth is lip-synced on every drawing.",
+  "character": "cartman",
+  "background": "backgrounds/cartman_room.png",
+  "fps": 24,
+  "size": [
+    1920,
+    1080
+  ],
+  "stand": [
+    1920,
+    1860
+  ],
+  "height": 800,
+  "lead_in": 1.0,
+  "gap": 0.6,
+  "tail": 2.0,
+  "lines": [
+    {
+      "clip": "audio/clip01.mp3",
+      "shots": [
+        {
+          "shot": "wide",
+          "poses": [
+            "turnaround/front",
+            "poses/hands_on_hips",
+            "poses/standing"
+          ]
+        },
+        {
+          "at": 5.9,
+          "shot": "medium",
+          "poses": [
+            "gestures/talking_1",
+            "gestures/both_hands_out"
+          ]
+        }
+      ]
+    },
+    {
+      "clip": "audio/clip02.mp3",
+      "shots": [
+        {
+          "shot": "close",
+          "face": "expressions/neutral"
+        },
+        {
+          "at": 6.3,
+          "shot": "medium",
+          "poses": [
+            "gestures/talking_3",
+            "gestures/shrug",
+            "gestures/talking_2"
+          ]
+        }
+      ]
+    },
+    {
+      "clip": "audio/clip03.mp3",
+      "shots": [
+        {
+          "shot": "wide",
+          "poses": [
+            "poses/lean_forward_talk",
+            "turnaround/front"
+          ]
+        },
+        {
+          "at": 4.7,
+          "shot": "close",
+          "face": "expressions/serious"
+        }
+      ]
+    },
+    {
+      "clip": "audio/clip04.mp3",
+      "shots": [
+        {
+          "shot": "medium",
+          "poses": [
+            "gestures/pointing_right",
+            "gestures/talking_1",
+            "gestures/fist_angry"
+          ]
+        },
+        {
+          "at": 8.8,
+          "shot": "close",
+          "face": "expressions/angry"
+        }
+      ]
+    },
+    {
+      "clip": "audio/clip05.mp3",
+      "shots": [
+        {
+          "shot": "close",
+          "face": "expressions/shouting"
+        },
+        {
+          "at": 7.9,
+          "shot": "medium",
+          "poses": [
+            "gestures/both_hands_up",
+            "gestures/fist_angry",
+            "gestures/both_hands_out"
+          ]
+        }
+      ]
+    },
+    {
+      "clip": "audio/clip06.mp3",
+      "shots": [
+        {
+          "shot": "wide",
+          "poses": [
+            "poses/crossed_arms",
+            "turnaround/front",
+            "poses/hands_on_hips"
+          ]
+        },
+        {
+          "at": 7.8,
+          "shot": "close",
+          "face": "expressions/smug"
+        }
+      ]
+    },
+    {
+      "clip": "audio/clip07.mp3",
+      "shots": [
+        {
+          "shot": "close",
+          "face": "head/front",
+          "face_frac": 0.46
+        }
+      ]
+    },
+    {
+      "clip": "audio/clip08.mp3",
+      "shots": [
+        {
+          "shot": "medium",
+          "poses": [
+            "gestures/talking_2",
+            "gestures/open_palm",
+            "gestures/talking_1"
+          ]
+        },
+        {
+          "at": 7.4,
+          "shot": "wide",
+          "poses": [
+            "poses/hands_on_hips",
+            "turnaround/front"
+          ]
+        }
+      ]
+    }
+  ]
+}
