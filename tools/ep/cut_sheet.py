@@ -116,6 +116,8 @@ def run(char):
             os.makedirs(os.path.dirname(os.path.join(EP, rel)), exist_ok=True)
             if band['panel'] != 'mouths':
                 rgba = F.drop_intrusions(rgba)[0]      # a neighbour's hand reaching into the box
+            if band['panel'] in ('body', 'turnaround'):
+                rgba = F.open_gaps(rgba)[0]            # the sheet showing between the legs
             cv2.imwrite(os.path.join(EP, rel), rgba, [cv2.IMWRITE_PNG_COMPRESSION, 6])
             index.setdefault(band['panel'], {})[name] = dict(file=rel, sheet_rect_x4=rect, size=[rgba.shape[1], rgba.shape[0]],
                                                              cut=cut)

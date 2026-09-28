@@ -56,6 +56,8 @@ def main():
         os.makedirs(os.path.dirname(out), exist_ok=True)
         if panel != 'mouths':
             res = F.drop_intrusions(res)[0]
+        if panel == 'body' and ch != 'roy':
+            res = F.open_gaps(res)[0]
         cv2.imwrite(out, res, [cv2.IMWRITE_PNG_COMPRESSION, 4])
         print(out, res.shape, flush=True)
 

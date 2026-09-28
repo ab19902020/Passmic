@@ -45,16 +45,21 @@ def roy_head(ridx):
     fw = fx1 - fx0
     w = (a[..., 3] > 128).sum(1)
     shoulders = int(np.argmax(w > 2.5 * np.median(w[20:int(fy0 + fw * 0.5)])))
-    head = np.zeros_like(a)
-    x0, x1 = max(0, int(fx0 - 0.55 * fw)), int(fx1 + 0.55 * fw)
-    y1 = shoulders - int(0.04 * fw)
-    head[:y1, x0:x1] = a[:y1, x0:x1]
-    # below the face, only the beard and neck (not the T-pose's shoulders)
-    head[int(fy1 + 0.05 * fw):, :max(0, int(fx0 - 0.12 * fw)), 3] = 0
-    head[int(fy1 + 0.05 * fw):, int(fx1 + 0.12 * fw):, 3] = 0
-    # fade the collar into Gary's
-    ramp = int(0.12 * fw)
-    head[y1 - ramp:y1, :, 3] = (head[y1 - ramp:y1, :, 3] * np.linspace(1, 0, ramp)[:, None]).astype(np.uint8)
+    # head, beard, neck and his black collar down onto the shoulders: the collar lands on
+    # Gary's black jacket, so the join is black on black; it fades out downwards and sideways
+    H, W = a.shape[:2]
+    y1 = min(H, int(shoulders + 0.3 * fw))
+    x0, x1 = max(0, int(fx0 - 0.6 * fw)), min(W, int(fx1 + 0.6 * fw))
+    yy, xx = np.mgrid[0:H, 0:W].astype(np.float32)
+    keep = np.clip((y1 - yy) / (0.22 * fw), 0, 1)
+    cx = (fx0 + fx1) / 2
+    side = np.clip((0.75 * fw - np.abs(xx - cx)) / (0.3 * fw), 0, 1)
+    low = np.clip((yy - (shoulders - 0.05 * fw)) / (0.15 * fw), 0, 1)     # the neck stays whole
+    keep *= 1 - low * (1 - side)
+    keep[:, :x0] = 0
+    keep[:, x1:] = 0
+    head = a.copy()
+    head[..., 3] = (a[..., 3] * keep).astype(np.uint8)
     head = clean_bits(head)[:, ::-1].copy()                  # face right, like the walks
     return head, F.find_face(head)
 
@@ -119,7 +124,34 @@ def build():
         padT, padL = max(0, -(top + dy)), max(0, -(left + dx))
         padR = max(0, left + dx + hd.shape[1] - g.shape[1])
         canvas = cv2.copyMakeBorder(body_full, padT, 0, padL, padR, cv2.BORDER_CONSTANT, value=0)
-        F.paste_over(canvas, hd, left + dx + padL, top + dy + padT)
+        # Roy's black collar only where Gary's jacket is (no dark haze round the beard)
+        hx, hy = left + dx + padL, top + dy + padT
+        hd = hd.copy()
+        L = F.lab(hd[..., :3])
+        hh, hw = hd.shape[:2]
+        under = np.zeros((hh, hw), np.float32)
+        ya, xa = max(0, hy), max(0, hx)
+        yb, xb = min(canvas.shape[0], hy + hh), min(canvas.shape[1], hx + hw)
+        under[ya - hy:yb - hy, xa - hx:xb - hx] = canvas[ya:yb, xa:xb, 3] / 255.0
+        chin = int(F.find_face(hd)['box'][3])
+        # his shirt: large dark areas (the beard's ink lines are thin and don't survive the opening)
+        kk = max(5, int(0.05 * (hinfo['box'][2] - hinfo['box'][0]) * s)) | 1
+        cloth = cv2.morphologyEx((L[..., 0] < 30).astype(np.uint8), cv2.MORPH_OPEN,
+                                 cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kk, kk)))
+        cloth |= ((hd[..., 3] > 0) & (hd[..., 3] < 250) & (L[..., 0] < 45)).astype(np.uint8)   # its faded edge
+        cloth = cv2.dilate(cloth, np.ones((5, 5), np.uint8))
+        dark = cloth.astype(np.float32)
+        dark[:chin] = 0
+        hd[..., 3] = (hd[..., 3] * (1 - dark * (1 - under))).astype(np.uint8)
+        # and off the jacket, only the solid head and beard: no faint leftover sheet lines
+        n, cc = cv2.connectedComponents((hd[..., 3] > 200).astype(np.uint8), connectivity=8)
+        fb = hinfo['box']
+        fc = cc[int((fb[1] + fb[3]) / 2 * s), int((fb[0] + fb[2]) / 2 * s)] if n > 1 else 0
+        solid = cv2.dilate((cc == fc).astype(np.uint8), np.ones((5, 5), np.uint8)).astype(np.float32) if fc else 1.0
+        stray = np.zeros((hh, hw), np.float32)
+        stray[chin:] = 1
+        hd[..., 3] = (hd[..., 3] * (1 - stray * (1 - np.maximum(solid, under)))).astype(np.uint8)
+        F.paste_over(canvas, hd, hx, hy)
         canvas = clean_bits(canvas)
         rel = os.path.join('characters', 'roy', 'body', name + '.png')
         cv2.imwrite(os.path.join(EP, rel), canvas, [cv2.IMWRITE_PNG_COMPRESSION, 6])

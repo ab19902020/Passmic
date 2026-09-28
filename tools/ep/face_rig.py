@@ -47,6 +47,29 @@ def drop_intrusions(rgba):
     return out, k
 
 
+def open_gaps(rgba, low=0.4):
+    """Clear the sheet's background left inside a figure (the gap between
+    walking legs, under an arm): large, flat, near-white, low-chroma areas in
+    the lower part of the drawing. Eye whites, teeth and shoe soles are small
+    and stay."""
+    a = rgba[..., 3] > 128
+    H, W = a.shape
+    L = lab(rgba[..., :3])
+    pale = a & (L[..., 0] > 86) & (np.hypot(L[..., 1], L[..., 2]) < 7)
+    pale[:int(H * low)] = False
+    pale = cv2.morphologyEx(pale.astype(np.uint8), cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    n, cc, st, _ = cv2.connectedComponentsWithStats(pale, connectivity=8)
+    total = a.sum()
+    out, k = rgba.copy(), 0
+    for i in range(1, n):
+        x, y, w, h, ar = st[i]
+        if ar > 0.03 * total and h > 0.12 * H:          # the leg gap; shoe soles are far smaller
+            m = cv2.dilate((cc == i).astype(np.uint8), np.ones((5, 5), np.uint8)) > 0
+            out[m & ~(L[..., 0] < 40), 3] = 0        # keep the ink outline around it
+            k += 1
+    return out, k
+
+
 def skin_colour(rgba, region=None):
     L = lab(rgba[..., :3])
     a = rgba[..., 3] > 200
@@ -180,7 +203,7 @@ def mouth_part(rgba, margin=0.28):
     dist = cv2.distanceTransform(np.pad(a, 1).astype(np.uint8), cv2.DIST_L2, 5)[1:-1, 1:-1]
     alpha *= np.clip(dist[Y0:Y1, X0:X1] / max(2.0, pad * 0.6), 0, 1)
     patch[..., 3] = (alpha * (patch[..., 3] / 255.0) * 255).astype(np.uint8)
-    return patch, (cx, cy), float(mw)
+    return patch, (cx, cy), float(mw), float(mh)
 
 
 def face_interior(info, shape):
@@ -193,6 +216,19 @@ def face_interior(info, shape):
     if fs is None or not fs.any():
         return None
     fw = info['box'][2] - info['box'][0]
+    if info.get('lips_box') is not None:
+        # a hand-located mouth: the skin's own outline (its convex hull, just inside the ink line),
+        # so neither the jaw line nor a sleeve, a hand or the jacket beside it is ever painted
+        hull = np.zeros(fs.shape, np.uint8)
+        cv2.fillConvexPoly(hull, cv2.convexHull(cv2.findNonZero(fs.astype(np.uint8))), 1)
+        k = max(5, int(fw * 0.07)) | 1
+        m = fill_holes(cv2.morphologyEx(fs.astype(np.uint8), cv2.MORPH_CLOSE,
+                                        cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))) > 0)
+        m |= info['mouth_mask']
+        m &= cv2.erode(hull, np.ones((3, 3), np.uint8)) > 0
+        soft = cv2.GaussianBlur(m.astype(np.float32), (0, 0), max(0.8, fw * 0.003))
+        info['_interior'] = soft
+        return soft
     k = max(5, int(fw * 0.07)) | 1
     # the drawn mouth is inside the face even where a wide-open one breaks through the skin
     mm = info.get('mouth_mask')
@@ -209,6 +245,87 @@ def face_interior(info, shape):
     soft = cv2.GaussianBlur(m.astype(np.float32), (0, 0), max(0.8, fw * 0.004))
     info['_interior'] = soft
     return soft
+
+
+def mouth_marks(rgba, info, box):
+    """The drawn mouth inside a hand-placed box: its ink, lips, teeth, tongue and
+    the dark inside, as the pieces that reach the middle of the box (a cheek
+    fold or a sleeve at the box's edge isn't the mouth)."""
+    H, W = rgba.shape[:2]
+    x0, x1, y0, y1 = [int(v) for v in box]
+    fw = info['box'][2] - info['box'][0]
+    mg = max(3, int(0.02 * fw))
+    X0, X1, Y0, Y1 = max(0, x0 - mg), min(W, x1 + mg), max(0, y0 - mg), min(H, y1 + mg)
+    L = lab(rgba[Y0:Y1, X0:X1, :3])
+    fs = info['face_skin'][Y0:Y1, X0:X1]
+    ink = L[..., 0] < 42
+    lips = (L[..., 1] > 17) & (L[..., 0] < 80)
+    teeth = (L[..., 0] > 84) & (np.hypot(L[..., 1], L[..., 2]) < 12)
+    inbox = np.zeros(L.shape[:2], bool)
+    inbox[y0 - Y0:y1 - Y0, x0 - X0:x1 - X0] = True
+    cand = (ink | lips | teeth | ((np.linalg.norm(L - info['skin'], axis=2) > 22) & inbox)) & ~fs & \
+        (rgba[Y0:Y1, X0:X1, 3] > 128)
+    n, cc = cv2.connectedComponents(cand.astype(np.uint8), connectivity=8)
+    core = np.zeros_like(cand)
+    bw = x1 - x0
+    core[y0 - Y0:y1 - Y0, int(x0 + 0.25 * bw) - X0:int(x1 - 0.25 * bw) - X0] = True
+    ids = np.unique(cc[core & cand])
+    m = np.isin(cc, ids[ids > 0]) & inbox | (np.isin(cc, ids[ids > 0]) & ~inbox & (ink | teeth))
+    out = np.zeros((H, W), bool)
+    out[Y0:Y1, X0:X1] = m
+    return out
+
+
+def erase_mouth(rgba, info):
+    """Paint out a drawn mouth located by hand (info['lips_box'], info['allow']):
+    only the mouth's own marks inside the box - ink, lips, teeth, tongue, the dark
+    of an open mouth - are removed, never anything above the nose line, and the
+    hole is filled from the skin and shading around it (inpainted, with the ink
+    just above the nose line kept out of the fill's sources)."""
+    H, W = rgba.shape[:2]
+    x0, x1, y0, y1 = info['lips_box']
+    fw = info['box'][2] - info['box'][0]
+    mg = max(3, int(0.02 * fw))
+    X0, X1, Y0, Y1 = max(0, int(x0) - 3 * mg), min(W, int(x1) + 3 * mg), max(0, int(y0) - 4 * mg), min(H, int(y1) + 3 * mg)
+    crop = rgba[Y0:Y1, X0:X1]
+    L = lab(crop[..., :3])
+    box = np.zeros(crop.shape[:2], np.uint8)
+    cv2.rectangle(box, (int(x0) - X0 - mg, int(y0) - Y0 - mg), (int(x1) - X0 + mg, int(y1) - Y0 + mg), 1, -1)
+    box = box > 0
+    ink = L[..., 0] < 42
+    lips = (L[..., 1] > 17) & (L[..., 0] < 80)                    # red/pink lips, tongue, gums
+    teeth = (L[..., 0] > 84) & (np.hypot(L[..., 1], L[..., 2]) < 12)
+    mouth = info['mouth_mask'][Y0:Y1, X0:X1] | ((ink | lips | teeth) & box & ~info['face_skin'][Y0:Y1, X0:X1])
+    k = max(3, int(0.014 * fw)) | 1
+    hole = cv2.dilate(mouth.astype(np.uint8), cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k, k))) > 0
+    allow = info['allow'][Y0:Y1, X0:X1]
+    inside = face_interior(info, (H, W))
+    inside = inside[Y0:Y1, X0:X1] if inside is not None else np.ones(crop.shape[:2], np.float32)
+    hole &= (allow > 0.02) & (inside > 0.5) & (crop[..., 3] > 0)
+    # the fill samples skin only: never the nose's ink, the jaw line, clothes, a hand or a phone
+    far = (np.linalg.norm(L - info['skin'], axis=2) > 30) | ink | (crop[..., 3] < 200) | (inside < 0.5) | \
+        (L[..., 0] > info['skin'][0] + 7)                      # no highlights / pale rims either
+    src_mask = hole | (cv2.dilate(far.astype(np.uint8), np.ones((k, k), np.uint8)) > 0)
+    # a smooth fill from the surrounding skin tones only (normalised convolution at two scales,
+    # the finer one wherever it has enough skin nearby): keeps the soft shading of the cheeks
+    rgb = crop[..., :3].astype(np.float32)
+    w = (~src_mask).astype(np.float32)
+    filled = None
+    for sig in (0.12 * fw, 0.045 * fw):
+        num = cv2.GaussianBlur(rgb * w[..., None], (0, 0), sig)
+        den = cv2.GaussianBlur(w, (0, 0), sig)[..., None]
+        est = num / np.maximum(den, 1e-6)
+        if filled is None:
+            filled = est
+        else:
+            a = np.clip(den / 0.25, 0, 1)
+            filled = est * a + filled * (1 - a)
+    soft = cv2.GaussianBlur(hole.astype(np.float32), (0, 0), max(1.0, 0.004 * fw))
+    soft = np.maximum(soft, hole.astype(np.float32)) * allow * np.clip(inside, 0, 1)
+    out = rgba.copy()
+    region = out[Y0:Y1, X0:X1, :3].astype(np.float32)
+    out[Y0:Y1, X0:X1, :3] = (region * (1 - soft[..., None]) + filled.astype(np.float32) * soft[..., None]).astype(np.uint8)
+    return out
 
 
 def without_mouth(rgba, info, grow=0.18):
@@ -269,7 +386,7 @@ def paste(dst, src, x0, y0, clip=None):
 def with_mouth(base, info, part, width, dx=0.0, dy=0.0, squash_x=1.0, angle=0.0):
     """Paste a mouth part so its width is `width` px, centred on the base
     drawing's mouth (plus an offset)."""
-    patch, (pcx, pcy), pw = part
+    patch, (pcx, pcy), pw = part[:3]
     s = width / max(pw, 1e-6)
     M = cv2.getRotationMatrix2D((pcx, pcy), angle, 1.0)
     M[0] *= s * squash_x
@@ -281,7 +398,10 @@ def with_mouth(base, info, part, width, dx=0.0, dy=0.0, squash_x=1.0, angle=0.0)
                             borderMode=cv2.BORDER_CONSTANT, borderValue=0)
     cx, cy = info['mouth'][0] + dx, info['mouth'][1] + dy
     out = base.copy()
-    paste(out, warped, int(round(cx - pcx * s * squash_x)), int(round(cy - pcy * s)), clip=face_interior(info, base.shape[:2]))
+    clip = face_interior(info, base.shape[:2])
+    if info.get('allow') is not None:
+        clip = info['allow'] if clip is None else clip * info['allow']
+    paste(out, warped, int(round(cx - pcx * s * squash_x)), int(round(cy - pcy * s)), clip=clip)
     return out
 
 

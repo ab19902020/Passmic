@@ -136,6 +136,20 @@ class Rig:
             m = np.zeros((H, W), np.uint8)
             cv2.ellipse(m, (int(mx), int(my)), (int(mw * 0.55), int(mw * 0.2)), 0, 0, 360, 1, -1)
             info['mouth_mask'] = m > 0
+        if 'lips' in ov:
+            # located by hand: the drawn mouth's box, and the nose line nothing may cross
+            lx0, lx1, ly0, ly1 = ov['lips']
+            nose = ov.get('nose', ly0 - 0.01)
+            pts = [(0.0, nose), (1.0, nose)] if not isinstance(nose, list) else \
+                [(0.0, nose[0][1])] + [tuple(p) for p in nose] + [(1.0, nose[-1][1])]
+            guard = np.interp(np.arange(W) / W, [p[0] for p in pts], [p[1] for p in pts]) * H
+            bx = (lx0 * W, lx1 * W, ly0 * H, ly1 * H)
+            info['lips_box'] = bx
+            info['mouth'] = ((bx[0] + bx[1]) / 2, (bx[2] + bx[3]) / 2, bx[1] - bx[0], bx[3] - bx[2])
+            info['mouth_mask'] = F.mouth_marks(img, info, bx)
+            feather = max(2.0, 0.003 * H)
+            info['allow'] = np.clip((np.arange(H)[:, None] - guard[None, :]) / feather, 0, 1).astype(np.float32)
+            info['_interior'] = None
         if ov.get('no_mouth'):
             info['mouth'] = None
         fx0, fy0, fx1, fy1 = info['box']
@@ -213,7 +227,7 @@ class Rig:
         if mouth is not None and info['mouth'] is not None:
             base = self.cache.get(('nomouth', key))
             if base is None and self.over.get('_mouth_style') != 'patch':
-                base = F.without_mouth(img, info)
+                base = F.erase_mouth(img, info) if 'lips_box' in info else F.without_mouth(img, info)
                 self.cache[('nomouth', key)] = base
             if self.over.get('_mouth_style') == 'patch':
                 part = self.patch_part(mouth)
@@ -222,12 +236,21 @@ class Rig:
                 parts = self.mouth_parts()
                 part = parts.get(mouth) or parts.get('rest')
                 rest_w = parts['rest'][2]
-                width = self.mouth_ratio() * info['width'] * part[2] / rest_w
+                ov = self.over.get(key, {})
+                rest_px = ov['mw'] * info['size'][0] if 'mw' in ov else self.mouth_ratio() * info['width']
+                width = rest_px * part[2] / rest_w
                 if mouth != 'rest':
                     width *= OPEN_SCALE
                 part = recolor_part(part, info['skin'])
-                sq = self.over.get(key, {}).get('squash', 1.0)
-                out = F.with_mouth(base, info, part, width, squash_x=sq)
+                sq = ov.get('squash', 1.0)
+                dy = 0.0
+                if 'lips_box' in info:
+                    # every mouth hangs from the drawn upper lip: an open one drops the jaw, never
+                    # reaches up into the nose
+                    s = width / max(part[2], 1e-6)
+                    top = info['lips_box'][2] + ov.get('lip_dy', 0.0) * info['size'][1]
+                    dy = top + part[3] * s / 2 - info['mouth'][1]
+                out = F.with_mouth(base, info, part, width, dy=dy, squash_x=sq, angle=ov.get('tilt', 0.0))
         if blink > 0:
             out = F.blink(out, info, blink)
         if flip:
@@ -244,7 +267,7 @@ def _skin_of_part(pid):
 
 def recolor_part(part, skin_lab):
     """Shift a mouth part's skin tone to the target face's skin."""
-    patch, c, w = part
+    patch, c, w = part[:3]
     key = (id(patch), tuple(np.round(skin_lab, 1)))
     hit = _RECOLOR.get(key)
     if hit is not None:
@@ -258,7 +281,7 @@ def recolor_part(part, skin_lab):
     wgt = near.astype(np.float32)[..., None]
     L2 = L + d * wgt
     bgr = (cv2.cvtColor(L2, cv2.COLOR_LAB2BGR) * 255).clip(0, 255).astype(np.uint8)
-    out = (np.dstack([bgr, patch[..., 3]]), c, w)
+    out = (np.dstack([bgr, patch[..., 3]]), c, w) + tuple(part[3:])
     _RECOLOR[key] = out
     return out
 
