@@ -6,8 +6,8 @@
     python3 tools/ep/render.py sheet 0 300 5       -> out/ep01/sheet.jpg (contact sheet)
     python3 tools/ep/render.py timings             -> print the line timeline
 
-JOBS=n limits parallel workers (each 4K worker needs about 3.5 GB with its encoder).
-Segments are resumable: a finished one is kept as out/ep01/seg_<mode>/segNNN.mp4
+JOBS=n sets the parallel workers (by default as many as memory allows: ~4.5 GB per 4K worker).
+Segments are resumable: a finished one is kept as out/ep01/seg_<mode>/f<first>-<end>.mp4
 (written under a temporary name and renamed when complete), so re-running
 renders only what is missing. Delete the folder after changing the episode.
 """
@@ -141,12 +141,23 @@ def main():
     size = SIZES[mode]
     R = load(size)
     n = int(R.tl.t * E.FPS)
-    jobs = int(os.environ.get('JOBS', os.cpu_count() or 4))
-    nseg = jobs * 4
+    # each 4K worker peaks around 4.5 GB (the high-res drawings and their face masks): by default
+    # run as many as the memory allows
+    try:
+        mem = os.sysconf('SC_PAGE_SIZE') * os.sysconf('SC_PHYS_PAGES')
+        cg = '/sys/fs/cgroup/memory.max'
+        if os.path.exists(cg) and open(cg).read().strip().isdigit():
+            mem = min(mem, int(open(cg).read()))
+    except (ValueError, OSError):
+        mem = 16e9
+    per = 4.5e9 if size[0] > 2000 else 2.5e9
+    jobs = int(os.environ.get('JOBS', max(1, min(os.cpu_count() or 4, int(mem // per)))))
+    nseg = 12                          # fixed, so a resumed render (any JOBS) reuses the same pieces
     b = [round(i * n / nseg) for i in range(nseg + 1)]
     segd = os.path.join(OUTD, 'seg_' + mode)
     os.makedirs(segd, exist_ok=True)
-    tasks = [(b[i], b[i + 1], os.path.join(segd, 'seg%03d.mp4' % i)) for i in range(nseg)]
+    # named by frame range: a changed episode length never reuses a stale piece
+    tasks = [(b[i], b[i + 1], os.path.join(segd, 'f%06d-%06d.mp4' % (b[i], b[i + 1]))) for i in range(nseg)]
     todo = [t for t in tasks if not os.path.exists(t[2])]
     t0 = time.time()
     print('%d frames at %dx%d, %d workers, %d of %d segments to render' % (n, size[0], size[1], jobs, len(todo), nseg),

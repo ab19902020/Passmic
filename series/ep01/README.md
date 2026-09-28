@@ -12,8 +12,9 @@ python3 tools/ep/render.py sheet 0 330 2.5 out/ep01/sheet.jpg   # contact sheet 
 python3 tools/ep/render.py timings     # every line's start, length and whether it has a recording
 ```
 
-Rendering uses one worker per CPU (`JOBS=n` to limit — each 4K worker needs
-about 3 GB of memory).
+Rendering runs as many workers as memory allows (~4.5 GB per 4K worker; `JOBS=n`
+to set it). Finished segments are kept, so if a render is interrupted just run it
+again; delete `out/ep01/seg_4k/` after changing anything in the episode.
 
 ## Replacing or adding a voice line
 
